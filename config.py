@@ -170,6 +170,8 @@ PACKAGES_PHASE2 = [
     "vulkan-radeon",
     "xf86-video-nouveau",
     "ttf-jetbrains-mono-nerd",
+    "noto-fonts",
+    "noto-fonts-cjk",
     "noto-fonts-emoji",
     "pcmanfm",
     "gvfs",

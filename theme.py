@@ -13,6 +13,7 @@ def apply_theme():
     css = f"""
         * {{
             outline-width: 0;
+            font-family: "Noto Sans", "Noto Sans CJK JP", "Noto Sans CJK KR", "Noto Sans CJK SC", "Noto Sans CJK TC", sans-serif;
         }}
         
         window {{ 
