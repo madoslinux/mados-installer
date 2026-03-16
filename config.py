@@ -2,6 +2,8 @@
 madOS Installer - Configuration constants
 """
 
+from colors import NORD_POLAR_NIGHT, NORD_SNOW_STORM, NORD_FROST, NORD_AURORA
+
 # ========== DEMO MODE ==========
 # Set to True to run installer in demo mode (no actual disk changes)
 # Set to False for real installation
@@ -79,21 +81,6 @@ TIMEZONES = [
     "Pacific/Fiji",
     "Pacific/Honolulu",
 ]
-
-# Nord color palette
-NORD_POLAR_NIGHT = {"nord0": "#2E3440", "nord1": "#3B4252", "nord2": "#434C5E", "nord3": "#4C566A"}
-
-NORD_SNOW_STORM = {"nord4": "#D8DEE9", "nord5": "#E5E9F0", "nord6": "#ECEFF4"}
-
-NORD_FROST = {"nord7": "#8FBCBB", "nord8": "#88C0D0", "nord9": "#81A1C1", "nord10": "#5E81AC"}
-
-NORD_AURORA = {
-    "nord11": "#BF616A",
-    "nord12": "#D08770",
-    "nord13": "#EBCB8B",
-    "nord14": "#A3BE8C",
-    "nord15": "#B48EAD",
-}
 
 # Phase 1 packages: core system packages (categorisation only — ALL packages
 # are included in the live ISO and copied to the target via rsync during

@@ -20,7 +20,7 @@ for name in submodules:
     sys.modules[f'mados_installer.{name}'] = mod
     spec.loader.exec_module(mod)
 
-for subdir in ['installer', 'pages']:
+for subdir in ['installer', 'pages', 'translations']:
     subdir_path = f'{pkg_dir}/{subdir}'
     if os.path.isdir(subdir_path):
         sys.modules[f'mados_installer.{subdir}'] = types.ModuleType(f'mados_installer.{subdir}')
