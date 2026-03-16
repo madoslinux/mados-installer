@@ -85,7 +85,7 @@ for svc in \
     rm -f "/etc/systemd/system/$svc"
 done
 
-find /etc/systemd/system -type l ! -exec test -e {{}} \\; -delete 2>/dev/null || true
+find /etc/systemd/system -type l ! -exec test -e {} \; -delete 2>/dev/null || true
 
 if id mados &>/dev/null; then
     userdel -r mados 2>/dev/null || userdel mados 2>/dev/null || true
@@ -570,9 +570,9 @@ for session_file in /usr/share/wayland-sessions/sway.desktop /usr/share/wayland-
         else
             echo "  ⚠ $session_file exists but Exec= may not point to madOS script — fixing..."
             session_name=$(basename "$session_file" .desktop)
-            if [ -x "/usr/local/bin/${{session_name}}-session" ]; then
-                sed -i "s|^Exec=.*|Exec=/usr/local/bin/${{session_name}}-session|" "$session_file"
-                echo "    Fixed: Exec=/usr/local/bin/${{session_name}}-session"
+            if [ -x "/usr/local/bin/${session_name}-session" ]; then
+                sed -i "s|^Exec=.*|Exec=/usr/local/bin/${session_name}-session|" "$session_file"
+                echo "    Fixed: Exec=/usr/local/bin/${session_name}-session"
             fi
         fi
     else
