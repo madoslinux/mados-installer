@@ -4,7 +4,10 @@ An AI-orchestrated Arch Linux system installer
 Beautiful GUI installer with Nord theme and i18n support
 """
 
-from .app import MadOSInstaller
+__app_name__ = "madOS Installer"
+__version__ = "1.0.0"
+
+from app import MadOSInstaller
 
 import gi
 

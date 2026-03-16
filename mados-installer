@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""madOS Installer - Entry point for: python3 -m mados_installer"""
+"""madOS Installer - Entry point
+
+Usage:
+    mados-installer
+"""
 
 import sys
 import os

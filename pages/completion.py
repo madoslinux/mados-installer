@@ -6,7 +6,7 @@ import subprocess
 
 from gi.repository import Gtk
 
-from ..config import DEMO_MODE, NORD_AURORA, NORD_POLAR_NIGHT
+from config import DEMO_MODE, NORD_AURORA, NORD_POLAR_NIGHT
 
 
 def create_completion_page(app):

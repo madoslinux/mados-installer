@@ -4,9 +4,9 @@ madOS Installer - Welcome page
 
 from gi.repository import Gtk
 
-from ..config import NORD_POLAR_NIGHT, NORD_SNOW_STORM, NORD_FROST
-from ..translations import TRANSLATIONS
-from ..utils import load_logo
+from config import NORD_POLAR_NIGHT, NORD_SNOW_STORM, NORD_FROST
+from translations import TRANSLATIONS
+from utils import load_logo
 
 
 def create_welcome_page(app):

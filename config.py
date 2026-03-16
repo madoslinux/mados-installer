@@ -234,6 +234,10 @@ RSYNC_EXCLUDES = [
     "/usr/share/help/*",
     # Archiso live-only initcpio configuration
     "/etc/initcpio/*",
+    # Live installer (not needed on installed system)
+    "/usr/local/bin/mados-installer",
+    "/usr/local/lib/mados-installer",
+    "/usr/local/share/mados-installer",
 ]
 
 # Paths (relative to /mnt) to remove after the rsync copy to reclaim

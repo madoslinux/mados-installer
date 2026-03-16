@@ -6,9 +6,9 @@ import re
 
 from gi.repository import Gtk
 
-from ..config import NORD_FROST
-from ..utils import show_error
-from .base import create_page_header, create_nav_buttons
+from config import NORD_FROST
+from utils import show_error
+from pages.base import create_page_header, create_nav_buttons
 
 
 def create_user_page(app):

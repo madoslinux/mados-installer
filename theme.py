@@ -4,7 +4,7 @@ madOS Installer - Nord theme CSS for GTK3
 
 from gi.repository import Gtk, Gdk
 
-from .config import NORD_POLAR_NIGHT, NORD_SNOW_STORM, NORD_FROST, NORD_AURORA
+from config import NORD_POLAR_NIGHT, NORD_SNOW_STORM, NORD_FROST, NORD_AURORA
 
 
 def apply_theme():

@@ -9,14 +9,14 @@ import time
 
 from gi.repository import Gtk, GLib
 
-from ..config import (
+from config import (
     DEMO_MODE,
     NORD_POLAR_NIGHT,
     NORD_SNOW_STORM,
     NORD_FROST,
     NORD_AURORA,
 )
-from .base import create_page_header, create_nav_buttons
+from pages.base import create_page_header, create_nav_buttons
 
 
 def _has_internet():

@@ -4,9 +4,9 @@ madOS Installer - Partitioning scheme page
 
 from gi.repository import Gtk, GLib
 
-from ..config import NORD_POLAR_NIGHT, NORD_SNOW_STORM, NORD_AURORA
-from ..utils import show_error
-from .base import create_page_header, create_nav_buttons
+from config import NORD_POLAR_NIGHT, NORD_SNOW_STORM, NORD_AURORA
+from utils import show_error
+from pages.base import create_page_header, create_nav_buttons
 
 
 def create_partitioning_page(app):

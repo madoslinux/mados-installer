@@ -6,7 +6,7 @@ import subprocess
 
 from gi.repository import Gtk
 
-from ..config import (
+from config import (
     DEMO_MODE,
     MIN_DISK_SIZE_GB,
     NORD_POLAR_NIGHT,
@@ -14,8 +14,8 @@ from ..config import (
     NORD_FROST,
     NORD_AURORA,
 )
-from ..utils import show_error, style_dialog
-from .base import create_page_header, create_nav_buttons
+from utils import show_error, style_dialog
+from pages.base import create_page_header, create_nav_buttons
 
 
 def create_disk_page(app):
@@ -55,6 +55,16 @@ def create_disk_page(app):
     app.disk_buttons = []
     app.selected_disk_info = None
 
+    app.no_disks_label = Gtk.Label()
+    app.no_disks_label.set_markup(
+        f'<span size="11000" foreground="{NORD_POLAR_NIGHT["nord3"]}">'
+        f'{app.t("no_disks_available")}</span>'
+    )
+    app.no_disks_label.set_halign(Gtk.Align.CENTER)
+    app.no_disks_label.set_margin_top(20)
+    app.no_disks_label.set_no_show_all(True)
+    app.disk_buttons_box.pack_start(app.no_disks_label, False, False, 0)
+
     _populate_disks(app)
 
     content.pack_start(app.disk_buttons_box, False, False, 0)
@@ -80,7 +90,7 @@ def _get_disk_type(name, model=""):
 
 
 def _get_disk_list():
-    """Get list of available disks."""
+    """Get list of available disks (excluding live USB and zram)."""
     if DEMO_MODE:
         return [
             ("sda", "256G", "Samsung SSD 860 EVO"),
@@ -94,14 +104,36 @@ def _get_disk_list():
         capture_output=True,
         text=True,
     )
+
+    root_disk = None
+    root_result = subprocess.run(
+        ["lsblk", "-n", "-o", "PKNAME", "/"],
+        capture_output=True,
+        text=True,
+    )
+    if root_result.returncode == 0 and root_result.stdout.strip():
+        root_disk = root_result.stdout.strip()
+
     for line in result.stdout.splitlines():
-        if "disk" in line:
-            parts = line.split()
-            if len(parts) >= 2:
-                name = parts[0]
-                size = parts[1]
-                model = " ".join(parts[3:]) if len(parts) > 3 else "Unknown disk"
-                disk_list.append((name, size, model))
+        if "disk" not in line:
+            continue
+
+        parts = line.split()
+        if len(parts) < 2:
+            continue
+
+        name = parts[0]
+        size = parts[1]
+        model = " ".join(parts[3:]) if len(parts) > 3 else "Unknown disk"
+
+        if name.startswith("zram"):
+            continue
+
+        if name == root_disk:
+            continue
+
+        disk_list.append((name, size, model))
+
     return disk_list
 
 
@@ -168,7 +200,8 @@ def _create_disk_button(name, size, model, on_click):
 def _populate_disks(app):
     """Populate disk list with clickable button cards."""
     for child in app.disk_buttons_box.get_children():
-        app.disk_buttons_box.remove(child)
+        if child != app.no_disks_label:
+            app.disk_buttons_box.remove(child)
     app.disk_buttons = []
     app.selected_disk_info = None
 
@@ -183,12 +216,18 @@ def _populate_disks(app):
         app.selected_disk_info = {"name": name, "size": size}
 
     try:
-        for name, size, model in _get_disk_list():
-            btn = _create_disk_button(name, size, model, on_disk_click)
-            app.disk_buttons.append(btn)
-            app.disk_buttons_box.pack_start(btn, False, False, 0)
+        disks = _get_disk_list()
+        if not disks:
+            app.no_disks_label.show()
+        else:
+            app.no_disks_label.hide()
+            for name, size, model in disks:
+                btn = _create_disk_button(name, size, model, on_disk_click)
+                app.disk_buttons.append(btn)
+                app.disk_buttons_box.pack_start(btn, False, False, 0)
     except Exception as e:
         print(f"Error listing disks: {e}")
+        app.no_disks_label.show()
 
 
 def _on_disk_next(app):

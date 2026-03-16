@@ -10,13 +10,12 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
-from .config import DEMO_MODE, LOCALE_MAP
-from .translations import TRANSLATIONS
-from .theme import apply_theme
-from .utils import random_suffix, show_error
-from .pages import (
+from config import DEMO_MODE, LOCALE_MAP
+from translations import TRANSLATIONS
+from theme import apply_theme
+from utils import random_suffix, show_error
+from pages import (
     create_welcome_page,
-    create_wifi_page,
     create_disk_page,
     create_partitioning_page,
     create_user_page,
@@ -122,7 +121,6 @@ class MadOSInstaller(Gtk.Window):
     def _build_pages(self):
         """Create all installer pages in order"""
         create_welcome_page(self)
-        create_wifi_page(self)
         create_disk_page(self)
         create_partitioning_page(self)
         create_user_page(self)
