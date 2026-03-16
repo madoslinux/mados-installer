@@ -335,8 +335,8 @@ EOFPLYCONF
 
 echo '[PROGRESS 6/8] Rebuilding initramfs...'
 pacman -Rdd --noconfirm mkinitcpio-archiso 2>/dev/null || true
-rm -f /etc/mkinitcpio.conf.d/*.conf
-rm -f /etc/mkinitcpio.d/*
+rm -f /etc/mkinitcpio.conf.d/archiso.conf
+rm -f /etc/mkinitcpio.d/linux.preset
 sync
 mkinitcpio -p linux
 
