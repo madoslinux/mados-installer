@@ -296,8 +296,7 @@ DeviceTimeout=5
 EOFPLYCONF
 
 echo '[PROGRESS 6/8] Rebuilding initramfs (this takes a while)...'
-# Add VirtIO and SATA/IDE drivers for QEMU/KVM
-sed -i 's/^MODULES=.*/MODULES=(virtio virtio_blk virtio_scsi virtio_net virtio_pci ahci libata ata_piix pdc_adma sata_nv sata_via sata_sil24)/' /etc/mkinitcpio.conf
+# Use default mkinitcpio (drivers included in kernel)
 sed -i 's/^HOOKS=.*/HOOKS=(base udev autodetect microcode modconf kms plymouth block filesystems keyboard fsck)/' /etc/mkinitcpio.conf
 
 cat > /etc/mkinitcpio.d/linux.preset <<'EOFPRESET'
