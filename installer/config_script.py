@@ -338,7 +338,7 @@ pacman -Rdd --noconfirm mkinitcpio-archiso 2>/dev/null || true
 rm -f /etc/mkinitcpio.conf.d/*.conf
 rm -f /etc/mkinitcpio.d/*
 sync
-mkinitcpio -P 2>/dev/null || mkinitcpio -p linux
+mkinitcpio -p linux
 
 echo '[PROGRESS 7/8] Enabling essential services...'
 passwd -l root

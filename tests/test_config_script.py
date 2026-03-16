@@ -179,8 +179,10 @@ class TestConfigScript(unittest.TestCase):
         """Test archiso config is removed and initramfs is rebuilt"""
         script = build_config_script(self.data)
         
-        self.assertIn("rm -f /etc/mkinitcpio.conf.d/archiso.conf", script)
-        self.assertIn("mkinitcpio -P", script)
+        self.assertIn("pacman -Rdd --noconfirm mkinitcpio-archiso", script)
+        self.assertIn("rm -f /etc/mkinitcpio.conf.d/*.conf", script)
+        self.assertIn("rm -f /etc/mkinitcpio.d/*", script)
+        self.assertIn("mkinitcpio -p linux", script)
 
     def test_root_locked(self):
         """Test root account is locked"""
