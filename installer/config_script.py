@@ -205,7 +205,7 @@ EOFHOOK
     fi
 else
     echo "==> Detected BIOS boot mode"
-    if ! grub-install --target=i386-pc --recheck {disk} 2>&1; then
+    if ! grub-install --target=i386-pc --recheck $disk 2>&1; then
         echo "ERROR: GRUB BIOS install failed!"
         exit 1
     fi
