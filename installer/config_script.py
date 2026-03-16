@@ -85,7 +85,7 @@ for svc in \
     rm -f "/etc/systemd/system/$svc"
 done
 
-find /etc/systemd/system -type l ! -exec test -e {} \; -delete 2>/dev/null || true
+find /etc/systemd/system -type l ! -exec test -e {{}} \; -delete 2>/dev/null || true
 
 if id mados &>/dev/null; then
     userdel -r mados 2>/dev/null || userdel mados 2>/dev/null || true
@@ -110,16 +110,16 @@ if [ ! -s /boot/vmlinuz-linux ] || [ ! -r /boot/vmlinuz-linux ]; then
     echo '  Kernel not found or unreadable at /boot/vmlinuz-linux, recovering...'
     KERN_FOUND=0
     for kdir in /usr/lib/modules/*/; do
-        if [ -r "${kdir}vmlinuz" ]; then
-            cp "${kdir}vmlinuz" /boot/vmlinuz-linux
-            echo "  Recovered kernel from ${kdir}vmlinuz"
+        if [ -r "${{kdir}}vmlinuz" ]; then
+            cp "${{kdir}}vmlinuz" /boot/vmlinuz-linux
+            echo "  Recovered kernel from ${{kdir}}vmlinuz"
             KERN_FOUND=1
             break
         fi
     done
     if [ "$KERN_FOUND" = "0" ]; then
         echo '  Modules vmlinuz not found. Reinstalling linux package...'
-        pacman -Sy --noconfirm linux || { echo 'FATAL: Failed to install kernel'; exit 1; }
+        pacman -Sy --noconfirm linux || {{ echo 'FATAL: Failed to install kernel'; exit 1; }}
     fi
 fi
 if [ ! -s /boot/vmlinuz-linux ] || [ ! -r /boot/vmlinuz-linux ]; then
@@ -317,16 +317,16 @@ rm -f /etc/mkinitcpio.conf.d/archiso.conf
 if [ ! -s /boot/vmlinuz-linux ] || [ ! -r /boot/vmlinuz-linux ]; then
     echo '  Kernel missing before mkinitcpio! Recovering...'
     for kdir in /usr/lib/modules/*/; do
-        if [ -r "${kdir}vmlinuz" ]; then
-            cp "${kdir}vmlinuz" /boot/vmlinuz-linux
-            echo "  Recovered kernel from ${kdir}vmlinuz"
+        if [ -r "${{kdir}}vmlinuz" ]; then
+            cp "${{kdir}}vmlinuz" /boot/vmlinuz-linux
+            echo "  Recovered kernel from ${{kdir}}vmlinuz"
             break
         fi
     done
 fi
 if [ ! -s /boot/vmlinuz-linux ] || [ ! -r /boot/vmlinuz-linux ]; then
     echo '  ERROR: Could not find kernel image. Reinstalling linux package...'
-    pacman -Sy --noconfirm linux || { echo 'FATAL: Failed to install kernel'; exit 1; }
+    pacman -Sy --noconfirm linux || {{ echo 'FATAL: Failed to install kernel'; exit 1; }}
 fi
 
 mkinitcpio -P
@@ -570,9 +570,9 @@ for session_file in /usr/share/wayland-sessions/sway.desktop /usr/share/wayland-
         else
             echo "  ⚠ $session_file exists but Exec= may not point to madOS script — fixing..."
             session_name=$(basename "$session_file" .desktop)
-            if [ -x "/usr/local/bin/${session_name}-session" ]; then
-                sed -i "s|^Exec=.*|Exec=/usr/local/bin/${session_name}-session|" "$session_file"
-                echo "    Fixed: Exec=/usr/local/bin/${session_name}-session"
+            if [ -x "/usr/local/bin/${{session_name}}-session" ]; then
+                sed -i "s|^Exec=.*|Exec=/usr/local/bin/${{session_name}}-session|" "$session_file"
+                echo "    Fixed: Exec=/usr/local/bin/${{session_name}}-session"
             fi
         fi
     else
