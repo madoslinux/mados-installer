@@ -19,6 +19,9 @@ LOCALE_MAP = {
     "Español": "es_ES.UTF-8",
     "Français": "fr_FR.UTF-8",
     "Deutsch": "de_DE.UTF-8",
+    "Português": "pt_BR.UTF-8",
+    "Italiano": "it_IT.UTF-8",
+    "한국어": "ko_KR.UTF-8",
     "中文": "zh_CN.UTF-8",
     "日本語": "ja_JP.UTF-8",
 }
@@ -258,6 +261,10 @@ LOCALE_KB_MAP = {
     "es_ES.UTF-8": "es",
     "fr_FR.UTF-8": "fr",
     "de_DE.UTF-8": "de",
+    "pt_BR.UTF-8": "br",
+    "it_IT.UTF-8": "it",
+    "ko_KR.UTF-8": "kr",
     "zh_CN.UTF-8": "us",
+    "zh_TW.UTF-8": "us",
     "ja_JP.UTF-8": "jp",
 }
