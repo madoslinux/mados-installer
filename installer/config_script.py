@@ -215,6 +215,30 @@ echo '[PROGRESS 4/8] Configuring GRUB...'
 sed -i 's/GRUB_CMDLINE_LINUX=""/GRUB_CMDLINE_LINUX="zswap.enabled=0 splash quiet"/' /etc/default/grub
 sed -i 's/GRUB_DISTRIBUTOR="Arch"/GRUB_DISTRIBUTOR="madOS"/' /etc/default/grub
 sed -i 's/#GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' /etc/default/grub
+echo 'GRUB_DISABLE_LINUX_UUID=false' >> /etc/default/grub
+
+# Detect root partition UUID for boot
+ROOT_UUID=$(blkid -s UUID -o value /dev/sda3 2>/dev/null || echo "")
+if [ -n "$ROOT_UUID" ]; then
+    echo "  Root partition UUID: $ROOT_UUID"
+    # Create custom menu entry with UUID
+    mkdir -p /boot/grub/custom
+    cat > /boot/grub/custom/mados.cfg <<'EOFGRUB'
+menuentry 'madOS Linux' {{
+    load_video
+    set gfxpayload=keep
+    insmod gzio
+    insmod part_gpt
+    insmod ext2
+    search --no-floppy --fs-uuid --set=root $ROOT_UUID
+    echo        'Loading Linux linux ...'
+    linux       /vmlinuz-linux root=UUID=$ROOT_UUID rw zswap.enabled=0 splash quiet
+    echo        'Loading initial ramdisk ...'
+    initrd      /initramfs-linux.img
+}}
+EOFGRUB
+fi
+
 grub-mkconfig -o /boot/grub/grub.cfg
 if [ ! -f /boot/grub/grub.cfg ]; then
     echo "ERROR: grub.cfg was not generated!"
