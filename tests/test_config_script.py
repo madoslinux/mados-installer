@@ -118,6 +118,14 @@ class TestConfigScript(unittest.TestCase):
         self.assertIn('GRUB_DISTRIBUTOR="madOS"', script)
         self.assertIn("GRUB_DISABLE_OS_PROBER=false", script)
 
+    def test_grub_uses_uuid(self):
+        """Test GRUB uses UUID instead of /dev/sda3"""
+        script = build_config_script(self.data)
+        
+        self.assertIn("GRUB_DISABLE_LINUX_UUID=false", script)
+        self.assertIn("blkid -s UUID -o value /dev/sda3", script)
+        self.assertIn("root=UUID=$ROOT_UUID", script)
+
     def test_networkmanager_config(self):
         """Test NetworkManager iwd backend is configured"""
         script = build_config_script(self.data)
