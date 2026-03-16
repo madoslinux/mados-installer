@@ -122,6 +122,7 @@ sequenceDiagram
 sequenceDiagram
     participant App as madOS Installer
     participant Steps as installer/steps.py
+    participant Config as config.py
     participant System as Linux (rsync)
 
     App->>Steps: rsync_rootfs_with_progress()
@@ -130,22 +131,22 @@ sequenceDiagram
         Note over Steps: Copia sistema live → /mnt
     end
 
-    Steps->>System: rsync -aAXHWS --exclude=/dev/* --exclude=/proc/* ...
-    Note over System: Copia todo el sistema<br/>excluyendo: dev, proc, sys, tmp, run<br/>var/cache, etc.
+    Note over Config: RSYNC_EXCLUDES contiene:<br/>- /dev/*, /proc/*, /sys/*, /tmp/*<br/>- /var/cache, /var/log<br/>- /usr/share/doc/*, /usr/share/man/*<br/>- /usr/lib/python*/test/*<br/>- /usr/include/*, /usr/lib/*.a<br/>- /usr/lib/go/*
+
+    Steps->>System: rsync -aAXHWS --exclude (de Config) ...
+    Note over System: Copia sistema excluyendo<br/>directamente los archivos innecesarios
 
     rect rgb(240, 248, 255)
-        Note over Steps: Limpieza post-rsync
+        Note over Steps: Limpieza mínima post-rsync
     end
 
-    Steps->>System: rm -rf /mnt/usr/lib/python*/test
-    Steps->>System: rm -rf /mnt/usr/include
-    Steps->>System: rm -rf /mnt/usr/lib/*.a
-    Steps->>System: rm -rf /mnt/usr/lib/go
+    Steps->>System: rm -rf /mnt/usr/lib/python*/__pycache__
+    Note over System: Solo __pycache__ (no excluido<br/>por glob en rsync)
 
     Steps->>System: arch-chroot /mnt pacman -Rdd mkinitcpio-archiso
     Steps->>System: rm /mnt/etc/machine-id && touch /mnt/etc/machine-id
 
-    Steps-->>App: Sistema copiado y limpio
+    Steps-->>App: Sistema copiado (más eficiente)
 ```
 
 ## Paso 6: Copia de archivos adicionales
