@@ -110,16 +110,16 @@ if [ ! -s /boot/vmlinuz-linux ] || [ ! -r /boot/vmlinuz-linux ]; then
     echo '  Kernel not found or unreadable at /boot/vmlinuz-linux, recovering...'
     KERN_FOUND=0
     for kdir in /usr/lib/modules/*/; do
-        if [ -r "${{kdir}}vmlinuz" ]; then
-            cp "${{kdir}}vmlinuz" /boot/vmlinuz-linux
-            echo "  Recovered kernel from ${{kdir}}vmlinuz"
+        if [ -r "${kdir}vmlinuz" ]; then
+            cp "${kdir}vmlinuz" /boot/vmlinuz-linux
+            echo "  Recovered kernel from ${kdir}vmlinuz"
             KERN_FOUND=1
             break
         fi
     done
     if [ "$KERN_FOUND" = "0" ]; then
         echo '  Modules vmlinuz not found. Reinstalling linux package...'
-        pacman -Sy --noconfirm linux || {{ echo 'FATAL: Failed to install kernel'; exit 1; }}
+        pacman -Sy --noconfirm linux || { echo 'FATAL: Failed to install kernel'; exit 1; }
     fi
 fi
 if [ ! -s /boot/vmlinuz-linux ] || [ ! -r /boot/vmlinuz-linux ]; then
@@ -317,16 +317,16 @@ rm -f /etc/mkinitcpio.conf.d/archiso.conf
 if [ ! -s /boot/vmlinuz-linux ] || [ ! -r /boot/vmlinuz-linux ]; then
     echo '  Kernel missing before mkinitcpio! Recovering...'
     for kdir in /usr/lib/modules/*/; do
-        if [ -r "${{kdir}}vmlinuz" ]; then
-            cp "${{kdir}}vmlinuz" /boot/vmlinuz-linux
-            echo "  Recovered kernel from ${{kdir}}vmlinuz"
+        if [ -r "${kdir}vmlinuz" ]; then
+            cp "${kdir}vmlinuz" /boot/vmlinuz-linux
+            echo "  Recovered kernel from ${kdir}vmlinuz"
             break
         fi
     done
 fi
 if [ ! -s /boot/vmlinuz-linux ] || [ ! -r /boot/vmlinuz-linux ]; then
     echo '  ERROR: Could not find kernel image. Reinstalling linux package...'
-    pacman -Sy --noconfirm linux || {{ echo 'FATAL: Failed to install kernel'; exit 1; }}
+    pacman -Sy --noconfirm linux || { echo 'FATAL: Failed to install kernel'; exit 1; }
 fi
 
 mkinitcpio -P
