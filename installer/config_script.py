@@ -296,7 +296,8 @@ DeviceTimeout=5
 EOFPLYCONF
 
 echo '[PROGRESS 6/8] Rebuilding initramfs (this takes a while)...'
-# Use default mkinitcpio (drivers included in kernel)
+# Add SATA/IDE drivers to ensure disk detection
+sed -i 's/^MODULES=.*/MODULES=(ahci libata ata_piix pdc_adma sata_nv sata_via sata_sil24)/' /etc/mkinitcpio.conf
 sed -i 's/^HOOKS=.*/HOOKS=(base udev autodetect microcode modconf kms plymouth block filesystems keyboard fsck)/' /etc/mkinitcpio.conf
 
 cat > /etc/mkinitcpio.d/linux.preset <<'EOFPRESET'
