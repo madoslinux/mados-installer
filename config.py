@@ -225,22 +225,22 @@ RSYNC_EXCLUDES = [
     "/usr/local/bin/mados-installer",
     "/usr/local/lib/mados-installer",
     "/usr/local/share/mados-installer",
+    # Python test suites — not needed at runtime
+    "/usr/lib/python*/test/*",
+    "/usr/lib/python*/*/test/*",
+    # C/C++ header files — only needed for compilation
+    "/usr/include/*",
+    # Static libraries — only needed for static linking
+    "/usr/lib/*.a",
+    # Go standard library object files
+    "/usr/lib/go/*",
 ]
 
 # Paths (relative to /mnt) to remove after the rsync copy to reclaim
-# additional disk space on small (10 GB) installations.  Glob wildcards
-# are expanded at cleanup time.
-POST_COPY_CLEANUP = [
-    # Python test suites — not needed at runtime
-    "usr/lib/python*/test",
-    "usr/lib/python*/*/test",
-    # C/C++ header files — only needed for compilation
-    "usr/include",
-    # Static libraries — only needed for static linking
-    "usr/lib/*.a",
-    # Go standard library object files
-    "usr/lib/go",
-]
+# additional disk space on small (10 GB) installations.
+# NOTE: Most items are now excluded directly in RSYNC_EXCLUDES.
+# This list is kept for any items that need post-copy removal.
+POST_COPY_CLEANUP = []
 
 # Archiso-specific packages to remove after copying the live rootfs.
 # These provide initcpio hooks and configs only needed for the live ISO.

@@ -343,7 +343,7 @@ def post_rsync_cleanup(app):
         check=False,
         capture_output=True,
     )
-    log_message(app, "  Disk footprint reduced")
+    log_message(app, "  Removed __pycache__ directories")
 
 
 def rsync_rootfs_with_progress(app):
