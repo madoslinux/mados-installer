@@ -182,6 +182,7 @@ class TestConfigScript(unittest.TestCase):
         self.assertIn("pacman -Rdd --noconfirm mkinitcpio-archiso", script)
         self.assertIn("rm -f /etc/mkinitcpio.conf.d/archiso.conf", script)
         self.assertIn("rm -f /etc/mkinitcpio.d/linux.preset", script)
+        self.assertIn('HOOKS=(base systemd autodetect modconf kms plymouth block keyboard sd-vconsole filesystems fsck)', script)
         self.assertIn('ALL_config="/etc/mkinitcpio.conf"', script)
         self.assertIn("mkinitcpio -p linux", script)
 
