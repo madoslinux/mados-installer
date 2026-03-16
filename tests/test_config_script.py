@@ -165,10 +165,10 @@ class TestConfigScript(unittest.TestCase):
         self.assertIn("systemctl enable iwd", script)
 
     def test_mkinitcpio_modifications(self):
-        """Test initramfs has SATA/IDE drivers"""
+        """Test initramfs has SATA/IDE/PIIX drivers"""
         script = build_config_script(self.data)
         
-        self.assertIn("MODULES=(ahci libata ata_piix pdc_adma sata_nv sata_via sata_sil24)", script)
+        self.assertIn("MODULES=(ahci libata ata_piix pdc_adma sata_nv sata_via sata_sil24 piix ide_core generic)", script)
         self.assertIn("HOOKS=(base udev autodetect microcode modconf kms plymouth block filesystems keyboard fsck)", script)
 
     def test_root_locked(self):
