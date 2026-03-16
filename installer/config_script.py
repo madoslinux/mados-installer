@@ -48,6 +48,9 @@ def build_config_script(data):
     return f'''#!/bin/bash
 set -e
 
+# ── Configuration variables ─────────────────────────────────────────────────
+disk="{disk}"
+
 # ── Initialize pacman keyring ────────────────────────────────────────────────
 echo '  Initializing pacman keyring...'
 [ -d /etc/pacman.d/gnupg ] && rm -rf /etc/pacman.d/gnupg

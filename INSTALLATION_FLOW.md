@@ -1,30 +1,30 @@
-# madOS Installer - Flujo de Instalación
+# madOS Installer - Installation Flow
 
-## Paso 1: Selección de Disco
+## Step 1: Disk Selection
 
 ```mermaid
 sequenceDiagram
-    participant U as Usuario
+    participant U as User
     participant App as madOS Installer
     participant Disk as pages/disk.py
     participant System as Linux (lsblk)
 
-    U->>App: Inicia instalador
+    U->>App: Starts installer
     App->>Disk: create_disk_page()
     Disk->>System: lsblk -d -n -o NAME,SIZE,TYPE,MODEL
-    System-->>Disk: Lista de discos disponibles
-    Disk-->>App: Muestra botones de selección
-    App->>U: Muestra discos disponibles
+    System-->>Disk: List of available disks
+    Disk-->>App: Shows disk selection buttons
+    App->>U: Displays available disks
     
-    U->>App: Selecciona disco (ej: /dev/sda)
+    U->>App: Selects disk (e.g., /dev/sda)
     App->>App: install_data["disk"] = "/dev/sda"
-    App->>App: Valida tamaño (mínimo 10GB)
-    App->>U: Confirmación de borrado
-    U->>App: Confirma
+    App->>App: Validates size (minimum 10GB)
+    App->>U: Asks for confirmation
+    U->>App: Confirms
     App->>App: notebook.next_page()
 ```
 
-## Paso 2: Particionamiento
+## Step 2: Partitioning
 
 ```mermaid
 sequenceDiagram
@@ -45,16 +45,16 @@ sequenceDiagram
     Steps->>System: parted -s /dev/sda set 2 esp on
     
     Steps->>System: parted -s /dev/sda mkpart root ext4 1GiB 50GiB
-    Steps->>System: parted -s /dev/sda mkpart home ext4 50GiB 100% (si separate_home)
+    Steps->>System: parted -s /dev/sda mkpart home ext4 50GiB 100% (if separate_home)
     
     Steps->>System: partprobe /dev/sda
     Steps->>System: udevadm settle
     
-    Steps-->>App: Retorna (boot_part, root_part, home_part)
+    Steps-->>App: Returns (boot_part, root_part, home_part)
     Note over App: boot_part = /dev/sda2<br/>root_part = /dev/sda3<br/>home_part = /dev/sda4
 ```
 
-## Paso 3: Formateo de Particiones
+## Step 3: Format Partitions
 
 ```mermaid
 sequenceDiagram
@@ -70,14 +70,14 @@ sequenceDiagram
     Steps->>System: mkfs.ext4 -F /dev/sda3
     Note over System: Root partition (ext4)
 
-    alt Si separate_home
+    alt If separate_home
         Steps->>System: mkfs.ext4 -F /dev/sda4
     end
 
-    Steps-->>App: Particiones formateadas
+    Steps-->>App: Partitions formatted
 ```
 
-## Paso 4: Montaje de Filesystems
+## Step 4: Mount Filesystems
 
 ```mermaid
 sequenceDiagram
@@ -91,15 +91,15 @@ sequenceDiagram
     Steps->>System: mkdir -p /mnt/boot
     Steps->>System: mount /dev/sda2 /mnt/boot
 
-    alt Si separate_home
+    alt If separate_home
         Steps->>System: mkdir -p /mnt/home
         Steps->>System: mount /dev/sda4 /mnt/home
     end
 
-    Steps-->>App: Filesystems montados
+    Steps-->>App: Filesystems mounted
 ```
 
-## Paso 5: Copia del Sistema (rsync)
+## Step 5: System Copy (rsync)
 
 ```mermaid
 sequenceDiagram
@@ -112,18 +112,18 @@ sequenceDiagram
 
     Note over Config: RSYNC_EXCLUDES = [<br/>"/dev/*", "/proc/*", "/sys/*"<br/>"/tmp/*", "/run/*", "/var/log/*"<br/>"/usr/share/doc/*", "/usr/share/man/*"<br/>"/usr/lib/python*/test/*"<br/>"/usr/include/*", "/usr/lib/*.a"<br/>... ]
 
-    Steps->>System: rsync -aAXHWS --exclude (muchos) / /mnt/
-    Note over System: Copia sistema<br/>excluye archivos innecesarios
+    Steps->>System: rsync -aAXHWS --exclude (many) / /mnt/
+    Note over System: Copies system<br/>excluding unnecessary files
 
     Steps->>System: rm -rf /mnt/usr/lib/python*/__pycache__
 
     Steps->>System: arch-chroot /mnt pacman -Rdd mkinitcpio-archiso
     Steps->>System: rm /mnt/etc/machine-id && touch /mnt/etc/machine-id
 
-    Steps-->>App: Sistema copiado
+    Steps-->>App: System copied
 ```
 
-## Paso 6: Copia de archivos adicionales
+## Step 6: Copy Additional Files
 
 ```mermaid
 sequenceDiagram
@@ -150,10 +150,10 @@ sequenceDiagram
     Note over Steps: Session files
     Steps->>System: cp /usr/share/wayland-sessions/*.desktop /mnt/...
 
-    Steps-->>App: Archivos copiados
+    Steps-->>App: Files copied
 ```
 
-## Paso 7: Generar fstab
+## Step 7: Generate fstab
 
 ```mermaid
 sequenceDiagram
@@ -163,17 +163,17 @@ sequenceDiagram
 
     App->>Steps: step_generate_fstab()
 
-    Note over Steps: /etc/fstab excluido de rsync
+    Note over Steps: /etc/fstab excluded from rsync
 
     Steps->>System: genfstab -U /mnt
     System-->>Steps: UUID=xxx / ext4 defaults 0 1<br/>UUID=yyy /boot vfat defaults 0 2<br/>UUID=zzz /home ext4 defaults 0 2
     
-    Steps->>System: Escribe a /mnt/etc/fstab
+    Steps->>System: Writes to /mnt/etc/fstab
 
-    Steps-->>App: fstab generado
+    Steps-->>App: fstab generated
 ```
 
-## Paso 8: Generación del script de configuración
+## Step 8: Generate Configuration Script
 
 ```mermaid
 sequenceDiagram
@@ -181,40 +181,40 @@ sequenceDiagram
     participant Data as install_data
     participant Config as config_script.py
 
-    App->>Data: Lee install_data
+    App->>Data: Reads install_data
     Note over Data: disk = "/dev/sda"<br/>timezone = "Europe/Madrid"<br/>locale = "es_ES.UTF-8"<br/>username = "testuser"<br/>...
 
     App->>Config: build_config_script(data)
 
     rect rgb(240, 248, 255)
-        Note over Config: Validación de entrada
+        Note over Config: Input validation
     end
-    Config->>Config: Valida timezone en TIMEZONES
-    Config->>Config: Valida locale en LOCALE_MAP
-    Config->>Config: Valida disk regex "^/dev/[a-zA-Z0-9]+$"
-    Config->>Config: Valida username regex "^[a-z_][a-z0-9_-]*$"
+    Config->>Config: Validates timezone in TIMEZONES
+    Config->>Config: Validates locale in LOCALE_MAP
+    Config->>Config: Validates disk regex "^/dev/[a-zA-Z0-9]+$"
+    Config->>Config: Validates username regex "^[a-z_][a-z0-9_-]*$"
 
     rect rgb(255, 240, 240)
-        Note over Config: Cálculo de particiones
+        Note over Config: Partition calculation
     end
     Config->>Config: _get_partition_prefix("/dev/sda")
-    Note over Config: Detecta: "sda" (sin prefijo p)
+    Note over Config: Returns: "sda" (no p prefix)
 
     Config->>Config: root_part = "sda3"
     Config->>Config: boot_part = "sda2"
 
-    alt Si disco NVMe
+    alt If NVMe disk
         Config->>Config: _get_partition_prefix("/dev/nvme0n1")
-        Note over Config: Retorna "nvme0n1p"
+        Note over Config: Returns "nvme0n1p"
         Config->>Config: root_part = "nvme0n1p3"
     end
 
-    Config-->>App: Retorna script bash
+    Config-->>App: Returns bash script
 
-    Note over App: Script contiene:<br/>- ROOT_UUID=$(blkid -s UUID -o value /dev/sda3)<br/>- grub-install UEFI o BIOS<br/>- mkinitcpio -P<br/>- systemctl enable ...
+    Note over App: Script contains:<br/>- ROOT_UUID=$(blkid -s UUID -o value /dev/sda3)<br/>- grub-install UEFI or BIOS<br/>- mkinitcpio -P<br/>- systemctl enable ...
 ```
 
-## Paso 9: Ejecutar configure.sh en chroot (Parte 1/2)
+## Step 9: Execute configure.sh in chroot (Part 1/2)
 
 ```mermaid
 sequenceDiagram
@@ -222,13 +222,13 @@ sequenceDiagram
     participant Steps as installer/steps.py
     participant System as Linux (arch-chroot)
 
-    App->>System: Escribe /mnt/root/configure.sh (script bash)
+    App->>System: Writes /mnt/root/configure.sh (bash script)
     App->>Steps: run_chroot_with_progress("/mnt/root/configure.sh")
 
     System->>System: arch-chroot /mnt /root/configure.sh
 
     rect rgb(240, 248, 255)
-        Note over System: PROGRESS 1/8: Timezone y Locale
+        Note over System: PROGRESS 1/8: Timezone and Locale
     end
     System->>System: ln -sf /usr/share/zoneinfo/Europe/Madrid /etc/localtime
     System->>System: hwclock --systohc
@@ -238,58 +238,58 @@ sequenceDiagram
     System->>System: echo "LANG=es_ES.UTF-8" > /etc/locale.conf
 
     rect rgb(240, 248, 255)
-        Note over System: PROGRESS 2/8: Usuario y Hostname
+        Note over System: PROGRESS 2/8: User and Hostname
     end
     System->>System: echo "mados-test" > /etc/hostname
     System->>System: cat > /etc/hosts <<EOF<br/>127.0.0.1 localhost<br/>127.0.1.1 mados-test.localdomain mados-test<br/>EOF
-    System->>System: userdel -r mados (limpia live user)
+    System->>System: userdel -r mados (cleanup live user)
     System->>System: systemctl disable livecd-*.service
     System->>System: useradd -m -G wheel,audio,video,storage -s /usr/bin/zsh testuser
     System->>System: echo 'testuser:password' | chpasswd
     System->>System: echo "%wheel ALL=(ALL:ALL) ALL" > /etc/sudoers.d/wheel
 ```
 
-## Paso 9: Ejecutar configure.sh en chroot (Parte 2/2 - GRUB)
+## Step 9: Execute configure.sh in chroot (Part 2/2 - GRUB)
 
 ```mermaid
 sequenceDiagram
     participant System as Linux (chroot)
 
     rect rgb(255, 200, 200)
-        Note over System: PROGRESS 3/8: Instalar GRUB
+        Note over System: PROGRESS 3/8: Install GRUB
     end
     
-    System->>System: Verifica /sys/firmware/efi exists
+    System->>System: Verifies /sys/firmware/efi exists
 
-    alt Modo UEFI
+    alt UEFI Mode
         System->>System: mount -t efivarfs efivarfs /sys/firmware/efi/efivars
         System->>System: grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=madOS --recheck
         System->>System: grub-install --target=x86_64-efi --efi-directory=/boot --removable --recheck
         
         rect rgb(255, 200, 255)
-            Note over System: Secure Boot (si está habilitado)
+            Note over System: Secure Boot (if enabled)
         end
-        System->>System: Verifica SecureBoot var
-        System->>System: Si enabled: sbctl create-keys, enroll-keys
+        System->>System: Checks SecureBoot var
+        System->>System: If enabled: sbctl create-keys, enroll-keys
         System->>System: sbctl sign /boot/EFI/BOOT/BOOTX64.EFI
         
-    else Modo BIOS
+    else BIOS Mode
         System->>System: BASE_DISK=$(echo "$disk" | sed 's/[0-9]*$//')
         System->>System: grub-install --target=i386-pc --recheck "$BASE_DISK"
     end
 
     rect rgb(200, 255, 200)
-        Note over System: PROGRESS 4/8: Configurar GRUB
+        Note over System: PROGRESS 4/8: Configure GRUB
     end
     System->>System: sed -i 's/GRUB_CMDLINE_LINUX="" /GRUB_CMDLINE_LINUX="zswap.enabled=0 splash quiet"/' /etc/default/grub
     System->>System: sed -i 's/GRUB_DISTRIBUTOR="Arch"/GRUB_DISTRIBUTOR="madOS"/' /etc/default/grub
     System->>System: echo 'GRUB_DISABLE_LINUX_UUID=false' >> /etc/default/grub
     
     rect rgb(200, 255, 200)
-        Note over System: Crear entrada personalizada con UUID
+        Note over System: Create custom entry with UUID
     end
     System->>System: ROOT_UUID=$(blkid -s UUID -o value {root_part})
-    Note over System: root_part = /dev/sda3 (dinámico)
+    Note over System: root_part = /dev/sda3 (dynamic)
     
     System->>System: mkdir -p /boot/grub/custom
     System->>System: cat > /boot/grub/custom/mados.cfg <<EOF<br/>menuentry 'madOS Linux' {<br/>search --no-floppy --fs-uuid --set=root $ROOT_UUID<br/>linux /vmlinuz-linux root=UUID=$ROOT_UUID rw ...<br/>initrd /initramfs-linux.img<br/>}<br/>EOF
@@ -297,7 +297,7 @@ sequenceDiagram
     System->>System: grub-mkconfig -o /boot/grub/grub.cfg
 ```
 
-## Paso 9 (continuación): Plymouth, Initramfs, Servicios
+## Step 9 (continued): Plymouth, Initramfs, Services
 
 ```mermaid
 sequenceDiagram
@@ -319,7 +319,7 @@ sequenceDiagram
     System->>System: mkinitcpio -P
 
     rect rgb(255, 255, 240)
-        Note over System: PROGRESS 7/8: Servicios
+        Note over System: PROGRESS 7/8: Services
     end
     System->>System: passwd -l root
     System->>System: systemctl enable NetworkManager
@@ -330,7 +330,7 @@ sequenceDiagram
     System->>System: systemctl enable bluetooth
 
     rect rgb(240, 240, 255)
-        Note over System: PROGRESS 8/8: Configuración final
+        Note over System: PROGRESS 8/8: Final configuration
     end
     System->>System: cat > /etc/os-release (madOS branding)
     System->>System: cat > /etc/NetworkManager/conf.d/wifi-backend.conf
@@ -338,10 +338,10 @@ sequenceDiagram
     System->>System: cat > /etc/systemd/zram-generator.conf
     System->>System: cat > /etc/greetd/config.toml
     System->>System: cat > /etc/greetd/regreet.toml
-    System->>System: Copia configs a /home/testuser/.config/
+    System->>System: Copy configs to /home/testuser/.config/
 ```
 
-## Paso 10: Limpieza final
+## Step 10: Final Cleanup
 
 ```mermaid
 sequenceDiagram
@@ -349,26 +349,26 @@ sequenceDiagram
     participant Steps as installer/steps.py
     participant System as Linux
 
-    App->>Steps: Limpieza final
+    App->>Steps: Final cleanup
 
     Steps->>System: rm /mnt/root/configure.sh
     Steps->>System: sync
     Steps->>System: umount -R /mnt
 
-    App->>U: ¡Instalación completa!
+    App->>U: Installation complete!
 ```
 
-## Resumen del Particionamiento
+## Partition Summary
 
 ```
 /dev/sda (SATA/HDD)           /dev/nvme0n1 (NVMe)
 ├─ sda1 (1MB) BIOS Boot        ├─ nvme0n1p1 (1MB) BIOS Boot
 ├─ sda2 (1GB) EFI              ├─ nvme0n1p2 (1GB) EFI
 ├─ sda3 (50GB) Root (/)        ├─ nvme0n1p3 (50GB) Root (/)
-└─ sda4 (resto) Home (/home)   └─ nvme0n1p4 (resto) Home (/home)
+└─ sda4 (rest) Home (/home)    └─ nvme0n1p4 (rest) Home (/home)
 ```
 
-## Cálculo Dinámico de Particiones
+## Dynamic Partition Calculation
 
 | Variable | SATA | NVMe |
 |----------|------|------|
@@ -378,15 +378,15 @@ sequenceDiagram
 | `root_part` | `sda3` | `nvme0n1p3` |
 | `home_part` | `sda4` | `nvme0n1p4` |
 
-## Puntos Críticos del Proceso
+## Critical Process Points
 
-1. **Particionamiento**: Crea BIOS boot, EFI, root, home
-2. **Formateo**: EFI = FAT32, root/home = ext4
-3. **Montaje**: EFI en /boot, root en /mnt, home en /mnt/home
-4. **fstab**: Generado con genfstab -U (UUIDs)
+1. **Partitioning**: Creates BIOS boot, EFI, root, home
+2. **Formatting**: EFI = FAT32, root/home = ext4
+3. **Mounting**: EFI at /boot, root at /mnt, home at /mnt/home
+4. **fstab**: Generated with genfstab -U (UUIDs)
 5. **GRUB**: 
    - UEFI: --efi-directory=/boot --removable
    - BIOS: --target=i386-pc --recheck $BASE_DISK
-   - Entry personalizada con UUID dinámico
-6. **initramfs**: mkinitcpio -P (reconstruido)
-7. **Servicios**: NetworkManager, greetd, iwd, bluetooth
+   - Custom entry with dynamic UUID
+6. **initramfs**: mkinitcpio -P (rebuilt)
+7. **Services**: NetworkManager, greetd, iwd, bluetooth
