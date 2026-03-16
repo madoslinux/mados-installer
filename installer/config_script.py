@@ -212,8 +212,7 @@ else
 fi
 
 echo '[PROGRESS 4/8] Configuring GRUB...'
-# Force root=/dev/sda3 for QEMU compatibility
-sed -i 's/GRUB_CMDLINE_LINUX=""/GRUB_CMDLINE_LINUX="zswap.enabled=0 splash quiet root=\/dev\/sda3"/' /etc/default/grub
+sed -i 's/GRUB_CMDLINE_LINUX=""/GRUB_CMDLINE_LINUX="zswap.enabled=0 splash quiet"/' /etc/default/grub
 sed -i 's/GRUB_DISTRIBUTOR="Arch"/GRUB_DISTRIBUTOR="madOS"/' /etc/default/grub
 sed -i 's/#GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' /etc/default/grub
 grub-mkconfig -o /boot/grub/grub.cfg
