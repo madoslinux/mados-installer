@@ -44,14 +44,18 @@ sudo python3 -m app
 
 ```
 mados-installer/
-├── app.py              # Main window and orchestration
-├── config.py           # Configuration constants
-├── utils.py            # Shared utility functions
-├── theme.py            # GTK theme application
-├── colors.py           # Nord color palette definitions
-├── css.py              # CSS styles for GTK
-├── pages/              # Installer wizard pages
-│   ├── base.py         # Shared UI helpers
+├── app.py                    # Main window and orchestration
+├── config.py                 # Configuration constants
+├── utils.py                  # Shared utility functions
+├── translations.py           # Translation helper
+├── __main__.py               # Entry point
+├── theme/                    # Visual theming
+│   ├── __init__.py
+│   ├── colors.py             # Nord color palette
+│   ├── css.py                # GTK CSS styles
+│   └── theme.py              # Theme application
+├── pages/                    # Installer wizard pages
+│   ├── base.py              # Shared UI helpers
 │   ├── welcome.py
 │   ├── disk.py
 │   ├── partitioning.py
@@ -60,11 +64,13 @@ mados-installer/
 │   ├── summary.py
 │   ├── installation.py
 │   └── completion.py
-├── installer/          # Installation logic
-│   ├── config_script.py  # Bash script generator
+├── installer/                # Installation logic
+│   ├── config_script.py     # Bash script generator
 │   └── steps.py
-├── translations/      # Language translations
-└── tests/             # Test suite
+├── translations/            # Language translations
+│   ├── en.py, es.py, fr.py, de.py, etc.
+└── tests/                    # Test suite
+    └── test_config_script.py
 ```
 
 ## Testing
