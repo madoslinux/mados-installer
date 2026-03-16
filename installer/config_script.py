@@ -334,8 +334,9 @@ DeviceTimeout=5
 EOFPLYCONF
 
 echo '[PROGRESS 6/8] Rebuilding initramfs...'
-rm -f /etc/mkinitcpio.conf.d/archiso.conf
-mkinitcpio -P
+rm -f /etc/mkinitcpio.conf.d/archiso.conf*
+sync
+mkinitcpio -P 2>/dev/null || mkinitcpio -p linux
 
 echo '[PROGRESS 7/8] Enabling essential services...'
 passwd -l root
