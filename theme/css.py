@@ -2,7 +2,7 @@
 madOS Installer - Nord theme CSS
 """
 
-from colors import NORD_POLAR_NIGHT, NORD_SNOW_STORM, NORD_FROST, NORD_AURORA
+from theme.colors import NORD_POLAR_NIGHT, NORD_SNOW_STORM, NORD_FROST, NORD_AURORA
 
 CSS = f"""
 * {{

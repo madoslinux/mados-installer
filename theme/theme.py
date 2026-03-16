@@ -4,7 +4,7 @@ madOS Installer - Nord theme application
 
 from gi.repository import Gtk, Gdk
 
-from css import CSS
+from theme.css import CSS
 
 
 def apply_theme():
