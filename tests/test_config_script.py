@@ -164,12 +164,11 @@ class TestConfigScript(unittest.TestCase):
         self.assertIn("systemctl enable bluetooth", script)
         self.assertIn("systemctl enable iwd", script)
 
-    def test_mkinitcpio_modifications(self):
-        """Test initramfs has SATA/IDE/PIIX drivers"""
+    def test_mkinitcpio_cleanup(self):
+        """Test archiso config is removed but initramfs is kept from pacstrap"""
         script = build_config_script(self.data)
         
-        self.assertIn("MODULES=(ahci libata ata_piix pdc_adma sata_nv sata_via sata_sil24 piix ide_core generic)", script)
-        self.assertIn("HOOKS=(base udev autodetect microcode modconf kms plymouth block filesystems keyboard fsck)", script)
+        self.assertIn("rm -f /etc/mkinitcpio.conf.d/archiso.conf", script)
 
     def test_root_locked(self):
         """Test root account is locked"""
