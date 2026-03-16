@@ -43,10 +43,12 @@ class TestConfigScript(unittest.TestCase):
         self.assertIn("${session_name}", script)
 
     def test_grub_disk_variable(self):
-        """Test $disk is properly used in grub-install"""
+        """Test $disk is properly used in BIOS mode grub-install"""
         script = build_config_script(self.data)
         
-        self.assertIn("--recheck $disk", script)
+        # In BIOS mode, the disk should be extracted from the path
+        self.assertIn('BASE_DISK=$(echo "$disk" | sed \'s/[0-9]*$//\')', script)
+        self.assertIn("--recheck \"$BASE_DISK\"", script)
         self.assertNotIn("{disk}", script)
 
     def test_bash_blocks_properly_escaped(self):
@@ -119,10 +121,11 @@ class TestConfigScript(unittest.TestCase):
         self.assertIn("GRUB_DISABLE_OS_PROBER=false", script)
 
     def test_grub_uses_uuid(self):
-        """Test GRUB uses UUID instead of /dev/sda3"""
+        """Test GRUB uses UUID from dynamic root partition"""
         script = build_config_script(self.data)
         
         self.assertIn("GRUB_DISABLE_LINUX_UUID=false", script)
+        # Should use dynamic partition based on disk (sda3 for /dev/sda)
         self.assertIn("blkid -s UUID -o value /dev/sda3", script)
         self.assertIn("root=UUID=$ROOT_UUID", script)
 
@@ -173,10 +176,11 @@ class TestConfigScript(unittest.TestCase):
         self.assertIn("systemctl enable iwd", script)
 
     def test_mkinitcpio_cleanup(self):
-        """Test archiso config is removed but initramfs is kept from pacstrap"""
+        """Test archiso config is removed and initramfs is rebuilt"""
         script = build_config_script(self.data)
         
         self.assertIn("rm -f /etc/mkinitcpio.conf.d/archiso.conf", script)
+        self.assertIn("mkinitcpio -P", script)
 
     def test_root_locked(self):
         """Test root account is locked"""

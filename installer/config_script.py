@@ -16,6 +16,11 @@ def _escape_shell(s):
     return s.replace("'", "'\\''")
 
 
+def _get_partition_prefix(disk):
+    """Get partition prefix (nvme/mmcblk use 'p' separator)"""
+    return f"{disk}p" if "nvme" in disk or "mmcblk" in disk else disk
+
+
 def build_config_script(data):
     """Build the chroot configuration shell script."""
     disk = data["disk"]
@@ -35,6 +40,10 @@ def build_config_script(data):
     username = data["username"]
     if not re.match(r"^[a-z_][a-z0-9_-]*$", username):
         raise ValueError(f"Invalid username: {username}")
+
+    part_prefix = _get_partition_prefix(disk)
+    root_part = f"{part_prefix}3"
+    boot_part = f"{part_prefix}2"
 
     return f'''#!/bin/bash
 set -e
@@ -220,7 +229,7 @@ sed -i 's/#GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' /etc/defa
 echo 'GRUB_DISABLE_LINUX_UUID=false' >> /etc/default/grub
 
 # Detect root partition UUID for boot
-ROOT_UUID=$(blkid -s UUID -o value /dev/sda3 2>/dev/null || echo "")
+ROOT_UUID=$(blkid -s UUID -o value {root_part} 2>/dev/null || echo "")
 if [ -n "$ROOT_UUID" ]; then
     echo "  Root partition UUID: $ROOT_UUID"
     # Create custom menu entry with UUID
@@ -321,8 +330,9 @@ ShowDelay=0
 DeviceTimeout=5
 EOFPLYCONF
 
-echo '[PROGRESS 6/8] Keeping default initramfs from pacstrap...'
+echo '[PROGRESS 6/8] Rebuilding initramfs...'
 rm -f /etc/mkinitcpio.conf.d/archiso.conf
+mkinitcpio -P
 
 echo '[PROGRESS 7/8] Enabling essential services...'
 passwd -l root
