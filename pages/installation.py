@@ -257,7 +257,11 @@ def _handle_installation_error(app, error_msg):
 
 
 def _finish_installation(app):
-    """Stop spinner and move to completion page"""
+    """Stop spinner, save log and move to completion page"""
+    # Always save log, regardless of success or failure
+    log_path = save_log_to_file(app)
+    if log_path:
+        log_message(app, f"\nLog saved to: {log_path}")
     app.install_spinner.stop()
     app.notebook.next_page()
     return False
