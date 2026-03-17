@@ -346,6 +346,15 @@ fallback_image="/boot/initramfs-linux-fallback.img"
 EOFPRESET
 sync
 mkinitcpio -P
+if [ ! -f /boot/initramfs-linux.img ]; then
+    echo "ERROR: initramfs not created! Trying fallback..."
+    mkinitcpio -p linux
+fi
+if [ ! -f /boot/initramfs-linux.img ]; then
+    echo "ERROR: initramfs still not created!"
+    exit 1
+fi
+echo "  initramfs created successfully"
 
 echo '[PROGRESS 7/8] Enabling essential services...'
 passwd -l root
