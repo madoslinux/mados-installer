@@ -344,13 +344,12 @@ rm -f /etc/mkinitcpio.conf.d/archiso.conf
 rm -f /etc/mkinitcpio.d/linux.preset
 
 # Add modules for broad hardware support:
-# Storage: virtio, ahci, scsi, nvme, dm_mod, filesystems, ide
+# Storage: virtio, ahci, scsi, nvme, dm_mod, filesystems, ATA/PATA
 # USB: usb_storage, xhci, ehci, uhci, ohci
 # WiFi: iwlwifi, ath, rtl8xxxu, mt76, brcmfmac, ath9k
 # Bluetooth: btusb, bluetooth
 # GPU: intel, amd, nvidia, virtio, vmware, qxl
-# QEMU/VMware specific: piix, lsi53c895a, isci
-MODULES_LIST="virtio virtio_blk virtio_scsi virtio_net virtio_pci virtio_balloon ahci scsi_mod sd_mod sg nvme loop dm_mod ext4 xfs btrfs usb_storage xhci_pci ehci_pci uhci_hcd ohci_hcd btusb iwlwifi ath rtl8xxxu mt76 brcmfmac ath9k cfg80211 i915 amdgpu radeon nouveau virtio_gpu vmwgfx qxl piix lsi53c895a isci"
+MODULES_LIST="virtio virtio_blk virtio_scsi virtio_net virtio_pci virtio_balloon ahci ata_generic ata_piix scsi_mod sd_mod sg nvme loop dm_mod ext4 xfs btrfs usb_storage xhci_pci ehci_pci uhci_hcd ohci_hcd btusb iwlwifi ath rtl8xxxu mt76 brcmfmac ath9k cfg80211 i915 amdgpu radeon nouveau virtio_gpu vmwgfx qxl"
 sed -i "s/^MODULES=()/MODULES=($MODULES_LIST)/" /etc/mkinitcpio.conf
 
 cat <<'EOFPRESET' > /etc/mkinitcpio.d/linux.preset
