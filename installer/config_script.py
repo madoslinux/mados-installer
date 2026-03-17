@@ -610,6 +610,7 @@ echo "Graphical environment verification complete."
 def write_config_script(data, path="/mnt/root/configure.sh"):
     """Write the configuration script to a file."""
     import os
+
     script_content = build_config_script(data)
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o700)
     with os.fdopen(fd, "w") as f:

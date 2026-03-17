@@ -162,6 +162,7 @@ def _run_installation(app):
 
         if not DEMO_MODE:
             from installer.steps import _ensure_kernel_in_target
+
             _ensure_kernel_in_target(app)
 
         step_generate_fstab(app)
@@ -172,7 +173,9 @@ def _run_installation(app):
         config_script = build_config_script(data)
 
         if DEMO_MODE:
-            log_message(app, "[DEMO] Would write configuration script to /mnt/root/configure.sh")
+            log_message(
+                app, "[DEMO] Would write configuration script to /mnt/root/configure.sh"
+            )
             time.sleep(0.5)
             log_message(app, "[DEMO] Configuration would include:")
             log_message(app, "[DEMO]   - Timezone setup")
@@ -184,7 +187,10 @@ def _run_installation(app):
             time.sleep(1)
         else:
             import os
-            fd = os.open("/mnt/root/configure.sh", os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o700)
+
+            fd = os.open(
+                "/mnt/root/configure.sh", os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o700
+            )
             with os.fdopen(fd, "w") as f:
                 f.write(config_script)
 

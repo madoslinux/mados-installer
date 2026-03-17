@@ -100,7 +100,9 @@ def create_partitioning_page(app):
     card2.get_style_context().add_class("partition-card")
     card2.set_margin_bottom(8)
 
-    app.radio_all_root = Gtk.RadioButton.new_with_label_from_widget(app.radio_separate, "")
+    app.radio_all_root = Gtk.RadioButton.new_with_label_from_widget(
+        app.radio_separate, ""
+    )
     radio_box2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
     radio_box2.pack_start(app.radio_all_root, False, False, 0)
     title2 = Gtk.Label()

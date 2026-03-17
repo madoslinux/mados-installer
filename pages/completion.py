@@ -34,7 +34,9 @@ def create_completion_page(app):
 
     # Title
     title = Gtk.Label()
-    title.set_markup(f'<span size="16000" weight="bold">{app.t("success_title")}</span>')
+    title.set_markup(
+        f'<span size="16000" weight="bold">{app.t("success_title")}</span>'
+    )
     title.set_halign(Gtk.Align.CENTER)
     title.set_margin_bottom(10)
     content.pack_start(title, False, False, 0)

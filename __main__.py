@@ -8,6 +8,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, script_dir)
 
 import gi
+
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 

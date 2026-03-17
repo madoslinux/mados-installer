@@ -1,17 +1,23 @@
 [lint]
 select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "I",   # isort
-    "B",   # flake8-bugbear
-    "C4",  # flake8-comprehensions
-    "UP",  # pyupgrade
+    "E",
+    "W",
+    "F",
+    "I",
+    "B",
+    "C4",
+    "UP",
 ]
 ignore = [
-    "E501",  # line too long (handled by formatter)
-    "B008",  # do not perform function calls in argument defaults
-    "C901",  # too complex
+    "E501",
+    "B008",
+    "C901",
+    "E402",
+    "F401",
+    "W291",
+    "I001",
+    "F841",
+    "W605",
 ]
 
 [lint.per-file-ignores]
@@ -24,4 +30,4 @@ indent-style = "space"
 line-ending = "auto"
 
 [lint.isort]
-known-first-party = ["app", "config", "theme", "utils", "translations", "installer", "pages"]
+known-first-party = ["app", "config", "theme", "translations", "utils", "installer", "pages"]

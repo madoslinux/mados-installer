@@ -61,7 +61,7 @@ TRANSLATIONS = {
         "installing": "madOS 설치 중",
         "preparing": "설치 준비 중...",
         "success_title": "설치 완료!",
-        "success_msg": "madOS 기본 시스템이 설치되었습니다!\n\n<b>첫 부팅 시</b> 남은 패키지와\n구성이 자동으로 설치됩니다.\n인터넷 연결이 필요합니다.\n\n다음 단계:\n1. 설치 미디어 제거\n2. 컴퓨터 재부팅\n3. 초기 설정 완료 대기\n4. 자격 증명으로 로그인\n5. \"opencode\" 입력하여 AI 어시스턴트 시작",
+        "success_msg": 'madOS 기본 시스템이 설치되었습니다!\n\n<b>첫 부팅 시</b> 남은 패키지와\n구성이 자동으로 설치됩니다.\n인터넷 연결이 필요합니다.\n\n다음 단계:\n1. 설치 미디어 제거\n2. 컴퓨터 재부팅\n3. 초기 설정 완료 대기\n4. 자격 증명으로 로그인\n5. "opencode" 입력하여 AI 어시스턴트 시작',
         "reboot_now": "지금 재부팅",
         "exit_live": "Live 시스템으로 종료",
         "show_log": "▶ 로그 표시",

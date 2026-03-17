@@ -23,13 +23,16 @@ def load_logo(size=160):
         "/usr/share/pixmaps/mados-logo.png",
         "airootfs/usr/share/pixmaps/mados-logo.png",
         os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "../../share/pixmaps/mados-logo.png"
+            os.path.dirname(os.path.abspath(__file__)),
+            "../../share/pixmaps/mados-logo.png",
         ),
     ]
     for logo_path in logo_paths:
         try:
             if os.path.exists(logo_path):
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(logo_path, size, size, True)
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(
+                    logo_path, size, size, True
+                )
                 return Gtk.Image.new_from_pixbuf(pixbuf)
         except Exception as e:
             print(f"Could not load logo from {logo_path}: {e}")

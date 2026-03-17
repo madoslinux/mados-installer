@@ -54,7 +54,9 @@ def _ensure_kernel_in_target(app):
             log_message(app, f"  Copied kernel from {vmlinuz}")
             return
 
-    if os.path.isfile("/boot/vmlinuz-linux") and os.access("/boot/vmlinuz-linux", os.R_OK):
+    if os.path.isfile("/boot/vmlinuz-linux") and os.access(
+        "/boot/vmlinuz-linux", os.R_OK
+    ):
         subprocess.run(["cp", "/boot/vmlinuz-linux", target_kernel], check=True)
         log_message(app, "  Copied kernel from /boot/vmlinuz-linux")
         return
@@ -92,14 +94,22 @@ def step_partition_disk(app, disk, separate_home, disk_size_gb):
         log_message(app, f"Unmounting existing partitions on {disk}...")
         for part in globmod.glob(f"{disk}[0-9]*") + globmod.glob(f"{disk}p[0-9]*"):
             subprocess.run(["swapoff", part], stderr=subprocess.DEVNULL, check=False)
-            subprocess.run(["umount", "-l", part], stderr=subprocess.DEVNULL, check=False)
+            subprocess.run(
+                ["umount", "-l", part], stderr=subprocess.DEVNULL, check=False
+            )
         time.sleep(1)
         subprocess.run(["sgdisk", "--zap-all", disk], check=False)
         subprocess.run(["wipefs", "-a", "-f", disk], check=True)
         subprocess.run(["parted", "-s", disk, "mklabel", "gpt"], check=True)
-        subprocess.run(["parted", "-s", disk, "mkpart", "bios_boot", "1MiB", "2MiB"], check=True)
-        subprocess.run(["parted", "-s", disk, "set", "1", "bios_grub", "on"], check=True)
-        subprocess.run(["parted", "-s", disk, "mkpart", "EFI", "fat32", "2MiB", "1GiB"], check=True)
+        subprocess.run(
+            ["parted", "-s", disk, "mkpart", "bios_boot", "1MiB", "2MiB"], check=True
+        )
+        subprocess.run(
+            ["parted", "-s", disk, "set", "1", "bios_grub", "on"], check=True
+        )
+        subprocess.run(
+            ["parted", "-s", disk, "mkpart", "EFI", "fat32", "2MiB", "1GiB"], check=True
+        )
         subprocess.run(["parted", "-s", disk, "set", "2", "esp", "on"], check=True)
 
     _create_root_partition(app, disk, separate_home, disk_size_gb)
@@ -178,7 +188,9 @@ def _format_partitions_real(boot_part, root_part, home_part, separate_home):
         partitions.append(("home", home_part))
     for part_name, part_dev in partitions:
         if not os.path.exists(part_dev):
-            raise RuntimeError(f"Partition device {part_dev} ({part_name}) does not exist!")
+            raise RuntimeError(
+                f"Partition device {part_dev} ({part_name}) does not exist!"
+            )
     subprocess.run(["mkfs.fat", "-F32", boot_part], check=True)
     subprocess.run(["mkfs.ext4", "-F", root_part], check=True)
     if separate_home and home_part:
@@ -294,7 +306,9 @@ def step_copy_desktop_files(app):
     set_progress(app, 0.54, "Copying session files...")
     log_message(app, "Copying session files...")
     subprocess.run(["mkdir", "-p", "/mnt/usr/share/wayland-sessions"], check=False)
-    _copy_item("/usr/share/wayland-sessions/sway.desktop", "/mnt/usr/share/wayland-sessions/")
+    _copy_item(
+        "/usr/share/wayland-sessions/sway.desktop", "/mnt/usr/share/wayland-sessions/"
+    )
     _copy_item(
         "/usr/share/wayland-sessions/hyprland.desktop",
         "/mnt/usr/share/wayland-sessions/",
@@ -339,7 +353,19 @@ def post_rsync_cleanup(app):
         for path in globmod.glob(full):
             subprocess.run(["rm", "-rf", path], check=False)
     subprocess.run(
-        ["find", "/mnt/usr", "-type", "d", "-name", "__pycache__", "-exec", "rm", "-rf", "{}", "+"],
+        [
+            "find",
+            "/mnt/usr",
+            "-type",
+            "d",
+            "-name",
+            "__pycache__",
+            "-exec",
+            "rm",
+            "-rf",
+            "{}",
+            "+",
+        ],
         check=False,
         capture_output=True,
     )
@@ -352,7 +378,13 @@ def rsync_rootfs_with_progress(app):
     log_message(app, "Copying live system to target disk (rsync)...")
     log_message(app, "  (Packages already installed in the ISO – no download needed)")
 
-    cmd = ["rsync", "-aAXHWS", "--info=progress2", "--no-inc-recursive", "--numeric-ids"]
+    cmd = [
+        "rsync",
+        "-aAXHWS",
+        "--info=progress2",
+        "--no-inc-recursive",
+        "--numeric-ids",
+    ]
     for exc in RSYNC_EXCLUDES:
         cmd.extend(["--exclude", exc])
     cmd.extend(["/", "/mnt/"])
@@ -402,7 +434,8 @@ def rsync_rootfs_with_progress(app):
     set_progress(app, 0.45, "Cleaning archiso artifacts...")
     log_message(app, "Removing archiso-specific packages...")
     subprocess.run(
-        ["arch-chroot", "/mnt", "pacman", "-Rdd", "--noconfirm"] + list(ARCHISO_PACKAGES),
+        ["arch-chroot", "/mnt", "pacman", "-Rdd", "--noconfirm"]
+        + list(ARCHISO_PACKAGES),
         capture_output=True,
     )
     machine_id = "/mnt/etc/machine-id"
@@ -454,10 +487,14 @@ def prepare_pacman(app):
                 break
             if poll_count % 6 == 0:
                 elapsed = poll_count * 5
-                log_message(app, f"  Still initializing keyring... ({elapsed}s elapsed)")
+                log_message(
+                    app, f"  Still initializing keyring... ({elapsed}s elapsed)"
+                )
 
     if status in ("failed", "inactive", "unknown"):
-        log_message(app, f"  Keyring service status: {status}, initializing manually...")
+        log_message(
+            app, f"  Keyring service status: {status}, initializing manually..."
+        )
         gnupg_dir = "/etc/pacman.d/gnupg"
         os.makedirs(gnupg_dir, mode=0o700, exist_ok=True)
         subprocess.run(["pacman-key", "--init"], check=True)
@@ -483,7 +520,9 @@ def prepare_pacman(app):
             log_message(app, f"  {line}")
     proc.wait()
     if proc.returncode != 0:
-        log_message(app, "  Warning: database sync returned non-zero, pacstrap will retry")
+        log_message(
+            app, "  Warning: database sync returned non-zero, pacstrap will retry"
+        )
     else:
         log_message(app, "  Package databases synchronized")
 
@@ -533,7 +572,9 @@ def download_packages_with_progress(app, packages):
             )
 
         downloaded = end
-        progress = progress_start + (progress_end - progress_start) * (downloaded / total)
+        progress = progress_start + (progress_end - progress_start) * (
+            downloaded / total
+        )
         set_progress(app, progress, f"Downloading packages ({downloaded}/{total})...")
 
     set_progress(app, progress_end, "All packages downloaded")
@@ -560,7 +601,9 @@ def run_pacstrap_with_progress(app, packages, max_retries=3):
                 f"retrying ({attempt}/{max_retries})...",
             )
             set_progress(
-                app, 0.36, f"Retrying installation (attempt {attempt + 1}/{max_retries})..."
+                app,
+                0.36,
+                f"Retrying installation (attempt {attempt + 1}/{max_retries})...",
             )
             refresh = subprocess.run(
                 ["pacman", "-Sy", "--noconfirm"],
@@ -592,10 +635,14 @@ def run_single_pacstrap(app, packages):
         bufsize=1,
     )
 
-    numbered_pkg_pattern = re.compile(r"\((\d+)/(\d+)\)\s+installing\s+(\S+)", re.IGNORECASE)
+    numbered_pkg_pattern = re.compile(
+        r"\((\d+)/(\d+)\)\s+installing\s+(\S+)", re.IGNORECASE
+    )
     pkg_pattern = re.compile(r"installing\s+(\S+)", re.IGNORECASE)
     downloading_pattern = re.compile(r"downloading\s+(\S+)", re.IGNORECASE)
-    resolving_pattern = re.compile(r"resolving dependencies|looking for conflicting", re.IGNORECASE)
+    resolving_pattern = re.compile(
+        r"resolving dependencies|looking for conflicting", re.IGNORECASE
+    )
     total_pattern = re.compile(r"Packages\s+\((\d+)\)", re.IGNORECASE)
     section_pattern = re.compile(r"^::")
     hook_pattern = re.compile(r"^\((\d+)/(\d+)\)\s+(?!installing)", re.IGNORECASE)
@@ -698,7 +745,9 @@ def run_chroot_with_progress(app, config_script_path):
             f"Configuration script not found at {config_script_path} — disk may be full or write failed"
         )
     if os.path.getsize(config_script_path) == 0:
-        raise ValueError(f"Configuration script at {config_script_path} is empty — write may have failed")
+        raise ValueError(
+            f"Configuration script at {config_script_path} is empty — write may have failed"
+        )
 
     proc = subprocess.Popen(
         ["arch-chroot", "/mnt", "/root/configure.sh"],
@@ -723,7 +772,9 @@ def run_chroot_with_progress(app, config_script_path):
             step = int(progress_match.group(1))
             total = int(progress_match.group(2))
             description = progress_match.group(3)
-            progress = progress_start + (progress_end - progress_start) * (step / max(total, 1))
+            progress = progress_start + (progress_end - progress_start) * (
+                step / max(total, 1)
+            )
             progress = min(progress, progress_end)
             set_progress(app, progress, description)
             log_message(app, f"  {description}")

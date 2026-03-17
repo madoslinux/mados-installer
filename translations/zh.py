@@ -61,7 +61,7 @@ TRANSLATIONS = {
         "installing": "正在安装madOS",
         "preparing": "准备安装...",
         "success_title": "安装完成！",
-        "success_msg": "madOS基础系统已安装！\n\n<b>首次启动时</b>，将自动安装剩余的软件包和\n配置。这需要互联网连接。\n\n下一步:\n1. 移除安装介质\n2. 重启计算机\n3. 等待首次启动设置完成\n4. 使用您的凭据登录\n5. 输入\"opencode\"启动AI助手",
+        "success_msg": 'madOS基础系统已安装！\n\n<b>首次启动时</b>，将自动安装剩余的软件包和\n配置。这需要互联网连接。\n\n下一步:\n1. 移除安装介质\n2. 重启计算机\n3. 等待首次启动设置完成\n4. 使用您的凭据登录\n5. 输入"opencode"启动AI助手',
         "reboot_now": "立即重启",
         "exit_live": "退出到Live系统",
         "show_log": "▶ 显示日志",

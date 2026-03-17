@@ -61,7 +61,7 @@ TRANSLATIONS = {
         "installing": "madOS wird installiert",
         "preparing": "Installation vorbereiten...",
         "success_title": "Installation Abgeschlossen!",
-        "success_msg": "madOS Basissystem wurde installiert!\n\n<b>Beim ersten Start</b> werden verbleibende Pakete und\nKonfiguration automatisch installiert.\nDies erfordert eine Internetverbindung.\n\nNächste Schritte:\n1. Installationsmedium entfernen\n2. Computer neu starten\n3. Auf Abschluss der Ersteinrichtung warten\n4. Mit Anmeldedaten einloggen\n5. \"opencode\" eingeben um KI-Assistent zu starten",
+        "success_msg": 'madOS Basissystem wurde installiert!\n\n<b>Beim ersten Start</b> werden verbleibende Pakete und\nKonfiguration automatisch installiert.\nDies erfordert eine Internetverbindung.\n\nNächste Schritte:\n1. Installationsmedium entfernen\n2. Computer neu starten\n3. Auf Abschluss der Ersteinrichtung warten\n4. Mit Anmeldedaten einloggen\n5. "opencode" eingeben um KI-Assistent zu starten',
         "reboot_now": "Jetzt Neu Starten",
         "exit_live": "Zu Live-System Beenden",
         "show_log": "▶ Protokoll anzeigen",

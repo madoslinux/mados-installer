@@ -58,7 +58,7 @@ def create_disk_page(app):
     app.no_disks_label = Gtk.Label()
     app.no_disks_label.set_markup(
         f'<span size="11000" foreground="{NORD_POLAR_NIGHT["nord3"]}">'
-        f'{app.t("no_disks_available")}</span>'
+        f"{app.t('no_disks_available')}</span>"
     )
     app.no_disks_label.set_halign(Gtk.Align.CENTER)
     app.no_disks_label.set_margin_top(20)
@@ -70,7 +70,9 @@ def create_disk_page(app):
     content.pack_start(app.disk_buttons_box, False, False, 0)
 
     # Navigation
-    nav = create_nav_buttons(app, lambda x: app.notebook.prev_page(), lambda x: _on_disk_next(app))
+    nav = create_nav_buttons(
+        app, lambda x: app.notebook.prev_page(), lambda x: _on_disk_next(app)
+    )
     content.pack_start(nav, False, False, 0)
 
     scroll.add(content)
@@ -245,7 +247,9 @@ def _on_disk_next(app):
         if "G" in size_str:
             app.install_data["disk_size_gb"] = int(float(size_str.replace("G", "")))
         elif "T" in size_str:
-            app.install_data["disk_size_gb"] = int(float(size_str.replace("T", "")) * 1024)
+            app.install_data["disk_size_gb"] = int(
+                float(size_str.replace("T", "")) * 1024
+            )
         else:
             app.install_data["disk_size_gb"] = 120
     except ValueError:

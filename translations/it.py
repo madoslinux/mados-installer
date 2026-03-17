@@ -61,7 +61,7 @@ TRANSLATIONS = {
         "installing": "Installazione madOS",
         "preparing": "Preparazione installazione...",
         "success_title": "Installazione Completata!",
-        "success_msg": "Il sistema base madOS è stato installato!\n\n<b>Al primo avvio</b>, i pacchetti e le\nconfigurazioni rimanenti verranno installati automaticamente.\nRichiede connessione internet.\n\nProssimi passi:\n1. Rimuovere il supporto di installazione\n2. Riavviare il computer\n3. Attendere il completamento della configurazione iniziale\n4. Accedere con le tue credenziali\n5. Digita \"opencode\" per avviare l'assistente IA",
+        "success_msg": 'Il sistema base madOS è stato installato!\n\n<b>Al primo avvio</b>, i pacchetti e le\nconfigurazioni rimanenti verranno installati automaticamente.\nRichiede connessione internet.\n\nProssimi passi:\n1. Rimuovere il supporto di installazione\n2. Riavviare il computer\n3. Attendere il completamento della configurazione iniziale\n4. Accedere con le tue credenziali\n5. Digita "opencode" per avviare l\'assistente IA',
         "reboot_now": "Riavvia Ora",
         "exit_live": "Esci al Sistema Live",
         "show_log": "▶ Mostra log",
