@@ -337,15 +337,8 @@ echo '[PROGRESS 6/8] Rebuilding initramfs...'
 pacman -Rdd --noconfirm mkinitcpio-archiso 2>/dev/null || true
 rm -f /etc/mkinitcpio.conf.d/archiso.conf
 rm -f /etc/mkinitcpio.d/linux.preset
-sed -i 's/^HOOKS=.*/HOOKS=(base systemd autodetect modconf kms plymouth block keyboard sd-vconsole filesystems fsck)/' /etc/mkinitcpio.conf
-cat <<'EOFPRESET' > /etc/mkinitcpio.d/linux.preset
-ALL_config="/etc/mkinitcpio.conf"
-ALL_kver="/boot/vmlinuz-linux"
-PRESETS=('default')
-default_image="/boot/initramfs-linux.img"
-EOFPRESET
 sync
-mkinitcpio -p linux
+mkinitcpio -P
 
 echo '[PROGRESS 7/8] Enabling essential services...'
 passwd -l root
