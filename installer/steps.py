@@ -28,8 +28,7 @@ def _get_partition_prefix(disk):
 def _copy_item(src, dst):
     """Copy file or directory if it exists."""
     if not os.path.exists(src):
-        print(f"  WARNING: {src} not found, skipping copy")
-        return
+        return  # Silent skip if source doesn't exist
     result = subprocess.run(["cp", "-a", src, dst], capture_output=True, text=True)
     if result.returncode != 0:
         print(f"  WARNING: failed to copy {src} → {dst}: {result.stderr.strip()}")
