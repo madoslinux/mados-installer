@@ -184,6 +184,7 @@ class TestConfigScript(unittest.TestCase):
         self.assertIn("pacman -Rdd --noconfirm mkinitcpio-archiso", script)
         self.assertIn("rm -f /etc/mkinitcpio.conf.d/archiso.conf", script)
         self.assertIn("rm -f /etc/mkinitcpio.d/linux.preset", script)
+        self.assertIn('ALL_config="/etc/mkinitcpio.conf"', script)
         self.assertIn("mkinitcpio -P", script)
 
     def test_root_locked(self):
