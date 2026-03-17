@@ -343,7 +343,8 @@ rm -f /etc/mkinitcpio.d/linux.preset
 # USB: usb_storage, xhci, ehci, uhci, ohci
 # WiFi: iwlwifi, ath, rtl8xxxu, mt76, brcmfmac, ath9k
 # Bluetooth: btusb, bluetooth
-MODULES_LIST="virtio virtio_blk virtio_scsi virtio_net virtio_pci virtio_balloon ahci ata scsi_mod sd_mod sg nvme loop dm_mod ext4 xfs btrfs usb_storage xhci_pci ehci_pci uhci_hcd ohci_hcd btusb iwlwifi ath rtl8xxxu mt76 brcmfmac ath9k cfg80211"
+# GPU: intel, amd, nvidia, virtio, vmware, qxl, cirrus
+MODULES_LIST="virtio virtio_blk virtio_scsi virtio_net virtio_pci virtio_balloon ahci ata scsi_mod sd_mod sg nvme loop dm_mod ext4 xfs btrfs usb_storage xhci_pci ehci_pci uhci_hcd ohci_hcd btusb iwlwifi ath rtl8xxxu mt76 brcmfmac ath9k cfg80211 i915 amdgpu radeon nouveau virtio_gpu vmwgfx qxl cirrus vesa"
 sed -i "s/^MODULES=()/MODULES=($MODULES_LIST)/" /etc/mkinitcpio.conf
 
 cat <<'EOFPRESET' > /etc/mkinitcpio.d/linux.preset
