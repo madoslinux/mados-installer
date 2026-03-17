@@ -338,19 +338,12 @@ pacman -Rdd --noconfirm mkinitcpio-archiso 2>/dev/null || true
 rm -f /etc/mkinitcpio.conf.d/archiso.conf
 rm -f /etc/mkinitcpio.d/linux.preset
 
-# Add storage and network modules for broad hardware support:
-# - virtio: QEMU/KVM virtual machines
-# - ahci: Modern SATA controllers
-# - ata: Legacy ATA/SATA
-# - scsi_mod, sd_mod, sg: SCSI support
-# - nvme: NVMe SSDs
-# - loop: Loop devices
-# - dm_mod: Device Mapper/LVM
-# - ext4, xfs, btrfs: Filesystems
-# - usb_storage: USB drives
-# - pata: Legacy IDE
-# - sata_nv, sata_via, sata_ali: Various SATA controllers
-MODULES_LIST="virtio virtio_blk virtio_scsi virtio_net virtio_pci virtio_balloon ahci ata scsi_mod sd_mod sg nvme loop dm_mod ext4 xfs btrfs usb_storage pata sata_nv sata_via sata_ali"
+# Add modules for broad hardware support:
+# Storage: virtio, ahci, ata, scsi, nvme, dm_mod, filesystems
+# USB: usb_storage, xhci, ehci, uhci, ohci
+# WiFi: iwlwifi, ath, rtl8xxxu, mt76, brcmfmac, ath9k
+# Bluetooth: btusb, bluetooth
+MODULES_LIST="virtio virtio_blk virtio_scsi virtio_net virtio_pci virtio_balloon ahci ata scsi_mod sd_mod sg nvme loop dm_mod ext4 xfs btrfs usb_storage xhci_pci ehci_pci uhci_hcd ohci_hcd btusb iwlwifi ath rtl8xxxu mt76 brcmfmac ath9k cfg80211"
 sed -i "s/^MODULES=()/MODULES=($MODULES_LIST)/" /etc/mkinitcpio.conf
 
 cat <<'EOFPRESET' > /etc/mkinitcpio.d/linux.preset
