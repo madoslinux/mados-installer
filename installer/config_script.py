@@ -226,10 +226,15 @@ else
 fi
 
 echo '[PROGRESS 4/8] Configuring GRUB...'
-sed -i 's/GRUB_CMDLINE_LINUX=""/GRUB_CMDLINE_LINUX="zswap.enabled=0 splash quiet"/' /etc/default/grub
+sed -i 's/GRUB_CMDLINE_LINUX="" /GRUB_CMDLINE_LINUX="zswap.enabled=0 splash quiet"/' /etc/default/grub
+
+# Add debug options to GRUB (console output for troubleshooting)
+sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="zswap.enabled=0 splash quiet"/GRUB_CMDLINE_LINUX_DEFAULT="zswap.enabled=0 splash quiet loglevel=7 earlyprintk=serial,tty0"/' /etc/default/grub 2>/dev/null || true
+
 sed -i 's/GRUB_DISTRIBUTOR="Arch"/GRUB_DISTRIBUTOR="madOS"/' /etc/default/grub
 sed -i 's/#GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' /etc/default/grub
 echo 'GRUB_DISABLE_LINUX_UUID=false' >> /etc/default/grub
+echo 'GRUB_TERMINAL="console"' >> /etc/default/grub
 
 # Detect root partition UUID for boot
 ROOT_UUID=$(blkid -s UUID -o value {root_part} 2>/dev/null || echo "")
