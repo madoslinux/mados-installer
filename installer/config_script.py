@@ -337,6 +337,12 @@ echo '[PROGRESS 6/8] Rebuilding initramfs...'
 pacman -Rdd --noconfirm mkinitcpio-archiso 2>/dev/null || true
 rm -f /etc/mkinitcpio.conf.d/archiso.conf
 rm -f /etc/mkinitcpio.d/linux.preset
+
+# Add virtio modules for QEMU/KVM virtual machines
+if ! grep -q "^MODULES=()" /etc/mkinitcpio.conf; then
+    sed -i 's/^MODULES=()/MODULES=(virtio virtio_blk virtio_scsi virtio_net virtio_pci virtio_balloon)/' /etc/mkinitcpio.conf
+fi
+
 cat <<'EOFPRESET' > /etc/mkinitcpio.d/linux.preset
 ALL_config="/etc/mkinitcpio.conf"
 ALL_kver="/boot/vmlinuz-linux"
@@ -354,7 +360,7 @@ if [ ! -f /boot/initramfs-linux.img ]; then
     echo "ERROR: initramfs still not created!"
     exit 1
 fi
-echo "  initramfs created successfully"
+echo "  initramfs created successfully with virtio drivers"
 
 echo '[PROGRESS 7/8] Enabling essential services...'
 passwd -l root
