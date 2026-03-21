@@ -45,7 +45,7 @@ htmlcov/
 
 # GTK/PyGObject (runtime generated)
 *.pyc
-
-# Project specific
-*.pyc
 *.pyo
+
+# Environment
+.env
