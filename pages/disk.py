@@ -128,7 +128,7 @@ def _get_disk_list():
         size = parts[1]
         model = " ".join(parts[3:]) if len(parts) > 3 else "Unknown disk"
 
-        if name.startswith("zram"):
+        if name.startswith("zram") or name.startswith("fd"):
             continue
 
         if name == root_disk:

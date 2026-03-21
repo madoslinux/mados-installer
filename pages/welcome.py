@@ -42,42 +42,6 @@ def create_welcome_page(app):
     subtitle.set_margin_bottom(10)
     content.pack_start(subtitle, False, False, 0)
 
-    # ── Divider ──
-    divider = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-    divider.get_style_context().add_class("welcome-divider")
-    divider.set_margin_start(40)
-    divider.set_margin_end(40)
-    divider.set_margin_bottom(10)
-    content.pack_start(divider, False, False, 0)
-
-    # ── Features grid ──
-    features_box = Gtk.FlowBox()
-    features_box.set_selection_mode(Gtk.SelectionMode.NONE)
-    features_box.set_homogeneous(True)
-    features_box.set_max_children_per_line(4)
-    features_box.set_min_children_per_line(4)
-    features_box.set_column_spacing(8)
-    features_box.set_row_spacing(6)
-    features_box.set_halign(Gtk.Align.CENTER)
-    features_box.set_margin_start(20)
-    features_box.set_margin_end(20)
-
-    for feature in app.t("features"):
-        card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
-        card.get_style_context().add_class("feature-card")
-
-        lbl = Gtk.Label()
-        lbl.set_markup(
-            f'<span foreground="{NORD_FROST["nord8"]}" weight="bold" size="small">{feature}</span>'
-        )
-        lbl.set_halign(Gtk.Align.CENTER)
-        lbl.set_valign(Gtk.Align.CENTER)
-        card.pack_start(lbl, True, True, 0)
-
-        features_box.insert(card, -1)
-
-    content.pack_start(features_box, False, False, 0)
-
     # ── Language selector ──
     lang_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
     lang_box.set_halign(Gtk.Align.CENTER)

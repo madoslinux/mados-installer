@@ -24,7 +24,7 @@ def load_logo(size=160):
         "airootfs/usr/share/pixmaps/mados-logo.png",
         os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
-            "../../share/pixmaps/mados-logo.png",
+            "share/pixmaps/mados-logo.png",
         ),
     ]
     for logo_path in logo_paths:
