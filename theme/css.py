@@ -456,6 +456,12 @@ messagedialog .dialog-action-area button:hover, dialog .dialog-action-area butto
     padding: 1px 6px;
 }}
 
+.partition-bar-snapshots {{
+    background-color: {NORD_AURORA["nord12"]};
+    min-height: 22px;
+    padding: 1px 6px;
+}}
+
 .form-card {{
     background-color: {NORD_POLAR_NIGHT["nord1"]};
     border-radius: 10px;

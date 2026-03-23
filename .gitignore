@@ -49,3 +49,4 @@ htmlcov/
 
 # Environment
 .env
+.config/gh/

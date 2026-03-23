@@ -122,21 +122,16 @@ def update_summary(app):
     part_title.set_halign(Gtk.Align.START)
     part_card.pack_start(part_title, False, False, 0)
 
-    if app.install_data["separate_home"]:
-        root_size = "50GB" if app.install_data["disk_size_gb"] < 128 else "60GB"
-        part_text = (
-            f"  {part_prefix}1   <b>1MB</b>      BIOS boot\n"
-            f"  {part_prefix}2   <b>1GB</b>      {app.t('efi_label')}  (FAT32)\n"
-            f"  {part_prefix}3   <b>{root_size}</b>   {app.t('root_label')}  (/)  ext4\n"
-            f"  {part_prefix}4   <b>{app.t('rest_label')}</b>     {app.t('home_label')}  (/home)  ext4"
-        )
-    else:
-        part_text = (
-            f"  {part_prefix}1   <b>1MB</b>        BIOS boot\n"
-            f"  {part_prefix}2   <b>1GB</b>        {app.t('efi_label')}  (FAT32)\n"
-            f"  {part_prefix}3   <b>{app.t('all_rest_label')}</b>   {app.t('root_label')}  (/)  ext4 "
-            f"– {app.t('home_dir_label')}"
-        )
+    root_size = app.install_data["disk_size_gb"] - 1
+    part_text = (
+        f"  {part_prefix}1   <b>1MB</b>       BIOS boot\n"
+        f"  {part_prefix}2   <b>1GB</b>        {app.t('efi_label')}  (FAT32)\n"
+        f"  {part_prefix}3   <b>{root_size}GB</b>   {app.t('root_label')}  (/)  btrfs\n\n"
+        f"  Btrfs subvolumes:\n"
+        f"    @           → /  (system)\n"
+        f"    @home       → /home  (user data)\n"
+        f"    @snapshots  → /.snapshots  (OTA rollback)"
+    )
 
     part_info = Gtk.Label()
     part_info.set_markup(

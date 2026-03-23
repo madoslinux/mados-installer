@@ -57,7 +57,6 @@ class MadOSInstaller(Gtk.Window):
         self.install_data = {
             "disk": None,
             "disk_size_gb": 0,
-            "separate_home": True,
             "username": "",
             "password": "",
             "hostname": "mados-" + random_suffix(),

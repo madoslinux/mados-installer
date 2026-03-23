@@ -73,8 +73,8 @@ def _ensure_kernel_in_target(app):
     )
 
 
-def step_partition_disk(app, disk, separate_home, disk_size_gb):
-    """Step 1: Partition the disk. Returns (boot_part, root_part, home_part)."""
+def step_partition_disk(app, disk, disk_size_gb):
+    """Step 1: Partition the disk. Returns (boot_part, root_part)."""
     set_progress(app, 0.05, "Partitioning disk...")
     log_message(app, f"Partitioning {disk}...")
 
@@ -112,7 +112,7 @@ def step_partition_disk(app, disk, separate_home, disk_size_gb):
         )
         subprocess.run(["parted", "-s", disk, "set", "2", "esp", "on"], check=True)
 
-    _create_root_partition(app, disk, separate_home, disk_size_gb)
+    _create_root_partition(app, disk)
 
     if not DEMO_MODE:
         log_message(app, "Waiting for partition devices...")
@@ -126,101 +126,215 @@ def step_partition_disk(app, disk, separate_home, disk_size_gb):
     return (
         f"{part_prefix}2",
         f"{part_prefix}3",
-        f"{part_prefix}4" if separate_home else None,
     )
 
 
-def _create_root_partition(app, disk, separate_home, disk_size_gb):
-    """Create root (and optionally home) partition."""
-    if separate_home:
-        root_end = "51GiB" if disk_size_gb < 128 else "61GiB"
-        if DEMO_MODE:
-            log_message(app, f"[DEMO] Simulating parted mkpart root 1GiB-{root_end}...")
-            time.sleep(0.5)
-            log_message(app, "[DEMO] Simulating parted mkpart home...")
-            time.sleep(0.5)
-        else:
-            subprocess.run(
-                ["parted", "-s", disk, "mkpart", "root", "ext4", "1GiB", root_end],
-                check=True,
-            )
-            subprocess.run(
-                ["parted", "-s", disk, "mkpart", "home", "ext4", root_end, "100%"],
-                check=True,
-            )
+def _create_root_partition(app, disk):
+    """Create root partition using entire disk (Btrfs for OTA snapshots)."""
+    if DEMO_MODE:
+        log_message(app, "[DEMO] Simulating parted mkpart root btrfs 1GiB-100%...")
+        time.sleep(0.5)
     else:
-        if DEMO_MODE:
-            log_message(app, "[DEMO] Simulating parted mkpart root 1GiB-100%...")
+        result = subprocess.run(
+            ["parted", "-s", disk, "mkpart", "root", "btrfs", "1GiB", "100%"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        if result.returncode != 0:
+            raise RuntimeError(f"Failed to create root partition: {result.stderr}")
+        log_message(app, "Created root partition")
+
+        part_prefix = _get_partition_prefix(disk)
+        root_part = f"{part_prefix}3"
+
+        for _ in range(10):
+            if os.path.exists(root_part):
+                break
+            subprocess.run(["udevadm", "settle", "--timeout=1"], check=False)
             time.sleep(0.5)
         else:
-            subprocess.run(
-                ["parted", "-s", disk, "mkpart", "root", "ext4", "1GiB", "100%"],
-                check=True,
-            )
+            raise RuntimeError(f"Partition {root_part} not found after creation")
+
+        log_message(app, f"Verified partition {root_part} exists")
 
 
-def step_format_partitions(app, boot_part, root_part, home_part, separate_home):
+def step_format_partitions(app, boot_part, root_part):
     """Step 2: Format partitions."""
     set_progress(app, 0.15, "Formatting partitions...")
     log_message(app, "Formatting partitions...")
 
     if DEMO_MODE:
-        _format_partitions_demo(app, boot_part, root_part, home_part, separate_home)
+        _format_partitions_demo(app, boot_part, root_part)
     else:
-        _format_partitions_real(boot_part, root_part, home_part, separate_home)
+        _format_partitions_real(boot_part, root_part)
 
 
-def _format_partitions_demo(app, boot_part, root_part, home_part, separate_home):
+def _format_partitions_demo(app, boot_part, root_part):
     """Demo mode partition formatting."""
     log_message(app, f"[DEMO] Simulating mkfs.fat {boot_part}...")
     time.sleep(0.5)
-    log_message(app, f"[DEMO] Simulating mkfs.ext4 {root_part}...")
+    log_message(app, f"[DEMO] Simulating mkfs.btrfs -f {root_part}...")
     time.sleep(0.5)
-    if separate_home and home_part:
-        log_message(app, f"[DEMO] Simulating mkfs.ext4 {home_part}...")
-        time.sleep(0.5)
 
 
-def _format_partitions_real(boot_part, root_part, home_part, separate_home):
-    """Real partition formatting."""
-    partitions = [("EFI", boot_part), ("root", root_part)]
-    if separate_home and home_part:
-        partitions.append(("home", home_part))
-    for part_name, part_dev in partitions:
+def _format_partitions_real(boot_part, root_part):
+    """Real partition formatting with Btrfs for OTA snapshots."""
+    for part_name, part_dev in [("EFI", boot_part), ("root", root_part)]:
         if not os.path.exists(part_dev):
             raise RuntimeError(
                 f"Partition device {part_dev} ({part_name}) does not exist!"
             )
     subprocess.run(["mkfs.fat", "-F32", boot_part], check=True)
-    subprocess.run(["mkfs.ext4", "-F", root_part], check=True)
-    if separate_home and home_part:
-        subprocess.run(["mkfs.ext4", "-F", home_part], check=True)
+    subprocess.run(["mkfs.btrfs", "-f", root_part], check=True)
 
 
-def step_mount_filesystems(app, boot_part, root_part, home_part, separate_home):
-    """Step 3: Mount filesystems."""
+def step_create_btrfs_subvolumes(app, root_part):
+    """Create Btrfs subvolumes for OTA support."""
+    set_progress(app, 0.18, "Creating Btrfs subvolumes...")
+    log_message(app, "Creating Btrfs subvolumes...")
+
+    if DEMO_MODE:
+        log_message(app, "[DEMO] Simulating btrfs subvolume create @ ...")
+        time.sleep(0.3)
+        log_message(app, "[DEMO] Simulating btrfs subvolume create @home ...")
+        time.sleep(0.3)
+        log_message(app, "[DEMO] Simulating btrfs subvolume create @snapshots ...")
+        time.sleep(0.3)
+        return
+
+    mount_point = "/mnt/btrfs_temp"
+    os.makedirs(mount_point, exist_ok=True)
+
+    try:
+        subprocess.run(["mount", root_part, mount_point], check=True)
+        time.sleep(1)
+
+        subprocess.run(
+            ["btrfs", "subvolume", "create", f"{mount_point}/@"],
+            check=True,
+        )
+        log_message(app, "Created subvolume @")
+
+        subprocess.run(
+            ["btrfs", "subvolume", "create", f"{mount_point}/@home"],
+            check=True,
+        )
+        log_message(app, "Created subvolume @home")
+
+        subprocess.run(
+            ["btrfs", "subvolume", "create", f"{mount_point}/@snapshots"],
+            check=True,
+        )
+        log_message(app, "Created subvolume @snapshots")
+
+        subprocess.run(["umount", mount_point], check=True)
+    except subprocess.CalledProcessError as e:
+        log_message(app, f"Error creating subvolumes: {e}")
+        raise
+    finally:
+        if os.path.exists(mount_point):
+            os.rmdir(mount_point)
+
+
+def step_configure_snapper(app):
+    """Configure snapper for automatic snapshots."""
+    set_progress(app, 0.72, "Configuring snapper...")
+    log_message(app, "Configuring snapper for OTA updates...")
+
+    if DEMO_MODE:
+        log_message(app, "[DEMO] Simulating snapper configuration...")
+        time.sleep(0.5)
+        return
+
+    snapper_config = """SUBVOLUME="/"
+ALLOW_USERS=""
+ALLOW_GROUPS=""
+SYNC_ACL="no"
+BACKGROUND_COMPARISON="no"
+TIMELINE_CREATE="no"
+TIMELINE_LIMIT_HOURLY="0"
+TIMELINE_LIMIT_DAILY="0"
+TIMELINE_LIMIT_WEEKLY="0"
+TIMELINE_LIMIT_MONTHLY="0"
+TIMELINE_LIMIT_YEARLY="0"
+NUMBER_LIMIT="1"
+NUMBER_LIMIT_IMPORTANT="1"
+"""
+
+    try:
+        subprocess.run(["mkdir", "-p", "/mnt/etc/snapper/configs"], check=True)
+        with open("/mnt/etc/snapper/configs/root", "w") as f:
+            f.write(snapper_config)
+        log_message(app, "Configured snapper for root subvolume")
+
+        subprocess.run(
+            ["chmod", "644", "/mnt/etc/snapper/configs/root"],
+            check=False,
+        )
+    except Exception as e:
+        log_message(app, f"Warning: snapper configuration failed: {e}")
+
+
+def step_configure_mados_updater(app):
+    """Install and configure mados-updater in target system."""
+    set_progress(app, 0.73, "Configuring mados-updater...")
+    log_message(app, "Installing mados-updater...")
+
+    if DEMO_MODE:
+        log_message(app, "[DEMO] Simulating mados-updater installation...")
+        time.sleep(0.5)
+        return
+
+    try:
+        subprocess.run(["mkdir", "-p", "/mnt/etc"], check=True)
+        with open("/mnt/etc/mados-updater.conf", "w") as f:
+            f.write("[updater]\n")
+            f.write("repo_url = https://github.com/madkoding/mados-updates\n")
+            f.write("channel = stable\n")
+            f.write("check_interval = 3600\n")
+            f.write("auto_download = false\n")
+            f.write("auto_install = false\n")
+            f.write("\n[notifications]\n")
+            f.write("enabled = true\n")
+            f.write("use_dialog = true\n")
+
+        with open("/mnt/etc/mados-version", "w") as f:
+            f.write("1.0.0\n")
+
+        subprocess.run(
+            ["chmod", "644", "/mnt/etc/mados-updater.conf"],
+            check=False,
+        )
+
+        log_message(app, "Configured mados-updater")
+    except Exception as e:
+        log_message(app, f"Warning: mados-updater configuration failed: {e}")
+
+
+def step_mount_filesystems(app, boot_part, root_part):
+    """Step 3: Mount filesystems with Btrfs subvolume support."""
     set_progress(app, 0.20, "Mounting filesystems...")
     log_message(app, "Mounting filesystems...")
 
     if DEMO_MODE:
-        log_message(app, f"[DEMO] Simulating mount {root_part} /mnt...")
+        log_message(app, "[DEMO] Simulating mount -o subvol=@ btrfs /mnt...")
         time.sleep(0.5)
         log_message(app, "[DEMO] Simulating mkdir /mnt/boot...")
         time.sleep(0.3)
         log_message(app, f"[DEMO] Simulating mount {boot_part} /mnt/boot...")
         time.sleep(0.5)
-        if separate_home and home_part:
-            log_message(app, "[DEMO] Simulating mkdir /mnt/home...")
-            time.sleep(0.3)
-            log_message(app, f"[DEMO] Simulating mount {home_part} /mnt/home...")
-            time.sleep(0.5)
+        log_message(app, "[DEMO] Simulating mount -o subvol=@home btrfs /mnt/home...")
+        time.sleep(0.3)
     else:
-        subprocess.run(["mount", root_part, "/mnt"], check=True)
+        subprocess.run(["mount", "-o", "subvol=@", root_part, "/mnt"], check=True)
         subprocess.run(["mkdir", "-p", "/mnt/boot"], check=True)
         subprocess.run(["mount", boot_part, "/mnt/boot"], check=True)
-        if separate_home and home_part:
-            subprocess.run(["mkdir", "-p", "/mnt/home"], check=True)
-            subprocess.run(["mount", home_part, "/mnt/home"], check=True)
+        subprocess.run(["mkdir", "-p", "/mnt/home"], check=True)
+        subprocess.run(
+            ["mount", "-o", "subvol=@home", root_part, "/mnt/home"],
+            check=True,
+        )
 
 
 def step_copy_live_files(app):
@@ -353,7 +467,7 @@ def step_copy_desktop_files(app):
 
 
 def step_generate_fstab(app):
-    """Step 5: Generate fstab."""
+    """Step 5: Generate fstab with Btrfs subvolume support."""
     set_progress(app, 0.49, "Generating filesystem table...")
     log_message(app, "Generating fstab...")
     if DEMO_MODE:
@@ -365,8 +479,23 @@ def step_generate_fstab(app):
         result = subprocess.run(
             ["genfstab", "-U", "/mnt"], capture_output=True, text=True, check=True
         )
+        fstab_content = result.stdout
+        lines = fstab_content.split("\n")
+        new_lines = []
+        for line in lines:
+            if "/dev/" in line and "/boot" not in line and "subvol=" not in line:
+                parts = line.split()
+                if len(parts) >= 4:
+                    mount_point = parts[1]
+                    if mount_point == "/":
+                        parts[3] = parts[3] + ",subvol=@"
+                    elif mount_point == "/home":
+                        parts[3] = parts[3] + ",subvol=@home"
+                new_lines.append(" ".join(parts))
+            else:
+                new_lines.append(line)
         with open("/mnt/etc/fstab", "w") as f:
-            f.write(result.stdout)
+            f.write("\n".join(new_lines) + "\n")
 
 
 def post_rsync_cleanup(app):

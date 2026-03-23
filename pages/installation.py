@@ -15,10 +15,13 @@ from pages.base import create_page_header
 from installer import (
     step_partition_disk,
     step_format_partitions,
+    step_create_btrfs_subvolumes,
     step_mount_filesystems,
     step_copy_live_files,
     step_copy_installer_scripts,
     step_generate_fstab,
+    step_configure_snapper,
+    step_configure_mados_updater,
     rsync_rootfs_with_progress,
     run_chroot_with_progress,
     build_config_script,
@@ -134,16 +137,15 @@ def _run_installation(app):
     try:
         data = app.install_data
         disk = data["disk"]
-        separate_home = data["separate_home"]
         disk_size_gb = data["disk_size_gb"]
 
-        boot_part, root_part, home_part = step_partition_disk(
-            app, disk, separate_home, disk_size_gb
-        )
+        boot_part, root_part = step_partition_disk(app, disk, disk_size_gb)
 
-        step_format_partitions(app, boot_part, root_part, home_part, separate_home)
+        step_format_partitions(app, boot_part, root_part)
 
-        step_mount_filesystems(app, boot_part, root_part, home_part, separate_home)
+        step_create_btrfs_subvolumes(app, root_part)
+
+        step_mount_filesystems(app, boot_part, root_part)
 
         if DEMO_MODE:
             log_message(app, "[DEMO] Simulating system copy from live ISO...")
@@ -167,6 +169,10 @@ def _run_installation(app):
             _ensure_kernel_in_target(app)
 
         step_generate_fstab(app)
+
+        step_configure_snapper(app)
+
+        step_configure_mados_updater(app)
 
         set_progress(app, 0.50, "Preparing system configuration...")
         log_message(app, "Preparing system configuration...")
