@@ -4,6 +4,7 @@ set -euo pipefail
 
 USERNAME="${1:-}"
 HOSTNAME="${2:-}"
+PASSWORD="${3:-}"
 
 if [ -z "$USERNAME" ] || [ -z "$HOSTNAME" ]; then
     echo "ERROR: USERNAME and HOSTNAME arguments required"
@@ -20,7 +21,9 @@ cat > /etc/hosts <<EOF
 EOF
 
 useradd -m -G wheel,audio,video,storage -s /usr/bin/zsh "$USERNAME"
-passwd -d "$USERNAME" 2>/dev/null || true
+if [ -n "$PASSWORD" ]; then
+    echo "$USERNAME:$PASSWORD" | chpasswd
+fi
 
 echo "%wheel ALL=(ALL:ALL) ALL" > /etc/sudoers.d/wheel
 chmod 440 /etc/sudoers.d/wheel

@@ -4,6 +4,7 @@
 set -euo pipefail
 
 USERNAME="${1:-}"
+PASSWORD="${7:-}"
 TIMEZONE="${2:-}"
 LOCALE="${3:-}"
 HOSTNAME="${4:-}"
@@ -18,6 +19,11 @@ fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+ROOT_PART="$(echo "$DISK" | sed 's/[0-9]*$//')3"
+if echo "$DISK" | grep -qE 'nvme|mmcblk'; then
+    ROOT_PART="${DISK}p3"
+fi
+
 echo '  Initializing pacman keyring...'
 [ -d /etc/pacman.d/gnupg ] && rm -rf /etc/pacman.d/gnupg
 pacman-key --init
@@ -26,9 +32,9 @@ echo '  Pacman keyring initialized'
 
 "$SCRIPT_DIR/setup-locale.sh" "$TIMEZONE" "$LOCALE"
 "$SCRIPT_DIR/setup-user.sh" "$USERNAME" "$HOSTNAME"
-"$SCRIPT_DIR/clean-live-artifacts.sh" "$USERNAME"
+"$SCRIPT_DIR/clean-live-artifacts.sh"
 "$SCRIPT_DIR/setup-bootloader.sh" "$DISK"
-"$SCRIPT_DIR/configure-grub.sh"
+"$SCRIPT_DIR/configure-grub.sh" "$ROOT_PART"
 "$SCRIPT_DIR/setup-plymouth.sh"
 "$SCRIPT_DIR/rebuild-initramfs.sh"
 "$SCRIPT_DIR/enable-services.sh"

@@ -11,17 +11,16 @@ if [ -z "$USERNAME" ]; then
     exit 1
 fi
 
-LOCALE_KB_MAP=(
-    ["en_US.UTF-8"]="us"
-    ["es_AR.UTF-8"]="latam"
-    ["es_ES.UTF-8"]="es"
-    ["pt_BR.UTF-8"]="br"
-    ["fr_FR.UTF-8"]="fr"
-    ["de_DE.UTF-8"]="de"
-    ["it_IT.UTF-8"]="it"
-)
-
-KB_LAYOUT="${LOCALE_KB_MAP[$LOCALE]:-us}"
+KB_LAYOUT="us"
+case "$LOCALE" in
+    en_US.UTF-8) KB_LAYOUT="us" ;;
+    es_AR.UTF-8) KB_LAYOUT="latam" ;;
+    es_ES.UTF-8) KB_LAYOUT="es" ;;
+    pt_BR.UTF-8) KB_LAYOUT="br" ;;
+    fr_FR.UTF-8) KB_LAYOUT="fr" ;;
+    de_DE.UTF-8) KB_LAYOUT="de" ;;
+    it_IT.UTF-8) KB_LAYOUT="it" ;;
+esac
 
 cat > /etc/os-release <<EOF
 NAME="madOS"

@@ -259,6 +259,7 @@ def step_copy_live_files(app):
         _copy_item(f"/usr/local/bin/{binary}", MNT_USR_LOCAL_BIN)
 
     step_copy_scripts(app)
+    step_copy_installer_scripts(app)
     step_copy_desktop_files(app)
 
 
@@ -299,6 +300,28 @@ def step_copy_scripts(app):
         "mados-debug",
     ]:
         subprocess.run(["chmod", "+x", f"{MNT_USR_LOCAL_BIN}{script}"], check=False)
+
+
+def step_copy_installer_scripts(app):
+    """Copy installer scripts to target for chroot execution."""
+    set_progress(app, 0.52, "Copying configuration scripts...")
+    log_message(app, "Copying configuration scripts...")
+    subprocess.run(["mkdir", "-p", "/mnt/usr/local/bin"], check=False)
+
+    installer_scripts_dir = os.path.dirname(os.path.abspath(__file__))
+    scripts_source = os.path.join(installer_scripts_dir, "..", "scripts")
+
+    if not os.path.isdir(scripts_source):
+        log_message(app, f"  WARNING: scripts directory not found at {scripts_source}")
+        return
+
+    for script_file in os.listdir(scripts_source):
+        if script_file.endswith(".sh"):
+            src = os.path.join(scripts_source, script_file)
+            dst = os.path.join(MNT_USR_LOCAL_BIN, script_file)
+            _copy_item(src, MNT_USR_LOCAL_BIN)
+            subprocess.run(["chmod", "+x", dst], check=False)
+            log_message(app, f"  Copied {script_file}")
 
 
 def step_copy_desktop_files(app):

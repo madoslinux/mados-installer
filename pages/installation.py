@@ -17,6 +17,7 @@ from installer import (
     step_format_partitions,
     step_mount_filesystems,
     step_copy_live_files,
+    step_copy_installer_scripts,
     step_generate_fstab,
     rsync_rootfs_with_progress,
     run_chroot_with_progress,
@@ -168,16 +169,12 @@ def _run_installation(app):
         step_generate_fstab(app)
 
         set_progress(app, 0.50, "Preparing system configuration...")
-        log_message(app, "Preparing Phase 1 configuration...")
-
-        config_script = build_config_script(data)
+        log_message(app, "Preparing system configuration...")
 
         if DEMO_MODE:
             log_message(
-                app, "[DEMO] Would write configuration script to /mnt/root/configure.sh"
+                app, "[DEMO] Would call configure-system.sh with proper arguments"
             )
-            time.sleep(0.5)
-            log_message(app, "[DEMO] Configuration would include:")
             log_message(app, "[DEMO]   - Timezone setup")
             log_message(app, "[DEMO]   - Locale generation")
             log_message(app, "[DEMO]   - Hostname configuration")
@@ -188,11 +185,12 @@ def _run_installation(app):
         else:
             import os
 
+            script_content = build_config_script(data)
             fd = os.open(
                 "/mnt/root/configure.sh", os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o700
             )
             with os.fdopen(fd, "w") as f:
-                f.write(config_script)
+                f.write(script_content)
 
             step_copy_live_files(app)
 

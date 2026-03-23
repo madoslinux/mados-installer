@@ -26,9 +26,9 @@ done
 
 find /etc/systemd/system -type l ! -exec test -e {} \; -delete 2>/dev/null || true
 
-if [ -n "$USERNAME" ] && id "$USERNAME" &>/dev/null; then
-    userdel -r "$USERNAME" 2>/dev/null || userdel "$USERNAME" 2>/dev/null || true
-    rm -rf "/home/$USERNAME"
+if id mados &>/dev/null; then
+    userdel -r mados 2>/dev/null || userdel mados 2>/dev/null || true
+    rm -rf /home/mados
 fi
 
 rm -f /etc/sudoers.d/99-opencode-nopasswd

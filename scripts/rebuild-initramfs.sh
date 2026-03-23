@@ -1,14 +1,12 @@
 #!/bin/bash
 # madOS Initramfs Rebuild Script
-set -e
+set -euo pipefail
 
-if grep -q '^HOOKS=.*systemd.*plymouth' /etc/mkinitcpio.conf; then
-    echo "  HOOKS already contain systemd and plymouth"
-else
-    sed -i 's/^HOOKS=(base systemd udev/HOOKS=(base systemd udev/' /etc/mkinitcpio.conf 2>/dev/null || true
-    sed -i 's/^HOOKS=(base udev /HOOKS=(base systemd udev /' /etc/mkinitcpio.conf
-    sed -i 's/plymouth block filesystems keyboard/plymouth block filesystems keyboard fsck/' /etc/mkinitcpio.conf
-fi
+echo "[6/8] Rebuilding initramfs..."
+
+pacman -Rdd --noconfirm mkinitcpio-archiso 2>/dev/null || true
+rm -f /etc/mkinitcpio.conf.d/archiso.conf
+rm -f /etc/mkinitcpio.d/linux.preset
 
 if [ ! -s /boot/vmlinuz-linux ] || [ ! -r /boot/vmlinuz-linux ]; then
     echo '  Kernel missing before mkinitcpio! Recovering...'
@@ -23,12 +21,26 @@ fi
 
 if [ ! -s /boot/vmlinuz-linux ] || [ ! -r /boot/vmlinuz-linux ]; then
     echo '  ERROR: Could not find kernel image. Reinstalling linux package...'
-    pacman -Sy --noconfirm linux || { echo 'FATAL: Failed to install kernel'; exit 1; }
+    pacman -Sy --noconfirm linux || {{ echo 'FATAL: Failed to install kernel'; exit 1; }}
 fi
 
-rm -f /etc/mkinitcpio.conf.d/archiso.conf
+cat > /etc/mkinitcpio.d/linux.preset <<'EOFPRESET'
+ALL_config="/etc/mkinitcpio.conf"
+ALL_kver="/boot/vmlinuz-linux"
+PRESETS=('default')
+default_image="/boot/initramfs-linux.img"
+fallback_image="/boot/initramfs-linux-fallback.img"
+EOFPRESET
 
-sed -i 's/^MODULES=(/MODULES=(nvme ahci /' /etc/mkinitcpio.conf 2>/dev/null || true
-
+sync
 mkinitcpio -P
+if [ ! -f /boot/initramfs-linux.img ]; then
+    echo "  WARNING: initramfs not created with virtio drivers, trying default..."
+    mkinitcpio -p linux
+fi
+if [ ! -f /boot/initramfs-linux.img ]; then
+    echo "  ERROR: initramfs still not created!"
+    exit 1
+fi
+
 echo "  Initramfs rebuilt successfully"
