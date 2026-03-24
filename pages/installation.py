@@ -22,6 +22,7 @@ from installer import (
     step_generate_fstab,
     step_configure_snapper,
     step_configure_mados_updater,
+    step_create_base_snapshot,
     rsync_rootfs_with_progress,
     run_chroot_with_progress,
     build_config_script,
@@ -220,6 +221,8 @@ def _run_installation(app):
                 time.sleep(0.5)
         else:
             run_chroot_with_progress(app, "/mnt/root/configure.sh")
+
+        step_create_base_snapshot(app)
 
         set_progress(app, 0.90, "Cleaning up...")
         log_message(app, "Cleaning up...")

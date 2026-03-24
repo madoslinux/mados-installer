@@ -332,6 +332,30 @@ def step_configure_mados_updater(app):
         log_message(app, f"Warning: mados-updater configuration failed: {e}")
 
 
+def step_create_base_snapshot(app):
+    """Create initial base snapshot for rollback capability."""
+    set_progress(app, 0.88, "Creating base snapshot...")
+    log_message(app, "Creating base snapshot for rollback...")
+
+    if DEMO_MODE:
+        log_message(app, "[DEMO] Simulating btrfs snapshot creation...")
+        time.sleep(0.5)
+        return
+
+    try:
+        subprocess.run(
+            ["btrfs", "subvolume", "snapshot", "/mnt", "/mnt/.snapshots/base-install"],
+            check=True,
+        )
+        subprocess.run(
+            ["chmod", "755", "/mnt/.snapshots/base-install"],
+            check=False,
+        )
+        log_message(app, "Created base snapshot for rollback capability")
+    except subprocess.CalledProcessError as e:
+        log_message(app, f"Warning: Failed to create base snapshot: {e}")
+
+
 def step_mount_filesystems(app, boot_part, root_part):
     """Step 3: Mount filesystems with Btrfs subvolume support."""
     set_progress(app, 0.20, "Mounting filesystems...")
