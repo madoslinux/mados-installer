@@ -18,6 +18,8 @@ def _escape_shell(s):
 
 def _get_partition_prefix(disk):
     """Get partition prefix (nvme/mmcblk use 'p' separator)"""
+    if disk is None:
+        return ""
     return f"{disk}p" if "nvme" in disk or "mmcblk" in disk else disk
 
 
