@@ -9,7 +9,7 @@ import string
 
 from gi.repository import Gtk, GLib, GdkPixbuf
 
-from theme.colors import NORD_FROST
+from config import NORD_FROST
 
 
 def random_suffix(length=4):

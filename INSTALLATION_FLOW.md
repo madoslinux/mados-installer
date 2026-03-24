@@ -1,5 +1,18 @@
 # madOS Installer - Installation Flow
 
+## Overview
+
+The installer uses **Btrfs with subvolumes** for OTA (Over-The-Air) update support. This enables atomic updates with automatic rollback capability.
+
+## Partition Scheme
+
+```
+/dev/sda (SATA/HDD)           /dev/nvme0n1 (NVMe)
+├─ sda1 (1MB) BIOS Boot        ├─ nvme0n1p1 (1MB) BIOS Boot
+├─ sda2 (1GB) EFI              ├─ nvme0n1p2 (1GB) EFI
+└─ sda3 (rest) Root (Btrfs)    └─ nvme0n1p3 (rest) Root (Btrfs)
+```
+
 ## Step 1: Disk Selection
 
 ```mermaid
@@ -15,7 +28,7 @@ sequenceDiagram
     System-->>Disk: List of available disks
     Disk-->>App: Shows disk selection buttons
     App->>U: Displays available disks
-    
+
     U->>App: Selects disk (e.g., /dev/sda)
     App->>App: install_data["disk"] = "/dev/sda"
     App->>App: Validates size (minimum 10GB)
@@ -24,7 +37,7 @@ sequenceDiagram
     App->>App: notebook.next_page()
 ```
 
-## Step 2: Partitioning
+## Step 2: Partitioning (Btrfs with Subvolumes)
 
 ```mermaid
 sequenceDiagram
@@ -32,26 +45,25 @@ sequenceDiagram
     participant Steps as installer/steps.py
     participant System as Linux (parted, sgdisk)
 
-    App->>Steps: step_partition_disk(disk, separate_home, size)
-    
+    App->>Steps: step_partition_disk(disk, disk_size_gb)
+
     Steps->>System: sgdisk --zap-all /dev/sda
     Steps->>System: wipefs -a -f /dev/sda
     Steps->>System: parted -s /dev/sda mklabel gpt
-    
+
     Steps->>System: parted -s /dev/sda mkpart bios_boot 1MiB 2MiB
     Steps->>System: parted -s /dev/sda set 1 bios_grub on
-    
+
     Steps->>System: parted -s /dev/sda mkpart EFI fat32 2MiB 1GiB
     Steps->>System: parted -s /dev/sda set 2 esp on
-    
-    Steps->>System: parted -s /dev/sda mkpart root ext4 1GiB 50GiB
-    Steps->>System: parted -s /dev/sda mkpart home ext4 50GiB 100% (if separate_home)
-    
+
+    Steps->>System: parted -s /dev/sda mkpart root btrfs 1GiB 100%
+
     Steps->>System: partprobe /dev/sda
     Steps->>System: udevadm settle
-    
-    Steps-->>App: Returns (boot_part, root_part, home_part)
-    Note over App: boot_part = /dev/sda2<br/>root_part = /dev/sda3<br/>home_part = /dev/sda4
+
+    Steps-->>App: Returns (boot_part, root_part)
+    Note over App: boot_part = /dev/sda2<br/>root_part = /dev/sda3
 ```
 
 ## Step 3: Format Partitions
@@ -62,22 +74,37 @@ sequenceDiagram
     participant Steps as installer/steps.py
     participant System as Linux (mkfs)
 
-    App->>Steps: step_format_partitions(boot_part, root_part, home_part)
+    App->>Steps: step_format_partitions(boot_part, root_part)
 
     Steps->>System: mkfs.fat -F32 /dev/sda2
     Note over System: EFI System Partition (FAT32)
 
-    Steps->>System: mkfs.ext4 -F /dev/sda3
-    Note over System: Root partition (ext4)
-
-    alt If separate_home
-        Steps->>System: mkfs.ext4 -F /dev/sda4
-    end
+    Steps->>System: mkfs.btrfs -f /dev/sda3
+    Note over System: Root partition (Btrfs)
 
     Steps-->>App: Partitions formatted
 ```
 
-## Step 4: Mount Filesystems
+## Step 4: Create Btrfs Subvolumes
+
+```mermaid
+sequenceDiagram
+    participant App as madOS Installer
+    participant Steps as installer/steps.py
+    participant System as Linux (btrfs)
+
+    App->>Steps: step_create_btrfs_subvolumes(root_part)
+
+    Steps->>System: mount /dev/sda3 /mnt/btrfs_temp
+    Steps->>System: btrfs subvolume create /mnt/btrfs_temp/@
+    Steps->>System: btrfs subvolume create /mnt/btrfs_temp/@home
+    Steps->>System: btrfs subvolume create /mnt/btrfs_temp/@snapshots
+    Steps->>System: umount /mnt/btrfs_temp
+
+    Steps-->>App: Subvolumes created
+```
+
+## Step 5: Mount Filesystems
 
 ```mermaid
 sequenceDiagram
@@ -85,21 +112,18 @@ sequenceDiagram
     participant Steps as installer/steps.py
     participant System as Linux (mount)
 
-    App->>Steps: step_mount_filesystems(boot_part, root_part, home_part)
+    App->>Steps: step_mount_filesystems(boot_part, root_part)
 
-    Steps->>System: mount /dev/sda3 /mnt
+    Steps->>System: mount -o subvol=@ /dev/sda3 /mnt
     Steps->>System: mkdir -p /mnt/boot
     Steps->>System: mount /dev/sda2 /mnt/boot
-
-    alt If separate_home
-        Steps->>System: mkdir -p /mnt/home
-        Steps->>System: mount /dev/sda4 /mnt/home
-    end
+    Steps->>System: mkdir -p /mnt/home
+    Steps->>System: mount -o subvol=@home /dev/sda3 /mnt/home
 
     Steps-->>App: Filesystems mounted
 ```
 
-## Step 5: System Copy (rsync)
+## Step 6: System Copy (rsync)
 
 ```mermaid
 sequenceDiagram
@@ -123,37 +147,7 @@ sequenceDiagram
     Steps-->>App: System copied
 ```
 
-## Step 6: Copy Additional Files
-
-```mermaid
-sequenceDiagram
-    participant App as madOS Installer
-    participant Steps as installer/steps.py
-    participant System as Linux (cp)
-
-    App->>Steps: step_copy_live_files()
-
-    Note over Steps: Plymouth boot splash
-    Steps->>System: mkdir -p /mnt/usr/share/plymouth/themes/mados
-    Steps->>System: cp /usr/share/plymouth/themes/mados/logo.png /mnt/...
-    Steps->>System: cp /usr/share/plymouth/themes/mados/dot.png /mnt/...
-
-    Note over Steps: Desktop configs (skel)
-    Steps->>System: cp -r /etc/skel/.config/* /mnt/etc/skel/.config/
-    Steps->>System: cp /etc/skel/.bash_profile /mnt/etc/skel/
-
-    Note over Steps: System scripts
-    Steps->>System: cp /usr/local/bin/cage-greeter /mnt/usr/local/bin/
-    Steps->>System: cp /usr/local/bin/sway-session /mnt/usr/local/bin/
-    Steps->>System: chmod +x /mnt/usr/local/bin/*
-
-    Note over Steps: Session files
-    Steps->>System: cp /usr/share/wayland-sessions/*.desktop /mnt/...
-
-    Steps-->>App: Files copied
-```
-
-## Step 7: Generate fstab
+## Step 7: Generate fstab (with Btrfs subvolumes)
 
 ```mermaid
 sequenceDiagram
@@ -166,14 +160,31 @@ sequenceDiagram
     Note over Steps: /etc/fstab excluded from rsync
 
     Steps->>System: genfstab -U /mnt
-    System-->>Steps: UUID=xxx / ext4 defaults 0 1<br/>UUID=yyy /boot vfat defaults 0 2<br/>UUID=zzz /home ext4 defaults 0 2
-    
+    System-->>Steps: UUID=xxx / btrfs subvol=@ 0 0<br/>UUID=xxx /home btrfs subvol=@home 0 0<br/>UUID=yyy /boot vfat defaults 0 2
+
     Steps->>System: Writes to /mnt/etc/fstab
 
     Steps-->>App: fstab generated
 ```
 
-## Step 8: Generate Configuration Script
+## Step 8: Configure Snapper
+
+```mermaid
+sequenceDiagram
+    participant App as madOS Installer
+    participant Steps as installer/steps.py
+    participant System as Linux
+
+    App->>Steps: step_configure_snapper()
+
+    Steps->>System: mkdir -p /mnt/etc/snapper/configs
+    Steps->>System: Write /mnt/etc/snapper/configs/root
+    Note over System: SUBVOLUME="/"<br/>NUMBER_LIMIT="1"
+
+    Steps-->>App: Snapper configured
+```
+
+## Step 9: Generate Configuration Script
 
 ```mermaid
 sequenceDiagram
@@ -214,7 +225,7 @@ sequenceDiagram
     Note over App: Script contains:<br/>- ROOT_UUID=$(blkid -s UUID -o value /dev/sda3)<br/>- grub-install UEFI or BIOS<br/>- mkinitcpio -P<br/>- systemctl enable ...
 ```
 
-## Step 9: Execute configure.sh in chroot (Part 1/2)
+## Step 10: Execute configure.sh in chroot (Part 1/2)
 
 ```mermaid
 sequenceDiagram
@@ -249,7 +260,7 @@ sequenceDiagram
     System->>System: echo "%wheel ALL=(ALL:ALL) ALL" > /etc/sudoers.d/wheel
 ```
 
-## Step 9: Execute configure.sh in chroot (Part 2/2 - GRUB)
+## Step 10: Execute configure.sh in chroot (Part 2/2 - GRUB)
 
 ```mermaid
 sequenceDiagram
@@ -258,21 +269,21 @@ sequenceDiagram
     rect rgb(255, 200, 200)
         Note over System: PROGRESS 3/8: Install GRUB
     end
-    
+
     System->>System: Verifies /sys/firmware/efi exists
 
     alt UEFI Mode
         System->>System: mount -t efivarfs efivarfs /sys/firmware/efi/efivars
         System->>System: grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=madOS --recheck
         System->>System: grub-install --target=x86_64-efi --efi-directory=/boot --removable --recheck
-        
+
         rect rgb(255, 200, 255)
             Note over System: Secure Boot (if enabled)
         end
         System->>System: Checks SecureBoot var
         System->>System: If enabled: sbctl create-keys, enroll-keys
         System->>System: sbctl sign /boot/EFI/BOOT/BOOTX64.EFI
-        
+
     else BIOS Mode
         System->>System: BASE_DISK=$(echo "$disk" | sed 's/[0-9]*$//')
         System->>System: grub-install --target=i386-pc --recheck "$BASE_DISK"
@@ -284,20 +295,20 @@ sequenceDiagram
     System->>System: sed -i 's/GRUB_CMDLINE_LINUX="" /GRUB_CMDLINE_LINUX="zswap.enabled=0 splash quiet"/' /etc/default/grub
     System->>System: sed -i 's/GRUB_DISTRIBUTOR="Arch"/GRUB_DISTRIBUTOR="madOS"/' /etc/default/grub
     System->>System: echo 'GRUB_DISABLE_LINUX_UUID=false' >> /etc/default/grub
-    
+
     rect rgb(200, 255, 200)
         Note over System: Create custom entry with UUID
     end
     System->>System: ROOT_UUID=$(blkid -s UUID -o value {root_part})
     Note over System: root_part = /dev/sda3 (dynamic)
-    
+
     System->>System: mkdir -p /boot/grub/custom
     System->>System: cat > /boot/grub/custom/mados.cfg <<EOF<br/>menuentry 'madOS Linux' {<br/>search --no-floppy --fs-uuid --set=root $ROOT_UUID<br/>linux /vmlinuz-linux root=UUID=$ROOT_UUID rw ...<br/>initrd /initramfs-linux.img<br/>}<br/>EOF
-    
+
     System->>System: grub-mkconfig -o /boot/grub/grub.cfg
 ```
 
-## Step 9 (continued): Plymouth, Initramfs, Services
+## Step 10 (continued): Plymouth, Initramfs, Services
 
 ```mermaid
 sequenceDiagram
@@ -341,7 +352,7 @@ sequenceDiagram
     System->>System: Copy configs to /home/testuser/.config/
 ```
 
-## Step 10: Final Cleanup
+## Step 11: Final Cleanup
 
 ```mermaid
 sequenceDiagram
@@ -358,16 +369,6 @@ sequenceDiagram
     App->>U: Installation complete!
 ```
 
-## Partition Summary
-
-```
-/dev/sda (SATA/HDD)           /dev/nvme0n1 (NVMe)
-├─ sda1 (1MB) BIOS Boot        ├─ nvme0n1p1 (1MB) BIOS Boot
-├─ sda2 (1GB) EFI              ├─ nvme0n1p2 (1GB) EFI
-├─ sda3 (50GB) Root (/)        ├─ nvme0n1p3 (50GB) Root (/)
-└─ sda4 (rest) Home (/home)    └─ nvme0n1p4 (rest) Home (/home)
-```
-
 ## Dynamic Partition Calculation
 
 | Variable | SATA | NVMe |
@@ -376,17 +377,18 @@ sequenceDiagram
 | `part_prefix` | `sda` | `nvme0n1p` |
 | `boot_part` | `sda2` | `nvme0n1p2` |
 | `root_part` | `sda3` | `nvme0n1p3` |
-| `home_part` | `sda4` | `nvme0n1p4` |
 
 ## Critical Process Points
 
-1. **Partitioning**: Creates BIOS boot, EFI, root, home
-2. **Formatting**: EFI = FAT32, root/home = ext4
-3. **Mounting**: EFI at /boot, root at /mnt, home at /mnt/home
-4. **fstab**: Generated with genfstab -U (UUIDs)
-5. **GRUB**: 
+1. **Partitioning**: Creates BIOS boot, EFI, root (Btrfs)
+2. **Formatting**: EFI = FAT32, root = Btrfs
+3. **Subvolumes**: @, @home, @snapshots created on Btrfs
+4. **Mounting**: EFI at /boot, root with subvol=@, home with subvol=@home
+5. **fstab**: Generated with genfstab -U (UUIDs) and subvol mount options
+6. **Snapper**: Configured for automatic snapshots
+7. **GRUB**:
    - UEFI: --efi-directory=/boot --removable
    - BIOS: --target=i386-pc --recheck $BASE_DISK
    - Custom entry with dynamic UUID
-6. **initramfs**: mkinitcpio -P (rebuilt)
-7. **Services**: NetworkManager, greetd, iwd, bluetooth
+8. **initramfs**: mkinitcpio -P (rebuilt)
+9. **Services**: NetworkManager, greetd, iwd, bluetooth

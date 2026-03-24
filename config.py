@@ -2,6 +2,8 @@
 madOS Installer - Configuration constants
 """
 
+from theme.colors import NORD_POLAR_NIGHT, NORD_SNOW_STORM, NORD_FROST, NORD_AURORA
+
 # ========== DEMO MODE ==========
 # Set to True to run installer in demo mode (no actual disk changes)
 # Set to False for real installation

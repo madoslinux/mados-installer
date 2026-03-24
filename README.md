@@ -11,7 +11,7 @@ A GTK3-based Linux distribution installer for madOS, an Arch Linux derivative wi
 - Plymouth boot splash with Nord theme
 - Sway and Hyprland desktop environments
 - Automatic keyboard layout configuration based on locale
-- Disk partitioning with separate /home support
+- Btrfs with subvolumes for OTA snapshot support
 - Demo mode for testing without system changes
 
 ## Requirements
@@ -99,14 +99,23 @@ python3 -m unittest tests.test_config_script.TestConfigScript.test_basic_replace
 
 ## Disk Partitioning
 
-The installer creates the following partition scheme:
+The installer creates the following partition scheme using **Btrfs with subvolumes** for OTA snapshot support:
 
-| Partition | Size | Type | Mount Point |
-|-----------|------|------|--------------|
-| BIOS Boot | 1MB | bios_grub | - |
-| EFI | 1GB | FAT32 | /boot |
-| Root | 50GB | ext4 | / |
-| Home | Remaining | ext4 | /home (optional) |
+| Partition | Size | Type | Mount Point | Filesystem |
+|-----------|------|------|------------|------------|
+| BIOS Boot | 1MB | bios_grub | - | - |
+| EFI | 1GB | FAT32 | /boot | FAT32 |
+| Root | Remaining | btrfs | / | Btrfs |
+
+**Btrfs Subvolumes:**
+
+| Subvolume | Mount Point | Purpose |
+|-----------|-------------|---------|
+| @ | / | Root system |
+| @home | /home | User data |
+| @snapshots | /.snapshots | OTA rollback |
+
+This scheme enables atomic updates with automatic rollback capability.
 
 ## Supported Disk Types
 
