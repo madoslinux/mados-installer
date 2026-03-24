@@ -352,7 +352,25 @@ sequenceDiagram
     System->>System: Copy configs to /home/testuser/.config/
 ```
 
-## Step 11: Final Cleanup
+## Step 11: Create Base Snapshot
+
+```mermaid
+sequenceDiagram
+    participant App as madOS Installer
+    participant Steps as installer/steps.py
+    participant System as Linux (btrfs)
+
+    App->>Steps: step_create_base_snapshot()
+
+    Steps->>System: btrfs subvolume snapshot /mnt /mnt/.snapshots/base-install
+    Steps->>System: chmod 755 /mnt/.snapshots/base-install
+
+    Note over System: Creates rollback point<br/>for clean installation state
+
+    Steps-->>App: Base snapshot created
+```
+
+## Step 12: Final Cleanup
 
 ```mermaid
 sequenceDiagram
