@@ -10,6 +10,8 @@ from pages.base import create_page_header, create_nav_buttons
 
 def _get_partition_prefix(disk):
     """Get partition prefix (nvme/mmcblk use 'p' separator)"""
+    if disk is None:
+        return ""
     return f"{disk}p" if "nvme" in disk or "mmcblk" in disk else disk
 
 
@@ -40,11 +42,11 @@ def create_partitioning_page(app):
     disk_info.set_margin_bottom(8)
     content.pack_start(disk_info, False, False, 0)
 
-    total_gb = app.install_data["disk_size_gb"]
+    total_gb = app.install_data.get("disk_size_gb") or 0
     efi_gb = 1
-    root_gb = total_gb - efi_gb
+    root_gb = max(0, total_gb - efi_gb)
 
-    disk = app.install_data["disk"]
+    disk = app.install_data.get("disk")
     part_prefix = _get_partition_prefix(disk)
 
     card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
