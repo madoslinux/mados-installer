@@ -19,7 +19,10 @@ for svc in \
     mados-persist-sync.service \
     mados-ventoy-setup.service \
     mados-timezone.service \
-    mados-installer-autostart.service; do
+    mados-installer-autostart.service \
+    plymouth-start.service \
+    plymouth-quit.service \
+    plymouth-quit-wait.service; do
     systemctl disable "$svc" 2>/dev/null || true
     rm -f "/etc/systemd/system/$svc"
 done
@@ -32,5 +35,10 @@ if id mados &>/dev/null; then
 fi
 
 rm -f /etc/sudoers.d/99-opencode-nopasswd
+rm -f /etc/profile.d/mados-security-notify.sh
+rm -f /etc/profile.d/mados-media-links.sh
+
+mkdir -p /etc/sway/config.d
+chmod 755 /etc/sway/config.d
 
 echo "  Live artifacts cleaned"

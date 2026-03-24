@@ -104,7 +104,7 @@ chown greeter:greeter /var/lib/greetd
 mkdir -p /etc/systemd/system/greetd.service.d
 cat > /etc/systemd/system/greetd.service.d/override.conf <<'EOFOVERRIDE'
 [Unit]
-After=systemd-logind.service plymouth-quit-wait.service
+After=systemd-logind.service
 Wants=systemd-logind.service
 Conflicts=getty@tty1.service
 After=getty@tty1.service
@@ -161,6 +161,36 @@ EOFVENTOY
 chmod 644 /etc/mados/ventoy-persist.conf
 
 rm -f /root/.automated_script.sh /root/.zlogin
+
+mkdir -p /etc/systemd/system
+cat > /etc/systemd/system/rkhunter-init.service <<'EOFRKHUNTERINIT'
+[Unit]
+Description=Rkhunter Initial Database Update
+After=network-online.target
+Requires=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/rkhunter --update --propupd
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+EOFRKHUNTERINIT
+
+cat > /etc/systemd/system/rkhunter.service <<'EOFRKHUNTER'
+[Unit]
+Description=Rkhunter Daily Scan
+After=network-online.target
+Requires=rkhunter-init.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/rkhunter --check --sk
+StandardOutput=journal
+StandardError=journal
+EOFRKHUNTER
 
 mkdir -p /etc/pacman.d/hooks
 cat > /etc/pacman.d/hooks/sway-desktop-override.hook <<'EOFHOOK'
