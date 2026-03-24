@@ -108,57 +108,6 @@ def create_partitioning_page(app):
     partitions_labels.set_margin_top(12)
     card.pack_start(partitions_labels, False, False, 0)
 
-    subvol_title = Gtk.Label()
-    subvol_title.set_markup(
-        f'<span weight="bold" size="9000" foreground="{NORD_SNOW_STORM["nord4"]}">'
-        f"  {app.t('btrfs_subvolumes_title')}</span>"
-    )
-    subvol_title.set_halign(Gtk.Align.START)
-    subvol_title.set_margin_start(28)
-    subvol_title.set_margin_top(12)
-    card.pack_start(subvol_title, False, False, 0)
-
-    subvol_bar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-    subvol_bar.set_margin_start(28)
-    subvol_bar.set_margin_end(28)
-    subvol_bar.set_margin_top(8)
-
-    subvol_at = Gtk.Label()
-    subvol_at.set_size_request(240, 24)
-    subvol_at.set_markup(
-        f'<span size="7000" foreground="{NORD_POLAR_NIGHT["nord0"]}"> @ </span>'
-    )
-    subvol_at.get_style_context().add_class("partition-bar-root")
-    subvol_bar.pack_start(subvol_at, False, False, 0)
-
-    subvol_home = Gtk.Label()
-    subvol_home.set_markup(
-        f'<span size="7000" foreground="{NORD_POLAR_NIGHT["nord0"]}"> @home </span>'
-    )
-    subvol_home.get_style_context().add_class("partition-bar-home")
-    subvol_bar.pack_start(subvol_home, False, False, 0)
-
-    subvol_snap = Gtk.Label()
-    subvol_snap.set_markup(
-        f'<span size="7000" foreground="{NORD_POLAR_NIGHT["nord0"]}"> @snapshots </span>'
-    )
-    subvol_snap.get_style_context().add_class("partition-bar-snapshots")
-    subvol_bar.pack_start(subvol_snap, True, True, 0)
-
-    card.pack_start(subvol_bar, False, False, 0)
-
-    subvol_labels = Gtk.Label()
-    subvol_labels.set_markup(
-        f'<span size="8000" foreground="{NORD_SNOW_STORM["nord4"]}">'
-        f"  @           → /                (root system)\n"
-        f"  @home       → /home            (user data)\n"
-        f"  @snapshots  → /.snapshots      (OTA rollback)</span>"
-    )
-    subvol_labels.set_halign(Gtk.Align.START)
-    subvol_labels.set_margin_start(28)
-    subvol_labels.set_margin_top(6)
-    card.pack_start(subvol_labels, False, False, 0)
-
     content.pack_start(card, False, False, 0)
 
     nav = create_nav_buttons(
