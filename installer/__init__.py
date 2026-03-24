@@ -21,6 +21,7 @@ from .steps import (
     run_pacstrap_with_progress,
     run_single_pacstrap,
     run_chroot_with_progress,
+    _check_required_commands,
 )
 
 from .config_script import (
@@ -49,4 +50,5 @@ __all__ = [
     "run_chroot_with_progress",
     "build_config_script",
     "write_config_script",
+    "_check_required_commands",
 ]

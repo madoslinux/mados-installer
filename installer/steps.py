@@ -20,6 +20,26 @@ MNT_USR_LOCAL_BIN = "/mnt/usr/local/bin/"
 SKEL_DIR = "/mnt/etc/skel/"
 
 
+def _command_exists(cmd):
+    """Check if a command exists in PATH."""
+    result = subprocess.run(["which", cmd], capture_output=True, text=True)
+    return result.returncode == 0
+
+
+def _check_required_commands(app):
+    """Verify all required commands exist before starting installation."""
+    required = ["mkfs.fat", "mkfs.btrfs", "btrfs", "parted", "genfstab"]
+    missing = []
+    for cmd in required:
+        if not _command_exists(cmd):
+            missing.append(cmd)
+    if missing:
+        error_msg = f"Missing required commands: {', '.join(missing)}"
+        log_message(app, f"ERROR: {error_msg}")
+        raise RuntimeError(error_msg)
+    log_message(app, "All required commands verified")
+
+
 def _get_partition_prefix(disk):
     """Get partition prefix (nvme/mmcblk use 'p' separator)"""
     return f"{disk}p" if "nvme" in disk or "mmcblk" in disk else disk

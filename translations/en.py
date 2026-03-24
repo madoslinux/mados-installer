@@ -30,6 +30,7 @@ TRANSLATIONS = {
         "btrfs_scheme_title": "Btrfs with Snapshots (Recommended for OTA)",
         "btrfs_scheme_desc": "Enables atomic updates with automatic rollback. All data in one partition with subvolumes.",
         "btrfs_subvolumes_title": "Btrfs Subvolumes:",
+        "bootable": "bootable",
         "efi_label": "EFI",
         "root_label": "Root",
         "home_label": "Home",

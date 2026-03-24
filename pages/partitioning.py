@@ -8,6 +8,11 @@ from config import NORD_POLAR_NIGHT, NORD_SNOW_STORM, NORD_AURORA
 from pages.base import create_page_header, create_nav_buttons
 
 
+def _get_partition_prefix(disk):
+    """Get partition prefix (nvme/mmcblk use 'p' separator)"""
+    return f"{disk}p" if "nvme" in disk or "mmcblk" in disk else disk
+
+
 def create_partitioning_page(app):
     """Btrfs partitioning with subvolumes for OTA support"""
     page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
@@ -38,6 +43,9 @@ def create_partitioning_page(app):
     total_gb = app.install_data["disk_size_gb"]
     efi_gb = 1
     root_gb = total_gb - efi_gb
+
+    disk = app.install_data["disk"]
+    part_prefix = _get_partition_prefix(disk)
 
     card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
     card.get_style_context().add_class("partition-card")
@@ -71,7 +79,7 @@ def create_partitioning_page(app):
     efi_size_pct = int(efi_ratio * 400)
     efi_bar.set_size_request(efi_size_pct, 32)
     efi_bar.set_markup(
-        f'<span size="7000" foreground="{NORD_POLAR_NIGHT["nord0"]}"> EFI {efi_gb}GB </span>'
+        f'<span size="7000" foreground="{NORD_POLAR_NIGHT["nord0"]}"> {app.t("efi_label")} {efi_gb}GB </span>'
     )
     efi_bar.get_style_context().add_class("partition-bar-efi")
     bar.pack_start(efi_bar, False, False, 0)
@@ -89,9 +97,9 @@ def create_partitioning_page(app):
     partitions_labels = Gtk.Label()
     partitions_labels.set_markup(
         f'<span size="8500" foreground="{NORD_AURORA["nord14"]}">'
-        f"  /dev/sda1  BIOS     1 MB      (bootable)\n"
-        f"  /dev/sda2  EFI      {efi_gb} GB    (FAT32)\n"
-        f"  /dev/sda3  Root     {root_gb} GB    (Btrfs)</span>"
+        f"  {part_prefix}1  BIOS     1 MB      ({app.t('bootable')})\n"
+        f"  {part_prefix}2  {app.t('efi_label')}      {efi_gb} GB    (FAT32)\n"
+        f"  {part_prefix}3  {app.t('root_label')}     {root_gb} GB    (Btrfs)</span>"
     )
     partitions_labels.set_halign(Gtk.Align.START)
     partitions_labels.set_margin_start(28)

@@ -25,6 +25,7 @@ from installer import (
     rsync_rootfs_with_progress,
     run_chroot_with_progress,
     build_config_script,
+    _check_required_commands,
 )
 
 
@@ -135,6 +136,9 @@ def on_start_installation(app):
 def _run_installation(app):
     """Perform installation (runs in background thread)."""
     try:
+        if not DEMO_MODE:
+            _check_required_commands(app)
+
         data = app.install_data
         disk = data["disk"]
         disk_size_gb = data["disk_size_gb"]
