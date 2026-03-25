@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install pyyaml
+
+      - name: Check Python syntax
+        run: |
+          find . -name "*.py" -exec python3 -m py_compile {} \;
+          echo "Syntax check passed"
+
+      - name: Verify Python imports
+        run: |
+          python3 -c "
+import sys
+sys.path.insert(0, '.')
+from pages import partitioning
+from pages import welcome
+from pages import disk
+from pages import user
+from pages import locale
+from pages import summary
+from pages import installation
+from pages import completion
+print('All imports successful')
+"
+
+      - name: Run unit tests
+        run: |
+          python3 -m unittest discover -s tests -v
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run shellcheck on shell scripts
+        run: |
+          for f in scripts/*.sh; do
+            echo "Checking $f"
+            shellcheck "$f" || echo "shellcheck failed on $f"
+          done
