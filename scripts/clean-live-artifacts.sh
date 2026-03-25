@@ -27,7 +27,7 @@ for svc in \
     rm -f "/etc/systemd/system/$svc"
 done
 
-find /etc/systemd/system -type l ! -exec test -e {} \; -delete 2>/dev/null || true
+
 
 if id mados &>/dev/null; then
     userdel -r mados 2>/dev/null || userdel mados 2>/dev/null || true

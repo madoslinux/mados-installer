@@ -133,4 +133,4 @@ def create_partitioning_page(app):
     page.pack_start(scroll, True, True, 0)
     app.notebook.append_page(page, Gtk.Label(label="Partitioning"))
 
-    _refresh_partitioning_content(app)
+    refresh_partitioning_content(app)
