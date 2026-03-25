@@ -24,6 +24,7 @@ from pages import (
     create_installation_page,
     create_completion_page,
 )
+from pages.partitioning import refresh_partitioning_content
 
 
 class MadOSInstaller(Gtk.Window):
@@ -69,6 +70,7 @@ class MadOSInstaller(Gtk.Window):
         self.notebook = Gtk.Notebook()
         self.notebook.set_show_tabs(False)
         self.notebook.set_show_border(False)
+        self.notebook.connect("switch-page", self._on_page_switch)
 
         # Add demo banner if in demo mode
         if DEMO_MODE:
@@ -131,3 +133,8 @@ class MadOSInstaller(Gtk.Window):
         create_summary_page(self)
         create_installation_page(self)
         create_completion_page(self)
+
+    def _on_page_switch(self, notebook, page, page_num):
+        """Refresh page content when switching to it"""
+        if page_num == 2:
+            refresh_partitioning_content(self)

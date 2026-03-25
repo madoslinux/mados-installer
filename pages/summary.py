@@ -122,7 +122,7 @@ def update_summary(app):
     part_title.set_halign(Gtk.Align.START)
     part_card.pack_start(part_title, False, False, 0)
 
-    root_size = app.install_data["disk_size_gb"] - 1
+    root_size = max(0, app.install_data["disk_size_gb"] - 1)
     part_text = (
         f"  {part_prefix}1   <b>1MB</b>       BIOS boot\n"
         f"  {part_prefix}2   <b>1GB</b>        {app.t('efi_label')}  (FAT32)\n"

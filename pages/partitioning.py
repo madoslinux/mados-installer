@@ -15,6 +15,39 @@ def _get_partition_prefix(disk):
     return f"{disk}p" if "nvme" in disk or "mmcblk" in disk else disk
 
 
+def refresh_partitioning_content(app):
+    """Refresh partitioning page content with current install_data"""
+    if not hasattr(app, "_partitioning_disk_info"):
+        return
+
+    total_gb = app.install_data.get("disk_size_gb") or 0
+    efi_gb = 1
+    root_gb = max(0, total_gb - efi_gb)
+    disk_size_display = f"{total_gb} GB" if total_gb > 0 else "N/A"
+    root_display = f"{root_gb}GB" if root_gb > 0 else "remaining"
+
+    disk = app.install_data.get("disk")
+    part_prefix = _get_partition_prefix(disk)
+
+    app._partitioning_disk_info.set_markup(
+        f'<span size="10000" foreground="{NORD_SNOW_STORM["nord4"]}">'
+        f"{app.t('disk_info')} <b>{disk or 'N/A'}</b> "
+        f"({disk_size_display})</span>"
+    )
+
+    app._partitioning_root_bar.set_markup(
+        f'<span size="7000" foreground="{NORD_POLAR_NIGHT["nord0"]}">'
+        f" Btrfs ({root_display}) </span>"
+    )
+
+    app._partitioning_labels.set_markup(
+        f'<span size="8500" foreground="{NORD_AURORA["nord14"]}">'
+        f"  {part_prefix}1  BIOS     1 MB      ({app.t('bootable')})\n"
+        f"  {part_prefix}2  {app.t('efi_label')}      {efi_gb} GB    (FAT32)\n"
+        f"  {part_prefix}3  {app.t('root_label')}     {root_display}    (Btrfs)</span>"
+    )
+
+
 def create_partitioning_page(app):
     """Btrfs partitioning with subvolumes for OTA support"""
     page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
@@ -32,22 +65,11 @@ def create_partitioning_page(app):
     content.pack_start(header, False, False, 0)
 
     disk_info = Gtk.Label()
-    disk_info.set_markup(
-        f'<span size="10000" foreground="{NORD_SNOW_STORM["nord4"]}">'
-        f"{app.t('disk_info')} <b>{app.install_data['disk'] or 'N/A'}</b> "
-        f"({app.install_data['disk_size_gb']} GB)</span>"
-    )
     disk_info.set_halign(Gtk.Align.CENTER)
     disk_info.set_margin_top(6)
     disk_info.set_margin_bottom(8)
+    app._partitioning_disk_info = disk_info
     content.pack_start(disk_info, False, False, 0)
-
-    total_gb = app.install_data.get("disk_size_gb") or 0
-    efi_gb = 1
-    root_gb = max(0, total_gb - efi_gb)
-
-    disk = app.install_data.get("disk")
-    part_prefix = _get_partition_prefix(disk)
 
     card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
     card.get_style_context().add_class("partition-card")
@@ -81,31 +103,23 @@ def create_partitioning_page(app):
     efi_size_pct = int(efi_ratio * 400)
     efi_bar.set_size_request(efi_size_pct, 32)
     efi_bar.set_markup(
-        f'<span size="7000" foreground="{NORD_POLAR_NIGHT["nord0"]}"> {app.t("efi_label")} {efi_gb}GB </span>'
+        f'<span size="7000" foreground="{NORD_POLAR_NIGHT["nord0"]}"> {app.t("efi_label")} 1GB </span>'
     )
     efi_bar.get_style_context().add_class("partition-bar-efi")
     bar.pack_start(efi_bar, False, False, 0)
 
     root_bar = Gtk.Label()
-    root_bar.set_markup(
-        f'<span size="7000" foreground="{NORD_POLAR_NIGHT["nord0"]}">'
-        f" Btrfs ({root_gb}GB) </span>"
-    )
+    app._partitioning_root_bar = root_bar
     root_bar.get_style_context().add_class("partition-bar-root-only")
     bar.pack_start(root_bar, True, True, 0)
 
     card.pack_start(bar, False, False, 0)
 
     partitions_labels = Gtk.Label()
-    partitions_labels.set_markup(
-        f'<span size="8500" foreground="{NORD_AURORA["nord14"]}">'
-        f"  {part_prefix}1  BIOS     1 MB      ({app.t('bootable')})\n"
-        f"  {part_prefix}2  {app.t('efi_label')}      {efi_gb} GB    (FAT32)\n"
-        f"  {part_prefix}3  {app.t('root_label')}     {root_gb} GB    (Btrfs)</span>"
-    )
     partitions_labels.set_halign(Gtk.Align.START)
     partitions_labels.set_margin_start(28)
     partitions_labels.set_margin_top(12)
+    app._partitioning_labels = partitions_labels
     card.pack_start(partitions_labels, False, False, 0)
 
     content.pack_start(card, False, False, 0)
@@ -118,3 +132,5 @@ def create_partitioning_page(app):
     scroll.add(content)
     page.pack_start(scroll, True, True, 0)
     app.notebook.append_page(page, Gtk.Label(label="Partitioning"))
+
+    _refresh_partitioning_content(app)

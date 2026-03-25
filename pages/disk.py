@@ -244,15 +244,19 @@ def _on_disk_next(app):
 
     # Parse disk size
     try:
-        if "G" in size_str:
-            app.install_data["disk_size_gb"] = int(float(size_str.replace("G", "")))
-        elif "T" in size_str:
-            app.install_data["disk_size_gb"] = int(
-                float(size_str.replace("T", "")) * 1024
+        size_str = size_str.strip()
+        if size_str.endswith("G") or size_str.endswith("GB"):
+            app.install_data["disk_size_gb"] = int(float(size_str.rstrip("GB")))
+        elif size_str.endswith("T") or size_str.endswith("TB"):
+            app.install_data["disk_size_gb"] = int(float(size_str.rstrip("TB")) * 1024)
+        elif size_str.endswith("M") or size_str.endswith("MB"):
+            app.install_data["disk_size_gb"] = max(
+                1, int(float(size_str.rstrip("MB")) / 1024)
             )
         else:
-            app.install_data["disk_size_gb"] = 120
-    except ValueError:
+            bytes_val = int(size_str)
+            app.install_data["disk_size_gb"] = max(1, bytes_val // (1024**3))
+    except (ValueError, IndexError):
         app.install_data["disk_size_gb"] = 120
 
     if app.install_data["disk_size_gb"] < MIN_DISK_SIZE_GB:
