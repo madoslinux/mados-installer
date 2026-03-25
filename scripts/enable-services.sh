@@ -26,7 +26,6 @@ enable_service bluetooth
 enable_service rkhunter.timer
 enable_service mados-gpu-wait.service
 enable_service fail2ban
-enable_service clamav-scan.timer
 
 systemctl --global enable pipewire.socket pipewire-pulse.socket wireplumber.service 2>/dev/null || true
 
