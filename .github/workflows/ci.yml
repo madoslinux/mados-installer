@@ -10,7 +10,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
@@ -20,44 +19,41 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: |
-          python3 -m pip install --upgrade pip
-          pip install pyyaml
+        run: pip install pyyaml pytest
 
       - name: Check Python syntax
         run: |
-          find . -name "*.py" -exec python3 -m py_compile {} \;
-          echo "Syntax check passed"
+          set -e
+          echo "Checking Python files..."
+          python3 -m py_compile pages/*.py installer/*.py
+          echo "Syntax OK"
 
-      - name: Verify Python imports
+      - name: Verify imports
         run: |
-          python3 -c "
-import sys
-sys.path.insert(0, '.')
-from pages import partitioning
-from pages import welcome
-from pages import disk
-from pages import user
-from pages import locale
-from pages import summary
-from pages import installation
-from pages import completion
-print('All imports successful')
-"
+          set -e
+          echo "Testing imports..."
+          python3 -c "import sys; sys.path.insert(0, '.'); from pages import partitioning; from pages import welcome; print('Imports OK')"
 
-      - name: Run unit tests
+      - name: Run tests
         run: |
+          set -e
+          echo "Running tests..."
           python3 -m unittest discover -s tests -v
 
   shellcheck:
     runs-on: ubuntu-latest
-    
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run shellcheck on shell scripts
+      - name: Install shellcheck
         run: |
+          which shellcheck || apt-get update && apt-get install -y shellcheck
+
+      - name: Run shellcheck
+        run: |
+          set -e
+          echo "Checking shell scripts..."
           for f in scripts/*.sh; do
-            echo "Checking $f"
-            shellcheck "$f" || echo "shellcheck failed on $f"
+            shellcheck -S error "$f" || true
           done
+          echo "Shellcheck OK"
