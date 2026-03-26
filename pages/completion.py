@@ -8,6 +8,7 @@ import os
 from gi.repository import Gtk
 
 from config import DEMO_MODE, NORD_AURORA, NORD_POLAR_NIGHT
+from utils import LOG_FILE
 
 
 def create_completion_page(app):
@@ -116,7 +117,7 @@ def _create_qr_section(app):
             generate_decoder_url,
         )
 
-        log_path = "/var/log/mados-install.log"
+        log_path = LOG_FILE
         if not os.path.exists(log_path):
             return None
 

@@ -39,7 +39,7 @@ def load_logo(size=160):
     return None
 
 
-LOG_FILE = "/var/log/mados-install.log"
+LOG_FILE = "/var/log/mados-installer.log"
 
 
 def save_log_to_file(app, path=None):
