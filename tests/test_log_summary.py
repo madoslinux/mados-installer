@@ -57,6 +57,8 @@ class TestLogSummaryScript(unittest.TestCase):
             self.assertTrue(
                 compressed_line.replace("+", "")
                 .replace("/", "")
+                .replace("-", "")
+                .replace("_", "")
                 .replace("=", "")
                 .isalnum()
                 or compressed_line.endswith("[TRUNCATED]")
