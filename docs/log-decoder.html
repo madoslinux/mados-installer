@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>madOS Installer Log Decoder</title>
+    <style>
+        :root {
+            --nord0: #2e3440;
+            --nord1: #3b4252;
+            --nord2: #434c5e;
+            --nord3: #4c566a;
+            --nord4: #d8dee9;
+            --nord5: #e5e9f0;
+            --nord6: #eceff4;
+            --nord7: #8fbcbb;
+            --nord8: #88c0d0;
+            --nord9: #81a1c1;
+            --nord10: #5e81ac;
+            --nord11: #bf616a;
+            --nord12: #d08770;
+            --nord14: #a3be8c;
+            --nord15: #b48ead;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--nord0);
+            color: var(--nord4);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: var(--nord8);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--nord1);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: var(--nord4);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            background: var(--nord0);
+            border: 2px solid var(--nord2);
+            border-radius: 8px;
+            color: var(--nord4);
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            padding: 12px;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--nord8);
+        }
+
+        button {
+            background: var(--nord10);
+            color: var(--nord6);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: var(--nord7);
+        }
+
+        #result {
+            background: var(--nord0);
+            border: 2px solid var(--nord2);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .error {
+            color: var(--nord11);
+        }
+
+        .warning {
+            color: var(--nord12);
+        }
+
+        .ok {
+            color: var(--nord14);
+        }
+
+        .progress {
+            color: var(--nord8);
+            font-weight: bold;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 16px;
+            padding: 12px;
+            background: var(--nord0);
+            border-radius: 8px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--nord8);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--nord3);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: var(--nord3);
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>madOS Installer Log Decoder</h1>
+        
+        <div class="card">
+            <label for="qr-input">Paste the compressed log data from your installation:</label>
+            <textarea id="qr-input" placeholder="Paste base64-encoded compressed log here..."></textarea>
+            <button onclick="decodeLog()">Decode Log</button>
+        </div>
+
+        <div class="card" id="stats-card" style="display: none;">
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="stat-steps">0</div>
+                    <div class="stat-label">Steps</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="stat-errors">0</div>
+                    <div class="stat-label">Errors</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="stat-warnings">0</div>
+                    <div class="stat-label">Warnings</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="stat-ok">0</div>
+                    <div class="stat-label">OK</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="result-card" style="display: none;">
+            <label>Decoded Log:</label>
+            <div id="result"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>madOS Installer Log Decoder</p>
+    </div>
+
+    <script>
+        function decodeLog() {
+            const input = document.getElementById('qr-input').value.trim();
+            const resultDiv = document.getElementById('result');
+            const statsCard = document.getElementById('stats-card');
+            const resultCard = document.getElementById('result-card');
+
+            if (!input) {
+                resultDiv.innerHTML = '<span class="error">Please paste the log data first.</span>';
+                resultCard.style.display = 'block';
+                statsCard.style.display = 'none';
+                return;
+            }
+
+            try {
+                const decoded = pako.inflate(atob(input), { to: 'string' });
+                
+                let html = '';
+                let errors = 0, warnings = 0, okCount = 0, steps = 0;
+
+                decoded.split('\n').forEach(line => {
+                    if (!line.trim()) return;
+                    
+                    let cssClass = '';
+                    if (line.includes('[ERROR]') || line.includes('[FATAL]')) {
+                        cssClass = 'error';
+                        errors++;
+                    } else if (line.includes('WARNING')) {
+                        cssClass = 'warning';
+                        warnings++;
+                    } else if (line.startsWith('[OK]')) {
+                        cssClass = 'ok';
+                        okCount++;
+                    } else if (line.match(/\[PROGRESS \d+\/\d+\]/)) {
+                        cssClass = 'progress';
+                        steps++;
+                    }
+
+                    html += `<div class="${cssClass}">${escapeHtml(line)}</div>`;
+                });
+
+                resultDiv.innerHTML = html;
+                resultCard.style.display = 'block';
+                statsCard.style.display = 'block';
+
+                document.getElementById('stat-steps').textContent = steps;
+                document.getElementById('stat-errors').textContent = errors;
+                document.getElementById('stat-warnings').textContent = warnings;
+                document.getElementById('stat-ok').textContent = okCount;
+
+            } catch (e) {
+                resultDiv.innerHTML = `<span class="error">Failed to decode: ${escapeHtml(e.message)}</span>`;
+                resultCard.style.display = 'block';
+                statsCard.style.display = 'none';
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+</body>
+</html>

@@ -3,6 +3,7 @@ madOS Installer - Completion page
 """
 
 import subprocess
+import os
 
 from gi.repository import Gtk
 
@@ -66,6 +67,12 @@ def create_completion_page(app):
     info_card.pack_start(info, False, False, 0)
     content.pack_start(info_card, False, False, 0)
 
+    # QR Code section
+    if not DEMO_MODE:
+        qr_box = _create_qr_section(app)
+        if qr_box:
+            content.pack_start(qr_box, False, False, 0)
+
     # Buttons
     btn_box = Gtk.Box(spacing=12)
     btn_box.set_halign(Gtk.Align.CENTER)
@@ -85,3 +92,87 @@ def create_completion_page(app):
     content.pack_start(btn_box, False, False, 0)
     page.pack_start(content, True, False, 0)
     app.notebook.append_page(page, Gtk.Label(label="Complete"))
+
+
+def _create_qr_section(app):
+    """Create QR code section for log sharing."""
+    try:
+        from scripts.log_summary import (
+            create_log_summary,
+            generate_decoder_url,
+        )
+
+        log_path = "/var/log/mados-install.log"
+        if not os.path.exists(log_path):
+            return None
+
+        compressed, stats, error = create_log_summary(log_path)
+        if error or not compressed:
+            return None
+
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        box.get_style_context().add_class("qr-card")
+        box.set_margin_top(16)
+        box.set_halign(Gtk.Align.CENTER)
+
+        qr_label = Gtk.Label()
+        qr_label.set_markup(
+            '<span size="9000" weight="bold">Share installation log via QR</span>'
+        )
+        qr_label.set_halign(Gtk.Align.CENTER)
+        box.pack_start(qr_label, False, False, 0)
+
+        decoder_url = generate_decoder_url(compressed)
+
+        qr_image = Gtk.Image()
+        try:
+            import qrcode
+            import tempfile
+            from gi.repository import GdkPixbuf
+
+            qr = qrcode.QRCode(
+                version=2,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size=10,
+                border=1,
+            )
+            qr.add_data(decoder_url)
+            qr.make(fit=True)
+            img = qr.make_image(fill_color="black", back_color="white")
+
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                img.save(f.name)
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(f.name, 200, 200, True)
+                qr_image.set_from_pixbuf(pixbuf)
+                os.unlink(f.name)
+        except Exception as e:
+            print(f"Warning: Could not generate local QR: {e}")
+            qr_image.set_from_icon_name("dialog-error", 6)
+
+        qr_image.set_halign(Gtk.Align.CENTER)
+        box.pack_start(qr_image, False, False, 0)
+
+        url_label = Gtk.Label()
+        url_label.set_markup(
+            f'<span size="7000" foreground="#81a1c1">{decoder_url[:60]}...</span>'
+        )
+        url_label.set_halign(Gtk.Align.CENTER)
+        url_label.set_line_wrap(True)
+        url_label.set_max_width_chars(50)
+        box.pack_start(url_label, False, False, 0)
+
+        stats_label = Gtk.Label()
+        stats_label.set_markup(
+            f'<span size="8000">Steps: {stats["steps"]} | '
+            f"Errors: {stats['errors']} | "
+            f"Warnings: {stats['warnings']} | "
+            f"OK: {stats['ok']}</span>"
+        )
+        stats_label.set_halign(Gtk.Align.CENTER)
+        box.pack_start(stats_label, False, False, 0)
+
+        return box
+
+    except Exception as e:
+        print(f"Warning: Could not create QR section: {e}")
+        return None
