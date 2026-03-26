@@ -225,6 +225,9 @@ RSYNC_EXCLUDES = [
     "/usr/local/bin/mados-installer",
     "/usr/local/lib/mados-installer",
     "/usr/local/share/mados-installer",
+    "/root/.local/share/mados-installer/",
+    # User home directories (not needed on installed system)
+    "/root/*",
     # Python test suites — not needed at runtime
     "/usr/lib/python*/test/*",
     "/usr/lib/python*/*/test/*",
