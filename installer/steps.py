@@ -343,14 +343,45 @@ def step_create_base_snapshot(app):
         return
 
     try:
-        subprocess.run(
-            ["btrfs", "subvolume", "snapshot", "/mnt", "/mnt/.snapshots/base-install"],
-            check=True,
+        os.makedirs("/mnt/.snapshots", exist_ok=True)
+        result = subprocess.run(
+            [
+                "mount",
+                "-o",
+                "subvol=@snapshots",
+                app.install_data["root_part"],
+                "/mnt/.snapshots",
+            ],
+            capture_output=True,
         )
-        subprocess.run(
-            ["chmod", "755", "/mnt/.snapshots/base-install"],
-            check=False,
-        )
+        if result.returncode != 0:
+            log_message(
+                app, f"Warning: Could not mount @snapshots: {result.stderr.decode()}"
+            )
+            log_message(app, "Creating snapshot at top-level instead...")
+            subprocess.run(
+                [
+                    "btrfs",
+                    "subvolume",
+                    "snapshot",
+                    "/mnt",
+                    "/mnt/snapshots/base-install",
+                ],
+                check=True,
+            )
+        else:
+            subprocess.run(
+                [
+                    "btrfs",
+                    "subvolume",
+                    "snapshot",
+                    "/mnt",
+                    "/mnt/.snapshots/base-install",
+                ],
+                check=True,
+            )
+            subprocess.run(["umount", "/mnt/.snapshots"], check=False)
+
         log_message(app, "Created base snapshot for rollback capability")
     except subprocess.CalledProcessError as e:
         log_message(app, f"Warning: Failed to create base snapshot: {e}")

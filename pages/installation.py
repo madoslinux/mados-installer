@@ -145,6 +145,7 @@ def _run_installation(app):
         disk_size_gb = data["disk_size_gb"]
 
         boot_part, root_part = step_partition_disk(app, disk, disk_size_gb)
+        app.install_data["root_part"] = root_part
 
         step_format_partitions(app, boot_part, root_part)
 
