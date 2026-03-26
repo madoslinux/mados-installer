@@ -37,20 +37,26 @@ EOFPRESET
 echo "  Detecting loaded kernel modules for initramfs..."
 MODULES=$(lsmod | awk 'NR>1 {print $1}' | tr '\n' ' ')
 MODULE_COUNT=$(lsmod | awk 'NR>1 {print $1}' | wc -w)
+
 STORAGE_MODULES="nvme ahci xhci_pci usb_storage virtio_scsi virtio_balloon sd_mod sr_mod cdrom ata_generic ata_piix"
-FS_MODULES="btrfs ext4 xfs vfat fat"
+FS_MODULES="btrfs ext4 xfs vfat fat exfat fuse overlay"
+CRYPTO_MODULES="dm_crypt dm_mod loop crc32c"
+NETWORK_MODULES="e1000 e1000e r8169 virtio_net"
+
+ALL_ESSENTIAL="${STORAGE_MODULES} ${FS_MODULES} ${CRYPTO_MODULES} ${NETWORK_MODULES}"
+
 if [ -n "$MODULES" ]; then
     echo "  Found ${MODULE_COUNT} modules from lsmod"
-    echo "  Adding storage modules: ${STORAGE_MODULES}"
-    echo "  Adding filesystem modules: ${FS_MODULES}"
-    ALL_MODULES="${MODULES} ${STORAGE_MODULES} ${FS_MODULES}"
-    echo "MODULES=\"${ALL_MODULES}\"" >> /etc/mkinitcpio.conf
-    echo "  Added modules to /etc/mkinitcpio.conf"
+    echo "  Storage: ${STORAGE_MODULES}"
+    echo "  Filesystems: ${FS_MODULES}"
+    echo "  Crypto: ${CRYPTO_MODULES}"
+    echo "  Network: ${NETWORK_MODULES}"
+    echo "MODULES=\"${MODULES} ${ALL_ESSENTIAL}\"" >> /etc/mkinitcpio.conf
+    echo "  Added all modules to /etc/mkinitcpio.conf"
 else
     echo "  WARNING: No modules detected from lsmod"
-    echo "  Adding storage modules: ${STORAGE_MODULES}"
-    echo "  Adding filesystem modules: ${FS_MODULES}"
-    echo "MODULES=\"${STORAGE_MODULES} ${FS_MODULES}\"" >> /etc/mkinitcpio.conf
+    echo "  Adding essential modules: ${ALL_ESSENTIAL}"
+    echo "MODULES=\"${ALL_ESSENTIAL}\"" >> /etc/mkinitcpio.conf
 fi
 
 echo "  Current /etc/mkinitcpio.conf content:"
