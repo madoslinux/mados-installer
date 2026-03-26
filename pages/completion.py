@@ -15,14 +15,21 @@ def create_completion_page(app):
     page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
     page.get_style_context().add_class("page-container")
 
-    content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-    content.set_halign(Gtk.Align.FILL)
-    content.set_valign(Gtk.Align.CENTER)
-    content.set_hexpand(True)
-    content.set_margin_start(30)
-    content.set_margin_end(30)
-    content.set_margin_top(10)
-    content.set_margin_bottom(14)
+    # Main horizontal box: left = info, right = QR
+    main_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
+    main_box.set_halign(Gtk.Align.CENTER)
+    main_box.set_valign(Gtk.Align.CENTER)
+    main_box.set_hexpand(True)
+    main_box.set_margin_start(30)
+    main_box.set_margin_end(30)
+    main_box.set_margin_top(10)
+    main_box.set_margin_bottom(14)
+
+    # Left side content (vertical)
+    left_content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+    left_content.set_halign(Gtk.Align.START)
+    left_content.set_valign(Gtk.Align.CENTER)
+    left_content.set_hexpand(True)
 
     # Big success checkmark
     icon = Gtk.Label()
@@ -31,7 +38,7 @@ def create_completion_page(app):
     )
     icon.set_halign(Gtk.Align.CENTER)
     icon.set_margin_bottom(8)
-    content.pack_start(icon, False, False, 0)
+    left_content.pack_start(icon, False, False, 0)
 
     # Title
     title = Gtk.Label()
@@ -40,7 +47,7 @@ def create_completion_page(app):
     )
     title.set_halign(Gtk.Align.CENTER)
     title.set_margin_bottom(10)
-    content.pack_start(title, False, False, 0)
+    left_content.pack_start(title, False, False, 0)
 
     # Info card
     info_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
@@ -65,7 +72,7 @@ def create_completion_page(app):
     info.set_justify(Gtk.Justification.LEFT)
     info.set_line_wrap(True)
     info_card.pack_start(info, False, False, 0)
-    content.pack_start(info_card, False, False, 0)
+    left_content.pack_start(info_card, False, False, 0)
 
     # Buttons
     btn_box = Gtk.Box(spacing=12)
@@ -83,9 +90,22 @@ def create_completion_page(app):
     exit_btn.connect("clicked", lambda x: Gtk.main_quit())
     btn_box.pack_start(exit_btn, False, False, 0)
 
-    content.pack_start(btn_box, False, False, 0)
-    page.pack_start(content, True, False, 0)
+    left_content.pack_start(btn_box, False, False, 0)
+
+    # Right side - QR code (placeholder, added dynamically)
+    right_content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+    right_content.set_halign(Gtk.Align.CENTER)
+    right_content.set_valign(Gtk.Align.CENTER)
+    right_content.set_name("qr-container")
+    right_content.set_size_request(220, -1)
+
+    # Assemble horizontal layout
+    main_box.pack_start(left_content, True, True, 0)
+    main_box.pack_start(right_content, False, False, 0)
+
+    page.pack_start(main_box, True, True, 0)
     app.notebook.append_page(page, Gtk.Label(label="Complete"))
+    app.qr_container = right_content
 
 
 def _create_qr_section(app):

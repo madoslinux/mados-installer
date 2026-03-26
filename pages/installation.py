@@ -303,13 +303,11 @@ def _add_qr_to_completion(app, log_path):
 
         decoder_url = generate_decoder_url(compressed)
 
-        page = app.notebook.get_nth_page(app.notebook.get_n_pages() - 1)
-        content = page.get_children()[0]
-
         qr_box = _build_qr_box(decoder_url, stats)
-        content.pack_start(qr_box, False, False, 0)
-        content.reorder_child(qr_box, len(content.get_children()) - 2)
-        page.show_all()
+
+        if hasattr(app, "qr_container") and app.qr_container:
+            app.qr_container.pack_start(qr_box, False, False, 0)
+            app.qr_container.show_all()
     except Exception as e:
         print(f"Warning: Could not add QR section: {e}")
 
