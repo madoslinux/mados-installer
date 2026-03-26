@@ -201,12 +201,16 @@
     <script>
         function decodeLog() {
             const input = document.getElementById('qr-input').value.trim();
+            decodeInput(input);
+        }
+
+        function decodeInput(input) {
             const resultDiv = document.getElementById('result');
             const statsCard = document.getElementById('stats-card');
             const resultCard = document.getElementById('result-card');
 
             if (!input) {
-                resultDiv.innerHTML = '<span class="error">Please paste the log data first.</span>';
+                resultDiv.innerHTML = '<span style="color: var(--nord3);">Paste the log data above or scan a QR code to see the installation summary.</span>';
                 resultCard.style.display = 'block';
                 statsCard.style.display = 'none';
                 return;
@@ -260,6 +264,14 @@
             div.textContent = text;
             return div.innerHTML;
         }
+
+        window.onload = function() {
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                document.getElementById('qr-input').value = hash;
+                decodeInput(hash);
+            }
+        };
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
 </body>
