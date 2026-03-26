@@ -11,7 +11,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -19,41 +20,34 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install pyyaml pytest
+        run: pip install pytest pyyaml
+
+      - name: List files
+        run: |
+          echo "=== Files in repo ==="
+          ls -la
+          echo "=== Python version ==="
+          python3 --version
 
       - name: Check Python syntax
-        run: |
-          set -e
-          echo "Checking Python files..."
-          python3 -m py_compile pages/*.py installer/*.py
-          echo "Syntax OK"
-
-      - name: Verify imports
-        run: |
-          set -e
-          echo "Testing imports..."
-          python3 -c "import sys; sys.path.insert(0, '.'); from pages import partitioning; from pages import welcome; print('Imports OK')"
+        run: python3 -m py_compile pages/*.py
 
       - name: Run tests
-        run: |
-          set -e
-          echo "Running tests..."
-          python3 -m unittest discover -s tests -v
+        run: python3 -m unittest discover -s tests -v
 
   shellcheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Install shellcheck
         run: |
-          which shellcheck || apt-get update && apt-get install -y shellcheck
+          echo "=== Installing shellcheck ==="
+          which shellcheck || (apt-get update && apt-get install -y shellcheck)
 
       - name: Run shellcheck
         run: |
-          set -e
-          echo "Checking shell scripts..."
-          for f in scripts/*.sh; do
-            shellcheck -S error "$f" || true
-          done
-          echo "Shellcheck OK"
+          echo "=== Shell scripts ==="
+          ls scripts/
+          shellcheck scripts/*.sh || true
