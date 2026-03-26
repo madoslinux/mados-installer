@@ -54,47 +54,6 @@
             margin-bottom: 20px;
         }
 
-        label {
-            display: block;
-            color: var(--nord4);
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-
-        textarea {
-            width: 100%;
-            height: 120px;
-            background: var(--nord0);
-            border: 2px solid var(--nord2);
-            border-radius: 8px;
-            color: var(--nord4);
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 14px;
-            padding: 12px;
-            resize: vertical;
-        }
-
-        textarea:focus {
-            outline: none;
-            border-color: var(--nord8);
-        }
-
-        button {
-            background: var(--nord10);
-            color: var(--nord6);
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 12px;
-            transition: background 0.2s;
-        }
-
-        button:hover {
-            background: var(--nord7);
-        }
-
         #result {
             background: var(--nord0);
             border: 2px solid var(--nord2);
@@ -161,10 +120,11 @@
     <div class="container">
         <h1>madOS Installer Log Decoder</h1>
         
-        <div class="card">
-            <label for="qr-input">Paste the compressed log data from your installation:</label>
-            <textarea id="qr-input" placeholder="Paste base64-encoded compressed log here..."></textarea>
-            <button onclick="decodeLog()">Decode Log</button>
+        <div class="card" id="result-card">
+            <label>Installation Summary:</label>
+            <div id="result">
+                <span style="color: var(--nord3);">Scanning QR code or loading...</span>
+            </div>
         </div>
 
         <div class="card" id="stats-card" style="display: none;">
@@ -187,11 +147,6 @@
                 </div>
             </div>
         </div>
-
-        <div class="card" id="result-card" style="display: none;">
-            <label>Decoded Log:</label>
-            <div id="result"></div>
-        </div>
     </div>
 
     <div class="footer">
@@ -199,19 +154,12 @@
     </div>
 
     <script>
-        async function decodeLog() {
-            const input = document.getElementById('qr-input').value.trim();
-            await decodeInput(input);
-        }
-
         async function decodeInput(input) {
             const resultDiv = document.getElementById('result');
             const statsCard = document.getElementById('stats-card');
-            const resultCard = document.getElementById('result-card');
 
             if (!input) {
-                resultDiv.innerHTML = '<span style="color: var(--nord3);">Paste the log data above or scan a QR code to see the installation summary.</span>';
-                resultCard.style.display = 'block';
+                resultDiv.innerHTML = '<span style="color: var(--nord3);">No log data found in URL.</span>';
                 statsCard.style.display = 'none';
                 return;
             }
@@ -234,15 +182,14 @@
                 writer.close();
                 
                 const result = await new Response(ds.readable).text();
-                displayResult(result, resultDiv, statsCard, resultCard);
+                displayResult(result, resultDiv, statsCard);
             } catch (e) {
                 resultDiv.innerHTML = `<span class="error">Failed to decode: ${escapeHtml(e.message)}</span>`;
-                resultCard.style.display = 'block';
                 statsCard.style.display = 'none';
             }
         }
 
-        function displayResult(decoded, resultDiv, statsCard, resultCard) {
+        function displayResult(decoded, resultDiv, statsCard) {
             let html = '';
             let errors = 0, warnings = 0, okCount = 0, steps = 0;
 
@@ -268,7 +215,6 @@
             });
 
             resultDiv.innerHTML = html;
-            resultCard.style.display = 'block';
             statsCard.style.display = 'block';
 
             document.getElementById('stat-steps').textContent = steps;
@@ -287,8 +233,9 @@
             const hash = window.location.hash.substring(1);
             if (hash) {
                 const decodedHash = decodeURIComponent(hash);
-                document.getElementById('qr-input').value = decodedHash;
                 decodeInput(decodedHash);
+            } else {
+                document.getElementById('result').innerHTML = '<span style="color: var(--nord3);">No QR data found. Scan a madOS installation log QR code.</span>';
             }
         };
     </script>
