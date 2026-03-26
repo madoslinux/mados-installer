@@ -218,6 +218,9 @@
 
             try {
                 let base64 = input.replace(/-/g, '+').replace(/_/g, '/');
+                while (base64.length % 4 !== 0) {
+                    base64 += '=';
+                }
                 const decoded = pako.ungzip(atob(base64), { to: 'string' });
                 
                 let html = '';
