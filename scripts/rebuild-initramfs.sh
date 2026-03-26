@@ -36,27 +36,17 @@ EOFPRESET
 
 echo "  Detecting loaded kernel modules for initramfs..."
 MODULES=$(lsmod | awk 'NR>1 {print $1}' | tr '\n' ' ')
-MODULE_COUNT=$(lsmod | awk 'NR>1 {print $1}' | wc -w)
 
-STORAGE_MODULES="nvme ahci xhci_pci usb_storage virtio_scsi virtio_balloon sd_mod sr_mod cdrom ata_generic ata_piix"
-FS_MODULES="btrfs ext4 xfs vfat fat exfat fuse overlay"
-CRYPTO_MODULES="dm_crypt dm_mod loop crc32c"
-NETWORK_MODULES="e1000 e1000e r8169 virtio_net"
-
-ALL_ESSENTIAL="${STORAGE_MODULES} ${FS_MODULES} ${CRYPTO_MODULES} ${NETWORK_MODULES}"
+CORE_STORAGE="nvme ahci xhci_pci usb_storage virtio_scsi sd_mod sr_mod"
+CORE_FS="btrfs ext4 xfs vfat fat"
 
 if [ -n "$MODULES" ]; then
-    echo "  Found ${MODULE_COUNT} modules from lsmod"
-    echo "  Storage: ${STORAGE_MODULES}"
-    echo "  Filesystems: ${FS_MODULES}"
-    echo "  Crypto: ${CRYPTO_MODULES}"
-    echo "  Network: ${NETWORK_MODULES}"
-    echo "MODULES=\"${MODULES} ${ALL_ESSENTIAL}\"" >> /etc/mkinitcpio.conf
-    echo "  Added all modules to /etc/mkinitcpio.conf"
+    echo "  Modules from live system: ${MODULES}"
+    echo "  Adding core modules: ${CORE_STORAGE} ${CORE_FS}"
+    echo "MODULES=\"${MODULES} ${CORE_STORAGE} ${CORE_FS}\"" >> /etc/mkinitcpio.conf
 else
-    echo "  WARNING: No modules detected from lsmod"
-    echo "  Adding essential modules: ${ALL_ESSENTIAL}"
-    echo "MODULES=\"${ALL_ESSENTIAL}\"" >> /etc/mkinitcpio.conf
+    echo "  No modules from lsmod, adding core only: ${CORE_STORAGE} ${CORE_FS}"
+    echo "MODULES=\"${CORE_STORAGE} ${CORE_FS}\"" >> /etc/mkinitcpio.conf
 fi
 
 echo "  Current /etc/mkinitcpio.conf content:"
