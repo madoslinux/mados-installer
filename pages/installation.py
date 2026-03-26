@@ -291,23 +291,34 @@ def _finish_installation(app):
 
 def _add_qr_to_completion(app, log_path):
     """Add QR code section to completion page after installation."""
+    print(f"DEBUG: log_path = {log_path}")
     if not log_path or not os.path.exists(log_path):
+        print(f"DEBUG: log_path is None or doesn't exist")
         return
 
     try:
         from scripts.log_summary import create_log_summary, generate_decoder_url
 
+        print(f"DEBUG: generating QR from {log_path}")
         compressed, stats, error = create_log_summary(log_path)
+        print(
+            f"DEBUG: compressed={compressed is not None}, error={error}, stats={stats}"
+        )
         if error or not compressed:
             return
 
         decoder_url = generate_decoder_url(compressed)
+        print(f"DEBUG: decoder_url = {decoder_url[:50]}...")
 
         qr_box = _build_qr_box(decoder_url, stats)
+        print(f"DEBUG: qr_box built, adding to container")
 
         if hasattr(app, "qr_container") and app.qr_container:
+            print(f"DEBUG: qr_container exists, packing")
             app.qr_container.pack_start(qr_box, False, False, 0)
             app.qr_container.show_all()
+        else:
+            print(f"DEBUG: qr_container not found on app")
     except Exception as e:
         print(f"Warning: Could not add QR section: {e}")
 
@@ -315,7 +326,6 @@ def _add_qr_to_completion(app, log_path):
 def _build_qr_box(decoder_url, stats):
     """Build the QR code GTK box."""
     import tempfile
-    import qrcode
 
     box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
     box.get_style_context().add_class("qr-card")
@@ -331,6 +341,8 @@ def _build_qr_box(decoder_url, stats):
 
     qr_image = Gtk.Image()
     try:
+        import qrcode
+
         qr = qrcode.QRCode(
             version=2,
             error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -346,6 +358,16 @@ def _build_qr_box(decoder_url, stats):
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(f.name, 200, 200, True)
             qr_image.set_from_pixbuf(pixbuf)
             os.unlink(f.name)
+    except ImportError:
+        print(f"Warning: qrcode module not installed, showing placeholder")
+        qr_image.set_from_icon_name("computer-vendor", 6)
+        qr_image.set_pixel_size(100)
+        error_label = Gtk.Label()
+        error_label.set_markup(
+            '<span size="7000" color="#d08770">QR module not installed</span>'
+        )
+        error_label.set_halign(Gtk.Align.CENTER)
+        box.pack_start(error_label, False, False, 0)
     except Exception as e:
         print(f"Warning: Could not generate QR: {e}")
         qr_image.set_from_icon_name("dialog-error", 6)
