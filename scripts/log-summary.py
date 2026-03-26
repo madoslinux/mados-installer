@@ -12,9 +12,17 @@ import urllib.parse
 
 
 def extract_summary(full_log):
-    """Extract [N/N], warnings and errors from log text."""
+    """Extract relevant installation information for QR code summary."""
     lines = full_log.split("\n")
     summary_lines = []
+    seen_keys = set()
+
+    def add_line(line, key=None):
+        if key and key in seen_keys:
+            return
+        if key:
+            seen_keys.add(key)
+        summary_lines.append(line)
 
     for line in lines:
         line = line.strip()
@@ -22,21 +30,31 @@ def extract_summary(full_log):
             continue
 
         if re.match(r"\[PROGRESS \d+/\d+\]", line):
-            summary_lines.append(line)
+            add_line(line)
         elif "[ERROR]" in line or "[FATAL]" in line:
-            summary_lines.append(line)
+            add_line(line, f"error:{line}")
         elif "WARNING:" in line or "Warning:" in line or "WARNING |" in line:
-            summary_lines.append(line)
+            add_line(line, f"warn:{line[:50]}")
         elif line.startswith("[OK]"):
-            summary_lines.append(line)
-        elif "error:" in line.lower() or "failed" in line.lower():
-            if "WARNING:" not in line and "error handling" not in line.lower():
-                summary_lines.append(line)
+            add_line(line)
+        elif re.search(r"(disk|device|partition|sda|nvme|mmc)", line, re.I):
+            if not any(x in line.lower() for x in ["rmmod", "modprobe", "echo"]):
+                add_line(line, f"disk:{line[:60]}")
+        elif re.search(r"(locale|timezone|keyboard|hostname|username)", line, re.I):
+            add_line(line, f"sys:{line[:60]}")
+        elif re.search(r"(bootloader|grub|efi)", line, re.I):
+            add_line(line, f"boot:{line[:60]}")
+        elif re.search(r"(initramfs|kernel|module|nvme)", line, re.I):
+            add_line(line, f"kern:{line[:60]}")
+        elif re.search(r"(snapper|update|package)", line, re.I):
+            add_line(line, f"pkg:{line[:60]}")
+        elif re.search(r"(desktop|environment|sway|hyprland|kde|gnome)", line, re.I):
+            add_line(line, f"de:{line[:60]}")
 
     return "\n".join(summary_lines)
 
 
-def compress_for_qr(text, max_base64_length=2500):
+def compress_for_qr(text, max_base64_length=4000):
     """
     Compress text and encode to base64 for QR compatibility.
     Uses URL-safe base64 to avoid URL encoding issues.
