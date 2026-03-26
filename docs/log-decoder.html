@@ -217,7 +217,7 @@
             }
 
             try {
-                const decoded = pako.inflate(atob(input), { to: 'string' });
+                const decoded = pako.ungzip(atob(input), { to: 'string' });
                 
                 let html = '';
                 let errors = 0, warnings = 0, okCount = 0, steps = 0;
