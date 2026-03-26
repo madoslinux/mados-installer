@@ -10,53 +10,24 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Debug start
-        run: |
-          echo "Starting CI at $(date)"
-          pwd
-          ls -la
+      - uses: actions/checkout@v4
 
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Python version
+        run: python3 --version
 
-      - name: Show checkout result
-        run: |
-          echo "Files after checkout:"
-          ls -la
-          echo "Python files:"
-          find . -name "*.py" | head -5
+      - name: Install pyyaml
+        run: pip install pyyaml
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+      - name: Run syntax check
+        run: python3 -m py_compile pages/*.py
 
-      - name: Install
-        run: |
-          pip install pyyaml
-          pip list | grep -E "pyyaml|pytest"
-
-      - name: Syntax check
-        run: |
-          echo "=== Running syntax check ==="
-          python3 -m py_compile pages/*.py
-          echo "Syntax OK"
-
-      - name: Run tests
-        run: |
-          echo "=== Running tests ==="
-          python3 -m unittest discover -s tests -v
+      - name: Run unit tests
+        run: python3 -m unittest discover -s tests
 
   lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout lint
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Check shell
-        run: |
-          ls scripts/
-          for f in scripts/*.sh; do
-            echo "Checking $f..."
-            bash -n "$f"
-          done
+      - name: Check bash syntax
+        run: for f in scripts/*.sh; do bash -n "$f"; done
