@@ -199,12 +199,12 @@
     </div>
 
     <script>
-        function decodeLog() {
+        async function decodeLog() {
             const input = document.getElementById('qr-input').value.trim();
-            decodeInput(input);
+            await decodeInput(input);
         }
 
-        function decodeInput(input) {
+        async function decodeInput(input) {
             const resultDiv = document.getElementById('result');
             const statsCard = document.getElementById('stats-card');
             const resultCard = document.getElementById('result-card');
@@ -221,46 +221,60 @@
                 while (base64.length % 4 !== 0) {
                     base64 += '=';
                 }
-                const decoded = pako.ungzip(atob(base64), { to: 'string' });
                 
-                let html = '';
-                let errors = 0, warnings = 0, okCount = 0, steps = 0;
-
-                decoded.split('\n').forEach(line => {
-                    if (!line.trim()) return;
-                    
-                    let cssClass = '';
-                    if (line.includes('[ERROR]') || line.includes('[FATAL]')) {
-                        cssClass = 'error';
-                        errors++;
-                    } else if (line.includes('WARNING')) {
-                        cssClass = 'warning';
-                        warnings++;
-                    } else if (line.startsWith('[OK]')) {
-                        cssClass = 'ok';
-                        okCount++;
-                    } else if (line.match(/\[PROGRESS \d+\/\d+\]/)) {
-                        cssClass = 'progress';
-                        steps++;
-                    }
-
-                    html += `<div class="${cssClass}">${escapeHtml(line)}</div>`;
-                });
-
-                resultDiv.innerHTML = html;
-                resultCard.style.display = 'block';
-                statsCard.style.display = 'block';
-
-                document.getElementById('stat-steps').textContent = steps;
-                document.getElementById('stat-errors').textContent = errors;
-                document.getElementById('stat-warnings').textContent = warnings;
-                document.getElementById('stat-ok').textContent = okCount;
-
+                const binaryString = atob(base64);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                
+                const ds = new DecompressionStream('gzip');
+                const writer = ds.writable.getWriter();
+                writer.write(bytes);
+                writer.close();
+                
+                const result = await new Response(ds.readable).text();
+                displayResult(result, resultDiv, statsCard, resultCard);
             } catch (e) {
                 resultDiv.innerHTML = `<span class="error">Failed to decode: ${escapeHtml(e.message)}</span>`;
                 resultCard.style.display = 'block';
                 statsCard.style.display = 'none';
             }
+        }
+
+        function displayResult(decoded, resultDiv, statsCard, resultCard) {
+            let html = '';
+            let errors = 0, warnings = 0, okCount = 0, steps = 0;
+
+            decoded.split('\n').forEach(line => {
+                if (!line.trim()) return;
+                
+                let cssClass = '';
+                if (line.includes('[ERROR]') || line.includes('[FATAL]')) {
+                    cssClass = 'error';
+                    errors++;
+                } else if (line.includes('WARNING')) {
+                    cssClass = 'warning';
+                    warnings++;
+                } else if (line.startsWith('[OK]')) {
+                    cssClass = 'ok';
+                    okCount++;
+                } else if (line.match(/\[PROGRESS \d+\/\d+\]/)) {
+                    cssClass = 'progress';
+                    steps++;
+                }
+
+                html += `<div class="${cssClass}">${escapeHtml(line)}</div>`;
+            });
+
+            resultDiv.innerHTML = html;
+            resultCard.style.display = 'block';
+            statsCard.style.display = 'block';
+
+            document.getElementById('stat-steps').textContent = steps;
+            document.getElementById('stat-errors').textContent = errors;
+            document.getElementById('stat-warnings').textContent = warnings;
+            document.getElementById('stat-ok').textContent = okCount;
         }
 
         function escapeHtml(text) {
@@ -278,6 +292,5 @@
             }
         };
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
 </body>
 </html>
