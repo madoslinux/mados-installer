@@ -39,16 +39,18 @@ def extract_summary(full_log):
 def compress_for_qr(text, max_base64_length=2500):
     """
     Compress text and encode to base64 for QR compatibility.
+    Uses URL-safe base64 to avoid URL encoding issues.
     Truncates if necessary to fit QR limits.
     """
     compressed = gzip.compress(text.encode("utf-8"), compresslevel=9)
     b64 = base64.b64encode(compressed).decode("ascii")
+    b64_urlsafe = b64.replace("+", "-").replace("/", "_")
 
-    if len(b64) > max_base64_length:
-        truncated = b64[: max_base64_length - 20]
+    if len(b64_urlsafe) > max_base64_length:
+        truncated = b64_urlsafe[: max_base64_length - 20]
         return truncated + "...[TRUNCATED]"
 
-    return b64
+    return b64_urlsafe
 
 
 def create_log_summary(log_path):
