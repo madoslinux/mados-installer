@@ -67,12 +67,6 @@ def create_completion_page(app):
     info_card.pack_start(info, False, False, 0)
     content.pack_start(info_card, False, False, 0)
 
-    # QR Code section
-    if not DEMO_MODE:
-        qr_box = _create_qr_section(app)
-        if qr_box:
-            content.pack_start(qr_box, False, False, 0)
-
     # Buttons
     btn_box = Gtk.Box(spacing=12)
     btn_box.set_halign(Gtk.Align.CENTER)
