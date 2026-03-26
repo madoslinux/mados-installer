@@ -217,8 +217,8 @@
             }
 
             try {
-                const inputBase64 = input.replace(/-/g, '+').replace(/_/g, '/');
-                const decoded = pako.ungzip(atob(inputBase64), { to: 'string' });
+                let base64 = input.replace(/-/g, '+').replace(/_/g, '/');
+                const decoded = pako.ungzip(atob(base64), { to: 'string' });
                 
                 let html = '';
                 let errors = 0, warnings = 0, okCount = 0, steps = 0;
@@ -269,8 +269,9 @@
         window.onload = function() {
             const hash = window.location.hash.substring(1);
             if (hash) {
-                document.getElementById('qr-input').value = hash;
-                decodeInput(hash);
+                const decodedHash = decodeURIComponent(hash);
+                document.getElementById('qr-input').value = decodedHash;
+                decodeInput(decodedHash);
             }
         };
     </script>
