@@ -23,6 +23,7 @@ from .steps import (
     run_single_pacstrap,
     run_chroot_with_progress,
     _check_required_commands,
+    step_install_nvidia_if_needed,
 )
 
 from .config_script import (
@@ -53,4 +54,5 @@ __all__ = [
     "build_config_script",
     "write_config_script",
     "_check_required_commands",
+    "step_install_nvidia_if_needed",
 ]

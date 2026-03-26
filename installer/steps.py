@@ -13,11 +13,21 @@ from config import (
     RSYNC_EXCLUDES,
     POST_COPY_CLEANUP,
     ARCHISO_PACKAGES,
+    PACKAGES_NVIDIA,
 )
 from utils import log_message, set_progress
 
 MNT_USR_LOCAL_BIN = "/mnt/usr/local/bin/"
 SKEL_DIR = "/mnt/etc/skel/"
+
+
+def _detect_nvidia_gpu():
+    """Detect if NVIDIA GPU is present using lspci."""
+    try:
+        result = subprocess.run(["lspci"], capture_output=True, text=True, check=False)
+        return "nvidia" in result.stdout.lower()
+    except Exception:
+        return False
 
 
 def _command_exists(cmd):
@@ -676,6 +686,50 @@ def rsync_rootfs_with_progress(app):
 
     set_progress(app, 0.48, "System ready")
     log_message(app, "Base system ready")
+
+
+def step_install_nvidia_if_needed(app):
+    """Conditionally install NVIDIA drivers if NVIDIA GPU is detected."""
+    has_nvidia = _detect_nvidia_gpu()
+    app.install_data["has_nvidia"] = has_nvidia
+
+    if not has_nvidia:
+        log_message(app, "No NVIDIA GPU detected, skipping NVIDIA packages")
+        return
+
+    if DEMO_MODE:
+        log_message(app, "[DEMO] Would install NVIDIA packages...")
+        return
+
+    set_progress(app, 0.49, "Installing NVIDIA drivers...")
+    log_message(app, "NVIDIA GPU detected, installing proprietary drivers...")
+
+    try:
+        proc = subprocess.Popen(
+            ["arch-chroot", "/mnt", "pacman", "-Sy", "--noconfirm", "--needed"]
+            + PACKAGES_NVIDIA,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+        )
+        while True:
+            line = proc.stdout.readline()
+            if not line:
+                break
+            line = line.rstrip()
+            if line:
+                log_message(app, f"  {line}")
+        proc.wait()
+        if proc.returncode == 0:
+            log_message(app, "  NVIDIA drivers installed successfully")
+        else:
+            log_message(
+                app,
+                f"  Warning: NVIDIA driver installation returned code {proc.returncode}",
+            )
+    except Exception as e:
+        log_message(app, f"  Warning: Could not install NVIDIA drivers: {e}")
 
 
 def prepare_pacman(app):

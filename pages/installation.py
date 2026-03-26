@@ -28,6 +28,7 @@ from installer import (
     run_chroot_with_progress,
     build_config_script,
     _check_required_commands,
+    step_install_nvidia_if_needed,
 )
 
 
@@ -175,6 +176,8 @@ def _run_installation(app):
 
             _ensure_kernel_in_target(app)
 
+        step_install_nvidia_if_needed(app)
+
         step_generate_fstab(app)
 
         step_configure_snapper(app)
@@ -291,37 +294,24 @@ def _finish_installation(app):
 
 def _add_qr_to_completion(app, log_path):
     """Add QR code section to completion page after installation."""
-    log_message(app, f"[DEBUG] Adding QR section, log_path={log_path}")
     if not log_path or not os.path.exists(log_path):
-        log_message(app, "[DEBUG] log_path is None or doesn't exist")
         return
 
     try:
         from scripts.log_summary import create_log_summary, generate_decoder_url
 
-        log_message(app, f"[DEBUG] Generating QR from {log_path}")
         compressed, stats, error = create_log_summary(log_path)
-        log_message(
-            app,
-            f"[DEBUG] compressed={compressed is not None}, error={error}, stats={stats}",
-        )
         if error or not compressed:
             return
 
         decoder_url = generate_decoder_url(compressed)
-        log_message(app, f"[DEBUG] decoder_url={decoder_url[:50]}...")
-
         qr_box = _build_qr_box(app, decoder_url, stats)
-        log_message(app, "[DEBUG] QR box built")
 
         if hasattr(app, "qr_container") and app.qr_container:
-            log_message(app, "[DEBUG] qr_container exists, packing")
             app.qr_container.pack_start(qr_box, False, False, 0)
             app.qr_container.show_all()
-        else:
-            log_message(app, "[DEBUG] qr_container not found on app")
     except Exception as e:
-        log_message(app, f"[DEBUG] Exception adding QR: {e}")
+        log_message(app, f"Warning: Could not generate QR code: {e}")
 
 
 def _build_qr_box(app, decoder_url, stats):

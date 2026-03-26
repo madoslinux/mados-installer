@@ -158,7 +158,6 @@ PACKAGES_PHASE2 = [
     "mesa-utils",
     "xf86-video-amdgpu",
     "vulkan-radeon",
-    "xf86-video-nouveau",
     "ttf-jetbrains-mono-nerd",
     "noto-fonts",
     "noto-fonts-cjk",
@@ -189,6 +188,13 @@ PACKAGES_PHASE2 = [
     "libwebp",
     "libheif",
     "libjxl",
+]
+
+PACKAGES_NVIDIA = [
+    "nvidia",
+    "nvidia-utils",
+    "nvidia-settings",
+    "libva-nvidia-driver",
 ]
 
 # Combined package list (all ISO packages in both categories)
