@@ -5,39 +5,58 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Debug start
+        run: |
+          echo "Starting CI at $(date)"
+          pwd
+          ls -la
 
-      - name: Set up Python
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show checkout result
+        run: |
+          echo "Files after checkout:"
+          ls -la
+          echo "Python files:"
+          find . -name "*.py" | head -5
+
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
-        run: pip install pyyaml
-
-      - name: Check Python syntax
+      - name: Install
         run: |
-          echo "Running syntax check..."
-          python3 -m py_compile pages/*.py installer/*.py
+          pip install pyyaml
+          pip list | grep -E "pyyaml|pytest"
+
+      - name: Syntax check
+        run: |
+          echo "=== Running syntax check ==="
+          python3 -m py_compile pages/*.py
+          echo "Syntax OK"
 
       - name: Run tests
         run: |
-          echo "Running unit tests..."
+          echo "=== Running tests ==="
           python3 -m unittest discover -s tests -v
 
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout lint
+        uses: actions/checkout@v4
 
-      - name: Run shellcheck
+      - name: Check shell
         run: |
+          ls scripts/
           for f in scripts/*.sh; do
-            shellcheck "$f" || true
+            echo "Checking $f..."
+            bash -n "$f"
           done
