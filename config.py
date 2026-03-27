@@ -231,6 +231,8 @@ RSYNC_EXCLUDES = [
     "/usr/local/bin/mados-installer",
     "/usr/local/lib/mados-installer",
     "/usr/local/share/mados-installer",
+    "/usr/share/applications/mados-installer.desktop",
+    "/etc/xdg/autostart/mados-installer-autostart.desktop",
     "/root/.local/share/mados-installer/",
     # User home directories (not needed on installed system)
     "/root/*",
