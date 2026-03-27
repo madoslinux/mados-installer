@@ -281,13 +281,18 @@ def _handle_installation_error(app, error_msg):
 
 def _finish_installation(app):
     """Stop spinner, save log and move to completion page"""
+    log_message(app, "QR: _finish_installation called")
+    log_message(app, f"QR: DEMO_MODE={DEMO_MODE}")
     log_path = save_log_to_file(app)
     if log_path:
         log_message(app, f"\nLog saved to: {log_path}")
     app.install_spinner.stop()
 
+    log_message(app, f"QR: about to call _add_qr_to_completion, DEMO_MODE={DEMO_MODE}")
     if not DEMO_MODE:
         _add_qr_to_completion(app, log_path)
+    else:
+        log_message(app, "QR: skipped due to DEMO_MODE")
 
     app.notebook.next_page()
     return False
@@ -295,9 +300,8 @@ def _finish_installation(app):
 
 def _add_qr_to_completion(app, log_path):
     """Add QR code section to completion page after installation."""
-    if not log_path or not os.path.exists(log_path):
-        log_message(app, "QR: log_path missing or file doesn't exist")
-        return
+    log_message(app, f"QR: _add_qr_to_completion started, log_path={log_path}")
+    log_message(app, f"QR: qr_container exists={hasattr(app, 'qr_container')}")
 
     try:
         import importlib.util
