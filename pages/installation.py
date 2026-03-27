@@ -6,6 +6,7 @@ import os
 import subprocess
 import time
 import threading
+import urllib.parse
 
 from gi.repository import Gtk, GLib
 
@@ -329,6 +330,7 @@ def _add_qr_to_completion(app, log_path):
 def _build_qr_box(app, decoder_url, stats):
     """Build the QR code GTK box."""
     import tempfile
+    import urllib.request
 
     box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
     box.get_style_context().add_class("qr-card")
@@ -361,16 +363,22 @@ def _build_qr_box(app, decoder_url, stats):
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(f.name, 200, 200, True)
             qr_image.set_from_pixbuf(pixbuf)
             os.unlink(f.name)
-    except ImportError as ex:
-        log_message(app, f"Warning: qrcode module not installed: {ex}")
-        qr_image.set_from_icon_name("computer-vendor", 6)
-        qr_image.set_pixel_size(100)
-        error_label = Gtk.Label()
-        error_label.set_markup(
-            '<span size="7000" color="#d08770">QR module not installed</span>'
-        )
-        error_label.set_halign(Gtk.Align.CENTER)
-        box.pack_start(error_label, False, False, 0)
+    except ImportError:
+        try:
+            qr_api_url = (
+                f"https://api.qrserver.com/v1/create-qr-code/"
+                f"?size=200x200&data={urllib.parse.quote(decoder_url)}"
+            )
+            with urllib.request.urlopen(qr_api_url, timeout=10) as response:
+                img_data = response.read()
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                f.write(img_data)
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(f.name, 200, 200, True)
+                qr_image.set_from_pixbuf(pixbuf)
+                os.unlink(f.name)
+        except Exception:
+            qr_image.set_from_icon_name("computer-vendor", 6)
+            qr_image.set_pixel_size(100)
     except Exception as e:
         log_message(app, f"Warning: Could not generate QR: {e}")
         qr_image.set_from_icon_name("dialog-error", 6)
