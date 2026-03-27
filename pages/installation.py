@@ -295,23 +295,35 @@ def _finish_installation(app):
 def _add_qr_to_completion(app, log_path):
     """Add QR code section to completion page after installation."""
     if not log_path or not os.path.exists(log_path):
+        log_message(app, "QR: log_path missing or file doesn't exist")
         return
 
     try:
-        from scripts.log_summary import create_log_summary, generate_decoder_url
+        import importlib.util
 
-        compressed, stats, error = create_log_summary(log_path)
+        scripts_dir = os.path.dirname(os.path.dirname(__file__))
+        log_summary_path = os.path.join(scripts_dir, "scripts", "log-summary.py")
+        spec = importlib.util.spec_from_file_location("log_summary", log_summary_path)
+        log_mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(log_mod)
+
+        log_message(app, f"QR: generating from {log_path}")
+        compressed, stats, error = log_mod.create_log_summary(log_path)
         if error or not compressed:
+            log_message(app, f"QR: compression error={error}, compressed={compressed}")
             return
 
-        decoder_url = generate_decoder_url(compressed)
+        decoder_url = log_mod.generate_decoder_url(compressed)
         qr_box = _build_qr_box(app, decoder_url, stats)
 
         if hasattr(app, "qr_container") and app.qr_container:
             app.qr_container.pack_start(qr_box, False, False, 0)
             app.qr_container.show_all()
+            log_message(app, "QR: added to completion page")
+        else:
+            log_message(app, "QR: qr_container not found on app")
     except Exception as e:
-        log_message(app, f"Warning: Could not generate QR code: {e}")
+        log_message(app, f"QR exception: {e}")
 
 
 def _build_qr_box(app, decoder_url, stats):
