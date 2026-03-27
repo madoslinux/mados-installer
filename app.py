@@ -4,6 +4,27 @@ madOS Installer - Main application window
 
 import os
 import sys
+import subprocess
+
+
+def _ensure_qrcode():
+    """Ensure qrcode module is installed, install via pip if missing."""
+    try:
+        import qrcode
+
+        return
+    except ImportError:
+        pass
+    try:
+        subprocess.run(
+            [sys.executable, "-m", "pip", "install", "qrcode>=7.4", "--quiet"],
+            check=True,
+        )
+    except Exception:
+        pass
+
+
+_ensure_qrcode()
 
 import gi
 
