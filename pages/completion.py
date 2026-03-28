@@ -167,15 +167,6 @@ def _create_qr_section(app):
         qr_image.set_halign(Gtk.Align.CENTER)
         box.pack_start(qr_image, False, False, 0)
 
-        url_label = Gtk.Label()
-        url_label.set_markup(
-            f'<span size="7000" foreground="#81a1c1">{decoder_url[:60]}...</span>'
-        )
-        url_label.set_halign(Gtk.Align.CENTER)
-        url_label.set_line_wrap(True)
-        url_label.set_max_width_chars(50)
-        box.pack_start(url_label, False, False, 0)
-
         stats_label = Gtk.Label()
         stats_label.set_markup(
             f'<span size="8000">Steps: {stats["steps"]} | '

@@ -2,13 +2,16 @@
 madOS Installer - Configuration constants
 """
 
-from theme.colors import NORD_POLAR_NIGHT, NORD_SNOW_STORM, NORD_FROST, NORD_AURORA
+import os
 
 # ========== DEMO MODE ==========
 # Set to True to run installer in demo mode (no actual disk changes)
 # Set to False for real installation
-DEMO_MODE = False
+# Can also be set via environment variable DEMO_MODE=true
+DEMO_MODE = os.environ.get("DEMO_MODE", "").lower() == "true"
 # ================================
+
+from theme.colors import NORD_POLAR_NIGHT, NORD_SNOW_STORM, NORD_FROST, NORD_AURORA
 
 # Minimum disk size (GB) for installation.  The live rootfs with rsync
 # excludes and post-copy cleanup fits in ~5-7 GB plus 1 GB EFI, so 10 GB

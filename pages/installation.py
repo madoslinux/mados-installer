@@ -8,7 +8,7 @@ import time
 import threading
 import urllib.parse
 
-from gi.repository import Gtk, GLib
+from gi.repository import Gtk, GLib, GdkPixbuf
 
 from config import DEMO_MODE, NORD_FROST
 from utils import log_message, set_progress, show_error, save_log_to_file
@@ -289,10 +289,7 @@ def _finish_installation(app):
     app.install_spinner.stop()
 
     log_message(app, f"QR: about to call _add_qr_to_completion, DEMO_MODE={DEMO_MODE}")
-    if not DEMO_MODE:
-        _add_qr_to_completion(app, log_path)
-    else:
-        log_message(app, "QR: skipped due to DEMO_MODE")
+    _add_qr_to_completion(app, log_path)
 
     app.notebook.next_page()
     return False
@@ -313,6 +310,15 @@ def _add_qr_to_completion(app, log_path):
         spec.loader.exec_module(log_mod)
 
         log_message(app, f"QR: generating from {log_path}")
+
+        if DEMO_MODE and not os.path.exists(log_path):
+            log_message(app, "QR: DEMO_MODE - creating sample log")
+            with open(log_path, "w") as f:
+                f.write("[DEMO MODE] Sample installation log for testing\n")
+                f.write("Installation completed successfully\n")
+                f.write("User: demo\n")
+                f.write("Hostname: mados-demo\n")
+
         compressed, stats, error = log_mod.create_log_summary(log_path)
         if error or not compressed:
             log_message(app, f"QR: compression error={error}, compressed={compressed}")
@@ -393,15 +399,6 @@ def _build_qr_box(app, decoder_url, stats):
 
     qr_image.set_halign(Gtk.Align.CENTER)
     box.pack_start(qr_image, False, False, 0)
-
-    url_label = Gtk.Label()
-    url_label.set_markup(
-        f'<span size="7000" foreground="#81a1c1">{decoder_url[:60]}...</span>'
-    )
-    url_label.set_halign(Gtk.Align.CENTER)
-    url_label.set_line_wrap(True)
-    url_label.set_max_width_chars(50)
-    box.pack_start(url_label, False, False, 0)
 
     stats_label = Gtk.Label()
     stats_label.set_markup(

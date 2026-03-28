@@ -16,9 +16,15 @@ from app import MadOSInstaller
 
 
 def main():
-    app = MadOSInstaller()
-    app.connect("destroy", Gtk.main_quit)
-    Gtk.main()
+    try:
+        app = MadOSInstaller()
+        app.connect("destroy", Gtk.main_quit)
+        Gtk.main()
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
 
 
 if __name__ == "__main__":

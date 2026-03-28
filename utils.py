@@ -9,7 +9,7 @@ import string
 
 from gi.repository import Gtk, GLib, GdkPixbuf
 
-from config import NORD_FROST
+from config import NORD_FROST, DEMO_MODE
 
 
 def random_suffix(length=4):
@@ -39,7 +39,7 @@ def load_logo(size=160):
     return None
 
 
-LOG_FILE = "/var/log/mados-installer.log"
+LOG_FILE = "/tmp/mados-installer.log" if DEMO_MODE else "/var/log/mados-installer.log"
 
 
 def save_log_to_file(app, path=None):

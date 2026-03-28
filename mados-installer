@@ -1,10 +1,13 @@
 #!/bin/bash
 cd "$(dirname "$0")"
+DEMO_MODE="${DEMO_MODE:-false}"
 python3 -c "
 import sys
 import os
 import types
 import importlib.util
+
+os.environ['DEMO_MODE'] = '${DEMO_MODE}'
 
 pkg_dir = '$(pwd)'
 spec = importlib.util.spec_from_file_location('mados_installer', f'{pkg_dir}/__init__.py')
