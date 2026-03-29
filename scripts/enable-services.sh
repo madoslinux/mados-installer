@@ -23,7 +23,6 @@ enable_service systemd-timesyncd
 enable_service greetd
 enable_service iwd
 enable_service bluetooth
-enable_service rkhunter.timer
 enable_service mados-gpu-wait.service
 enable_service fail2ban
 
