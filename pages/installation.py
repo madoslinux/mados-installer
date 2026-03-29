@@ -360,9 +360,9 @@ def _build_qr_box(app, decoder_url, stats):
 
         qr = qrcode.QRCode(
             version=2,
-            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            error_correction=qrcode.constants.ERROR_CORRECT_M,
             box_size=10,
-            border=1,
+            border=2,
         )
         qr.add_data(decoder_url)
         qr.make(fit=True)
@@ -370,14 +370,14 @@ def _build_qr_box(app, decoder_url, stats):
 
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
             img.save(f.name)
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(f.name, 200, 200, True)
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(f.name, 300, 300, True)
             qr_image.set_from_pixbuf(pixbuf)
             os.unlink(f.name)
     except ImportError:
         try:
             qr_api_url = (
                 f"https://api.qrserver.com/v1/create-qr-code/"
-                f"?size=200x200&data={urllib.parse.quote(decoder_url)}"
+                f"?size=300x300&data={urllib.parse.quote(decoder_url)}"
             )
             log_message(app, f"QR API: trying {qr_api_url[:60]}...")
             with urllib.request.urlopen(qr_api_url, timeout=10) as response:

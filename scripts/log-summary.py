@@ -74,7 +74,7 @@ def compress_for_qr(text, max_base64_length=4000):
 def create_log_summary(log_path):
     """Read log file, extract summary, return compressed base64."""
     try:
-        with open(log_path, "r", errors="replace") as f:
+        with open(log_path, errors="replace") as f:
             full_log = f.read()
     except Exception as e:
         return None, None, str(e)

@@ -37,7 +37,7 @@ def create_completion_page(app):
     if is_error:
         icon = Gtk.Label()
         icon.set_markup(
-            f'<span size="40000" weight="bold" foreground="#dc7878">&#x2717;</span>'
+            '<span size="40000" weight="bold" foreground="#dc7878">&#x2717;</span>'
         )
         icon.set_halign(Gtk.Align.CENTER)
         icon.set_margin_bottom(8)
@@ -182,9 +182,9 @@ def _create_qr_section(app):
 
             qr = qrcode.QRCode(
                 version=2,
-                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                error_correction=qrcode.constants.ERROR_CORRECT_M,
                 box_size=10,
-                border=1,
+                border=2,
             )
             qr.add_data(decoder_url)
             qr.make(fit=True)
@@ -192,7 +192,7 @@ def _create_qr_section(app):
 
             with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
                 img.save(f.name)
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(f.name, 200, 200, True)
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(f.name, 300, 300, True)
                 qr_image.set_from_pixbuf(pixbuf)
                 os.unlink(f.name)
         except Exception as e:
