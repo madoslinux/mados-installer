@@ -11,29 +11,30 @@ rm -f /etc/mkinitcpio.d/linux.preset
 rm -f /etc/mkinitcpio.d/linux-zen.preset
 rm -f /etc/mkinitcpio.d/linux-lts.preset
 
-if [ ! -s /boot/vmlinuz-linux ] || [ ! -r /boot/vmlinuz-linux ]; then
+KERNEL="linux-zen"
+if [ ! -s /boot/vmlinuz-${KERNEL} ] || [ ! -r /boot/vmlinuz-${KERNEL} ]; then
     echo "  Kernel missing before mkinitcpio! Recovering..."
     for kdir in /usr/lib/modules/*/; do
         if [ -r "${kdir}vmlinuz" ]; then
-            cp "${kdir}vmlinuz" /boot/vmlinuz-linux
+            cp "${kdir}vmlinuz" /boot/vmlinuz-${KERNEL}
             echo "  Recovered kernel from ${kdir}vmlinuz"
             break
         fi
     done
 fi
 
-if [ ! -s /boot/vmlinuz-linux ] || [ ! -r /boot/vmlinuz-linux ]; then
-    echo "  ERROR: Could not find kernel image. Reinstalling linux package..."
-    pacman -Sy --noconfirm linux || { echo "FATAL: Failed to install kernel"; exit 1; }
+if [ ! -s /boot/vmlinuz-${KERNEL} ] || [ ! -r /boot/vmlinuz-${KERNEL} ]; then
+    echo "  ERROR: Could not find kernel image. Reinstalling linux-zen package..."
+    pacman -Sy --noconfirm ${KERNEL} || { echo "FATAL: Failed to install kernel"; exit 1; }
 fi
 
 echo "  Creating mkinitcpio preset file..."
-cat > /etc/mkinitcpio.d/linux.preset <<'EOFPRESET'
+cat > /etc/mkinitcpio.d/${KERNEL}.preset <<'EOFPRESET'
 ALL_config="/etc/mkinitcpio.conf"
-ALL_kver="/boot/vmlinuz-linux"
+ALL_kver="/boot/vmlinuz-${KERNEL}"
 PRESETS=('default')
-default_image="/boot/initramfs-linux.img"
-fallback_image="/boot/initramfs-linux-fallback.img"
+default_image="/boot/initramfs-${KERNEL}.img"
+fallback_image="/boot/initramfs-${KERNEL}-fallback.img"
 EOFPRESET
 
 echo "  Detecting loaded kernel modules for initramfs..."
@@ -61,22 +62,22 @@ if ! mkinitcpio -P 2>&1; then
     exit 1
 fi
 
-if [ ! -f /boot/initramfs-linux.img ]; then
+if [ ! -f /boot/initramfs-${KERNEL}.img ]; then
     echo "  WARNING: initramfs not created, trying fallback preset..."
-    mkinitcpio -p linux 2>&1 || { echo "FATAL: mkinitcpio -p linux failed"; exit 1; }
+    mkinitcpio -p ${KERNEL} 2>&1 || { echo "FATAL: mkinitcpio -p ${KERNEL} failed"; exit 1; }
 fi
 
-if [ -f /boot/initramfs-linux.img ]; then
-    INITRAMFS_SIZE=$(du -h /boot/initramfs-linux.img | cut -f1)
-    echo "  Initramfs created: /boot/initramfs-linux.img (${INITRAMFS_SIZE})"
+if [ -f /boot/initramfs-${KERNEL}.img ]; then
+    INITRAMFS_SIZE=$(du -h /boot/initramfs-${KERNEL}.img | cut -f1)
+    echo "  Initramfs created: /boot/initramfs-${KERNEL}.img (${INITRAMFS_SIZE})"
 else
     echo "  ERROR: initramfs still not created!"
     exit 1
 fi
 
-if [ -f /boot/initramfs-linux-fallback.img ]; then
-    FALLBACK_SIZE=$(du -h /boot/initramfs-linux-fallback.img | cut -f1)
-    echo "  Fallback initramfs: /boot/initramfs-linux-fallback.img (${FALLBACK_SIZE})"
+if [ -f /boot/initramfs-${KERNEL}-fallback.img ]; then
+    FALLBACK_SIZE=$(du -h /boot/initramfs-${KERNEL}-fallback.img | cut -f1)
+    echo "  Fallback initramfs: /boot/initramfs-${KERNEL}-fallback.img (${FALLBACK_SIZE})"
 fi
 
 echo "  Initramfs rebuilt successfully"
