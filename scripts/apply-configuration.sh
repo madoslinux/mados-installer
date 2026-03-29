@@ -75,7 +75,6 @@ EOLIGHTDM
 
 cat > /etc/lightdm/lightdm-gtk-greeter.conf <<'EOLIGHTDMGTK'
 [greeter]
-theme-name = Nordic
 icon-theme-name = Adwaita
 background = /usr/share/backgrounds/mad-os-wallpaper.png
 default-user-image = /usr/share/pixmaps/hicolor/128x128/apps/system-logo-icon.png
