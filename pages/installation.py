@@ -275,7 +275,6 @@ def _handle_installation_error(app, error_msg):
     _add_qr_to_completion(app, log_path)
 
     app.notebook.next_page()
-    GLib.timeout_add(5000, Gtk.main_quit)
     return False
 
 
