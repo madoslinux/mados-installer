@@ -20,7 +20,7 @@ enable_service NetworkManager
 enable_service systemd-resolved
 enable_service earlyoom
 enable_service systemd-timesyncd
-enable_service greetd
+enable_service lightdm
 enable_service iwd
 enable_service bluetooth
 enable_service mados-gpu-wait.service

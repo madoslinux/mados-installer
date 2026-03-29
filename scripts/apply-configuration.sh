@@ -63,51 +63,31 @@ swap-priority = 100
 fs-type = swap
 EOF
 
-mkdir -p /etc/greetd
-cat > /etc/greetd/config.toml <<'EOFGREETD'
-[terminal]
-vt = 1
+# Configure LightDM with GTK greeter
+cat > /etc/lightdm/lightdm.conf <<'EOLIGHTDM'
+[Seat:*]
+greeter-session = lightdm-gtk-greeter
+user-session = hyprland
+allow-user-switching = true
+allow-guest = false
+session-wrapper = /etc/lightdm/Xsession
+EOLIGHTDM
 
-[default_session]
-command = "/usr/bin/regreet"
-user = "greeter"
-EOFGREETD
-
-cat > /etc/greetd/regreet.toml <<'EOFREGREET'
-[background]
-path = "/usr/share/backgrounds/mad-os-wallpaper.png"
-fit = "Cover"
-
-[env]
-LIBSEAT_BACKEND = "logind"
-
-[GTK]
-application_prefer_dark_theme = true
-
-[commands]
-reboot = [ "systemctl", "reboot" ]
-poweroff = [ "systemctl", "poweroff" ]
-EOFREGREET
-
-chown -R greeter:greeter /etc/greetd
-chmod 755 /etc/greetd
-chmod 644 /etc/greetd/config.toml /etc/greetd/regreet.toml
-
-usermod -aG video,input greeter 2>/dev/null || echo "Note: greeter user group modification skipped"
-
-mkdir -p /var/cache/regreet
-chown greeter:greeter /var/cache/regreet
-chmod 750 /var/cache/regreet
-mkdir -p /var/lib/greetd
-chown greeter:greeter /var/lib/greetd
-
-mkdir -p /etc/systemd/system/greetd.service.d
-cat > /etc/systemd/system/greetd.service.d/override.conf <<'EOFOVERRIDE'
-[Unit]
-After=systemd-logind.service systemd-user-sessions.service
-Wants=systemd-logind.service
-Conflicts=getty@tty1.service
-EOFOVERRIDE
+cat > /etc/lightdm/lightdm-gtk-greeter.conf <<'EOLIGHTDMGTK'
+[greeter]
+theme-name = Nordic
+icon-theme-name = Adwaita
+background = /usr/share/backgrounds/mad-os-wallpaper.png
+default-user-image = /usr/share/pixmaps/hicolor/128x128/apps/system-logo-icon.png
+xft-antialias = true
+xft-dpi = 96
+xft-font = Sans 10
+indicators = ~clock;~language;~session;~power
+clock-format = %a %d %b  %H:%M
+hide-users = false
+show-manual-login = false
+show-guest = false
+EOLIGHTDMGTK
 
 install -d -o "$USERNAME" -g "$USERNAME" /home/"$USERNAME"/.config/{sway,hypr,waybar,foot,wofi,gtk-3.0,gtk-4.0}
 install -d -o "$USERNAME" -g "$USERNAME" /home/"$USERNAME"/{Documents,Downloads,Music,Videos,Desktop,Templates,Public}
@@ -222,7 +202,7 @@ EOFHOOK2
 
 echo "Verifying graphical environment components..."
 GRAPHICAL_OK=1
-for bin in cage regreet sway; do
+for bin in lightdm lightdm-gtk-greeter sway; do
     if command -v "$bin" &>/dev/null; then
         echo "  ✓ $bin found: $(command -v "$bin")"
     else
@@ -231,7 +211,7 @@ for bin in cage regreet sway; do
     fi
 done
 
-for script in /usr/local/bin/cage-greeter /usr/local/bin/sway-session /usr/local/bin/hyprland-session /usr/local/bin/start-hyprland /usr/local/bin/select-compositor; do
+for script in /usr/local/bin/sway-session /usr/local/bin/hyprland-session /usr/local/bin/start-hyprland /usr/local/bin/select-compositor; do
     if [ -x "$script" ]; then
         echo "  ✓ $script is executable"
     elif [ -f "$script" ]; then
@@ -243,10 +223,10 @@ for script in /usr/local/bin/cage-greeter /usr/local/bin/sway-session /usr/local
     fi
 done
 
-if [ -f /etc/greetd/config.toml ]; then
-    echo "  ✓ greetd config exists"
+if [ -f /etc/lightdm/lightdm.conf ]; then
+    echo "  ✓ lightdm config exists"
 else
-    echo "  ✗ greetd config NOT found — graphical login may fail"
+    echo "  ✗ lightdm config NOT found — graphical login may fail"
     GRAPHICAL_OK=0
 fi
 
@@ -267,11 +247,11 @@ for session_file in /usr/share/wayland-sessions/sway.desktop /usr/share/wayland-
     fi
 done
 
-if systemctl is-enabled greetd.service &>/dev/null; then
-    echo "  ✓ greetd.service is enabled"
+if systemctl is-enabled lightdm.service &>/dev/null; then
+    echo "  ✓ lightdm.service is enabled"
 else
-    echo "  ✗ greetd.service is NOT enabled — enabling..."
-    systemctl enable greetd.service 2>/dev/null || true
+    echo "  ✗ lightdm.service is NOT enabled — enabling..."
+    systemctl enable lightdm.service 2>/dev/null || true
 fi
 
 systemctl enable getty@tty2.service 2>/dev/null || true
