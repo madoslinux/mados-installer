@@ -264,18 +264,18 @@ def _run_installation(app):
 
 
 def _handle_installation_error(app, error_msg):
-    """Save log to file, show error dialog, then quit the installer."""
+    """Save log to file, show error on completion page, then show completion page."""
     log_path = save_log_to_file(app)
     if log_path:
-        message = (
-            f"{error_msg}\n\n"
-            f"The installation log has been saved to:\n{log_path}\n\n"
-            "The installer will now close."
-        )
-    else:
-        message = f"{error_msg}\n\nThe installer will now close."
-    show_error(app, "Installation Failed", message)
-    Gtk.main_quit()
+        log_message(app, f"Error log saved to: {log_path}")
+    app.install_spinner.stop()
+
+    app.installation_error = error_msg
+
+    _add_qr_to_completion(app, log_path)
+
+    app.notebook.next_page()
+    GLib.timeout_add(5000, Gtk.main_quit)
     return False
 
 

@@ -32,64 +32,99 @@ def create_completion_page(app):
     left_content.set_valign(Gtk.Align.CENTER)
     left_content.set_hexpand(True)
 
-    # Big success checkmark
-    icon = Gtk.Label()
-    icon.set_markup(
-        f'<span size="40000" weight="bold" foreground="{NORD_AURORA["nord14"]}">&#x2713;</span>'
-    )
-    icon.set_halign(Gtk.Align.CENTER)
-    icon.set_margin_bottom(8)
-    left_content.pack_start(icon, False, False, 0)
+    is_error = hasattr(app, "installation_error") and app.installation_error
 
-    # Title
-    title = Gtk.Label()
-    title.set_markup(
-        f'<span size="16000" weight="bold">{app.t("success_title")}</span>'
-    )
-    title.set_halign(Gtk.Align.CENTER)
-    title.set_margin_bottom(10)
-    left_content.pack_start(title, False, False, 0)
-
-    # Info card
-    info_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-    info_card.get_style_context().add_class("completion-card")
-    info_card.set_hexpand(True)
-
-    if DEMO_MODE:
-        info = Gtk.Label()
-        info.set_markup(
-            '<span size="9000">This was a <b>DEMONSTRATION</b> of the madOS installer.\n\n'
-            "In real mode (DEMO_MODE = False):\n"
-            "  • System would be installed to disk\n"
-            "  • All configurations would be applied\n"
-            "  • System would be ready to boot\n\n"
-            "<b>Edit config.py and set DEMO_MODE = False\n"
-            "for real installation.</b></span>"
+    if is_error:
+        icon = Gtk.Label()
+        icon.set_markup(
+            f'<span size="40000" weight="bold" foreground="#dc7878">&#x2717;</span>'
         )
-    else:
-        info = Gtk.Label()
-        info.set_markup(f'<span size="9000">{app.t("success_msg")}</span>')
+        icon.set_halign(Gtk.Align.CENTER)
+        icon.set_margin_bottom(8)
+        left_content.pack_start(icon, False, False, 0)
 
-    info.set_justify(Gtk.Justification.LEFT)
-    info.set_line_wrap(True)
-    info_card.pack_start(info, False, False, 0)
-    left_content.pack_start(info_card, False, False, 0)
+        title = Gtk.Label()
+        title.set_markup(
+            '<span size="16000" weight="bold">Installation Failed</span>'
+        )
+        title.set_halign(Gtk.Align.CENTER)
+        title.set_margin_bottom(10)
+        left_content.pack_start(title, False, False, 0)
+
+        info_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        info_card.get_style_context().add_class("completion-card")
+        info_card.set_hexpand(True)
+
+        error_info = Gtk.Label()
+        error_info.set_markup(
+            f'<span size="9000" foreground="#dc7878">{app.installation_error}</span>'
+        )
+        error_info.set_justify(Gtk.Justification.LEFT)
+        error_info.set_line_wrap(True)
+        info_card.pack_start(error_info, False, False, 0)
+        left_content.pack_start(info_card, False, False, 0)
+    else:
+        icon = Gtk.Label()
+        icon.set_markup(
+            f'<span size="40000" weight="bold" foreground="{NORD_AURORA["nord14"]}">&#x2713;</span>'
+        )
+        icon.set_halign(Gtk.Align.CENTER)
+        icon.set_margin_bottom(8)
+        left_content.pack_start(icon, False, False, 0)
+
+        title = Gtk.Label()
+        title.set_markup(
+            f'<span size="16000" weight="bold">{app.t("success_title")}</span>'
+        )
+        title.set_halign(Gtk.Align.CENTER)
+        title.set_margin_bottom(10)
+        left_content.pack_start(title, False, False, 0)
+
+        info_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        info_card.get_style_context().add_class("completion-card")
+        info_card.set_hexpand(True)
+
+        if DEMO_MODE:
+            info = Gtk.Label()
+            info.set_markup(
+                '<span size="9000">This was a <b>DEMONSTRATION</b> of the madOS installer.\n\n'
+                "In real mode (DEMO_MODE = False):\n"
+                "  • System would be installed to disk\n"
+                "  • All configurations would be applied\n"
+                "  • System would be ready to boot\n\n"
+                "<b>Edit config.py and set DEMO_MODE = False\n"
+                "for real installation.</b></span>"
+            )
+        else:
+            info = Gtk.Label()
+            info.set_markup(f'<span size="9000">{app.t("success_msg")}</span>')
+
+        info.set_justify(Gtk.Justification.LEFT)
+        info.set_line_wrap(True)
+        info_card.pack_start(info, False, False, 0)
+        left_content.pack_start(info_card, False, False, 0)
 
     # Buttons
     btn_box = Gtk.Box(spacing=12)
     btn_box.set_halign(Gtk.Align.CENTER)
     btn_box.set_margin_top(14)
 
-    if not DEMO_MODE:
-        reboot_btn = Gtk.Button(label=app.t("reboot_now"))
-        reboot_btn.get_style_context().add_class("success-button")
-        reboot_btn.connect("clicked", lambda x: subprocess.run(["reboot"]))
-        btn_box.pack_start(reboot_btn, False, False, 0)
+    if is_error:
+        exit_btn = Gtk.Button(label="Exit")
+        exit_btn.get_style_context().add_class("nav-back-button")
+        exit_btn.connect("clicked", lambda x: Gtk.main_quit())
+        btn_box.pack_start(exit_btn, False, False, 0)
+    else:
+        if not DEMO_MODE:
+            reboot_btn = Gtk.Button(label=app.t("reboot_now"))
+            reboot_btn.get_style_context().add_class("success-button")
+            reboot_btn.connect("clicked", lambda x: subprocess.run(["reboot"]))
+            btn_box.pack_start(reboot_btn, False, False, 0)
 
-    exit_btn = Gtk.Button(label=app.t("exit_live"))
-    exit_btn.get_style_context().add_class("nav-back-button")
-    exit_btn.connect("clicked", lambda x: Gtk.main_quit())
-    btn_box.pack_start(exit_btn, False, False, 0)
+        exit_btn = Gtk.Button(label=app.t("exit_live"))
+        exit_btn.get_style_context().add_class("nav-back-button")
+        exit_btn.connect("clicked", lambda x: Gtk.main_quit())
+        btn_box.pack_start(exit_btn, False, False, 0)
 
     left_content.pack_start(btn_box, False, False, 0)
 
