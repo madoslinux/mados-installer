@@ -15,9 +15,10 @@ KERNEL="linux-zen"
 if [ ! -s /boot/vmlinuz-${KERNEL} ] || [ ! -r /boot/vmlinuz-${KERNEL} ]; then
     echo "  Kernel missing before mkinitcpio! Recovering..."
     for kdir in /usr/lib/modules/*/; do
-        if [ -r "${kdir}vmlinuz" ]; then
+        kver=$(basename "$kdir")
+        if [[ "$kver" == *"zen"* ]] && [ -r "${kdir}vmlinuz" ]; then
             cp "${kdir}vmlinuz" /boot/vmlinuz-${KERNEL}
-            echo "  Recovered kernel from ${kdir}vmlinuz"
+            echo "  Recovered kernel from ${kdir}vmlinuz (zen kernel)"
             break
         fi
     done
@@ -29,7 +30,7 @@ if [ ! -s /boot/vmlinuz-${KERNEL} ] || [ ! -r /boot/vmlinuz-${KERNEL} ]; then
 fi
 
 echo "  Creating mkinitcpio preset file..."
-cat > /etc/mkinitcpio.d/${KERNEL}.preset <<'EOFPRESET'
+cat > /etc/mkinitcpio.d/${KERNEL}.preset <<EOFPRESET
 ALL_config="/etc/mkinitcpio.conf"
 ALL_kver="/boot/vmlinuz-${KERNEL}"
 PRESETS=('default')
