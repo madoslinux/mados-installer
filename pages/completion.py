@@ -197,7 +197,24 @@ def _create_qr_section(app):
                 os.unlink(f.name)
         except Exception as e:
             print(f"Warning: Could not generate local QR: {e}")
-            qr_image.set_from_icon_name("dialog-error", 6)
+            try:
+                import urllib.request
+                qr_api_url = (
+                    f"https://api.qrserver.com/v1/create-qr-code/"
+                    f"?size=300x300&data={urllib.parse.quote(decoder_url)}"
+                )
+                with urllib.request.urlopen(qr_api_url, timeout=15) as response:
+                    img_data = response.read()
+                with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                    f.write(img_data)
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(f.name, 300, 300, True)
+                    qr_image.set_from_pixbuf(pixbuf)
+                    os.unlink(f.name)
+                print("QR: generated via API fallback")
+            except Exception as e2:
+                print(f"Warning: QR API fallback also failed: {e2}")
+                qr_image.set_from_icon_name("dialog-information", 6)
+                qr_image.set_pixel_size(100)
 
         qr_image.set_halign(Gtk.Align.CENTER)
         box.pack_start(qr_image, False, False, 0)
