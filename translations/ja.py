@@ -54,6 +54,7 @@ TRANSLATIONS = {
         "pwd_confirm_label": "パスワード確認:",
         "hostname": "ホスト名:",
         "regional": "地域設定",
+        "keyboard": "キーボード",
         "timezone": "タイムゾーン:",
         "locale_label": "システム言語:",
         "summary": "インストール概要",

@@ -4,7 +4,7 @@ madOS Installer - Regional settings (locale/timezone) page
 
 from gi.repository import Gtk
 
-from config import TIMEZONES, NORD_POLAR_NIGHT, NORD_SNOW_STORM, NORD_FROST
+from config import TIMEZONES, KEYBOARDS, NORD_POLAR_NIGHT, NORD_SNOW_STORM, NORD_FROST
 from pages.base import create_page_header, create_nav_buttons
 
 
@@ -82,6 +82,30 @@ def create_locale_page(app):
 
     content.pack_start(tz_card, False, False, 0)
 
+    # Keyboard layout card
+    kb_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+    kb_card.get_style_context().add_class("content-card")
+    kb_card.set_margin_top(8)
+    kb_card.set_hexpand(True)
+
+    kb_label = Gtk.Label()
+    kb_label.set_markup(
+        f'<span size="9000" weight="bold" foreground="{NORD_FROST["nord8"]}">'
+        f"{app.t('keyboard').rstrip(':')}</span>"
+    )
+    kb_label.set_halign(Gtk.Align.START)
+    kb_card.pack_start(kb_label, False, False, 0)
+
+    app.keyboard_combo = Gtk.ComboBoxText()
+    for kb_code, kb_name in KEYBOARDS:
+        app.keyboard_combo.append_text(f"{kb_name} ({kb_code})")
+    app.keyboard_combo.set_active(0)
+    app.keyboard_combo.set_margin_start(24)
+    app.keyboard_combo.set_margin_end(8)
+    kb_card.pack_start(app.keyboard_combo, False, False, 0)
+
+    content.pack_start(kb_card, False, False, 0)
+
     # Navigation
     nav = create_nav_buttons(
         app, lambda x: app.notebook.prev_page(), lambda x: _on_locale_next(app)
@@ -96,6 +120,8 @@ def create_locale_page(app):
 def _on_locale_next(app):
     """Save locale data and advance to summary"""
     app.install_data["timezone"] = app.timezone_combo.get_active_text()
+    kb_code, _ = KEYBOARDS[app.keyboard_combo.get_active()]
+    app.install_data["keyboard"] = kb_code
     # Trigger summary update before showing the page
     from .summary import update_summary
 

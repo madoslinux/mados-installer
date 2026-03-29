@@ -54,6 +54,7 @@ TRANSLATIONS = {
         "pwd_confirm_label": "确认密码:",
         "hostname": "主机名:",
         "regional": "区域设置",
+        "keyboard": "键盘",
         "timezone": "时区:",
         "locale_label": "系统语言:",
         "summary": "安装摘要",

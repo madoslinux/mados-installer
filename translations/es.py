@@ -54,6 +54,7 @@ TRANSLATIONS = {
         "pwd_confirm_label": "Confirmar Contraseña:",
         "hostname": "Nombre del equipo:",
         "regional": "Configuración Regional",
+        "keyboard": "Teclado",
         "timezone": "Zona horaria:",
         "locale_label": "Idioma del sistema:",
         "summary": "Resumen de Instalación",
