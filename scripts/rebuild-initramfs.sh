@@ -8,6 +8,8 @@ echo "  Removing archiso-specific mkinitcpio configs..."
 pacman -Rdd --noconfirm mkinitcpio-archiso 2>/dev/null || true
 rm -f /etc/mkinitcpio.conf.d/archiso.conf
 rm -f /etc/mkinitcpio.d/linux.preset
+rm -f /etc/mkinitcpio.d/linux-zen.preset
+rm -f /etc/mkinitcpio.d/linux-lts.preset
 
 if [ ! -s /boot/vmlinuz-linux ] || [ ! -r /boot/vmlinuz-linux ]; then
     echo "  Kernel missing before mkinitcpio! Recovering..."
