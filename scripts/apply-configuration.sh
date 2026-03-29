@@ -65,12 +65,14 @@ EOF
 
 mkdir -p /etc/greetd
 cat > /etc/greetd/config.toml <<'EOFGREETD'
-[terminal]
-vt = 1
+[environment]
+XDG_SESSION_TYPE = "wayland"
+XDG_CURRENT_DESKTOP = "niri"
+WAYLAND_DISPLAY = "wayland-0"
 
 [default_session]
-command = "/usr/local/bin/cage-greeter"
-user = "greeter"
+command = "/usr/local/bin/niri-session"
+user = "mados"
 EOFGREETD
 
 cat > /etc/greetd/regreet.toml <<'EOFREGREET'
@@ -265,14 +267,7 @@ else
     GRAPHICAL_OK=0
 fi
 
-if [ -f /etc/greetd/regreet.toml ]; then
-    echo "  ✓ regreet config exists"
-else
-    echo "  ✗ regreet.toml NOT found — greeter UI may fail"
-    GRAPHICAL_OK=0
-fi
-
-for session_file in /usr/share/wayland-sessions/sway.desktop /usr/share/wayland-sessions/hyprland.desktop; do
+for session_file in /usr/share/wayland-sessions/niri.desktop /usr/share/wayland-sessions/sway.desktop /usr/share/wayland-sessions/hyprland.desktop; do
     if [ -f "$session_file" ]; then
         if grep -q "/usr/local/bin/" "$session_file"; then
             echo "  ✓ $session_file has madOS session script"
