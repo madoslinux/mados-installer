@@ -65,14 +65,12 @@ EOF
 
 mkdir -p /etc/greetd
 cat > /etc/greetd/config.toml <<'EOFGREETD'
-[environment]
-XDG_SESSION_TYPE = "wayland"
-XDG_CURRENT_DESKTOP = "niri"
-WAYLAND_DISPLAY = "wayland-0"
+[terminal]
+vt = 1
 
 [default_session]
-command = "/usr/local/bin/niri-session"
-user = "mados"
+command = "/usr/bin/regreet"
+user = "greeter"
 EOFGREETD
 
 cat > /etc/greetd/regreet.toml <<'EOFREGREET'
