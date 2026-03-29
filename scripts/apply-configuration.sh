@@ -104,10 +104,9 @@ chown greeter:greeter /var/lib/greetd
 mkdir -p /etc/systemd/system/greetd.service.d
 cat > /etc/systemd/system/greetd.service.d/override.conf <<'EOFOVERRIDE'
 [Unit]
-After=systemd-logind.service
+After=systemd-logind.service systemd-user-sessions.service
 Wants=systemd-logind.service
 Conflicts=getty@tty1.service
-After=getty@tty1.service
 EOFOVERRIDE
 
 install -d -o "$USERNAME" -g "$USERNAME" /home/"$USERNAME"/.config/{sway,hypr,waybar,foot,wofi,gtk-3.0,gtk-4.0}
