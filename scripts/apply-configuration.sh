@@ -125,6 +125,36 @@ if [ -f /etc/skel/.zshrc ]; then
     chown "$USERNAME":"$USERNAME" /home/"$USERNAME"/.zshrc
 fi
 
+# ════════════════════════════════════════════════════════════════════════════
+# Yay (AUR helper) - Install to user home from system binary
+# ════════════════════════════════════════════════════════════════════════════
+install_yay_to_user() {
+    local yay_src="/usr/local/bin/yay"
+    local yay_bin="/home/$USERNAME/.local/bin/yay"
+
+    if command -v yay &>/dev/null; then
+        echo "  ✓ yay available system-wide"
+        return 0
+    fi
+
+    if [ ! -f "$yay_src" ]; then
+        echo "  ⚠ yay binary not found in /usr/local/bin"
+        return 1
+    fi
+
+    mkdir -p "/home/$USERNAME/.local/bin"
+    if [ ! -f "$yay_bin" ]; then
+        cp "$yay_src" "$yay_bin"
+        chmod +x "$yay_bin"
+        chown "$USERNAME:$USERNAME" "$yay_bin"
+        echo "  ✓ yay installed to $yay_bin"
+    else
+        echo "  ✓ yay already in user home"
+    fi
+}
+
+install_yay_to_user
+
 mkdir -p /etc/mados
 cat > /etc/mados/ventoy-persist.conf << EOFVENTOY
 # madOS Persistence Configuration
