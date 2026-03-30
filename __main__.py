@@ -12,7 +12,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
-from app import MadOSInstaller
+from mados_installer import MadOSInstaller
 
 
 def main():

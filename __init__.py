@@ -9,7 +9,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
-from app import MadOSInstaller
+from mados_installer import MadOSInstaller
 
 __app_name__ = "madOS Installer"
 __version__ = "1.0.0"

@@ -15,13 +15,14 @@ pkg = importlib.util.module_from_spec(spec)
 sys.modules['mados_installer'] = pkg
 spec.loader.exec_module(pkg)
 
-submodules = ['app', 'config', 'theme', 'translations', 'utils']
+submodules = ['mados_installer', 'config', 'theme', 'translations', 'utils']
 for name in submodules:
     filepath = f'{pkg_dir}/{name}.py'
-    spec = importlib.util.spec_from_file_location(f'mados_installer.{name}', filepath)
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules[f'mados_installer.{name}'] = mod
-    spec.loader.exec_module(mod)
+    if os.path.exists(filepath):
+        spec = importlib.util.spec_from_file_location(f'mados_installer.{name}', filepath)
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules[f'mados_installer.{name}'] = mod
+        spec.loader.exec_module(mod)
 
 for subdir in ['installer', 'pages', 'translations']:
     subdir_path = f'{pkg_dir}/{subdir}'
@@ -36,7 +37,7 @@ for subdir in ['installer', 'pages', 'translations']:
                 sys.modules[f'mados_installer.{subdir}.{modname}'] = mod
                 spec.loader.exec_module(mod)
 
-from mados_installer.app import MadOSInstaller
+from mados_installer.mados_installer import MadOSInstaller
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
