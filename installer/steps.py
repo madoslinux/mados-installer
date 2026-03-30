@@ -88,30 +88,43 @@ def _ensure_kernel_in_target(app):
         log_message(app, "  Copied kernel from /boot/vmlinuz-linux-mados-zen")
         return
 
-    # Try modules directory (archiso format with vmlinuz inside)
+    # Try modules directory - ONLY copy madOS kernels (filter by "mados-zen")
     for vmlinuz in sorted(globmod.glob("/usr/lib/modules/*/vmlinuz"), reverse=True):
-        if os.path.isfile(vmlinuz) and os.access(vmlinuz, os.R_OK):
+        if "mados-zen" in vmlinuz and os.path.isfile(vmlinuz) and os.access(vmlinuz, os.R_OK):
             subprocess.run(["cp", vmlinuz, target_kernel], check=True)
             log_message(app, f"  Copied kernel from {vmlinuz}")
             return
 
+    # Try /boot/vmlinuz-linux as last resort (only if it contains "mados-zen")
+    # Skip if it doesn't exist or is a non-mados kernel
     if os.path.isfile("/boot/vmlinuz-linux") and os.access(
         "/boot/vmlinuz-linux", os.R_OK
     ):
-        subprocess.run(["cp", "/boot/vmlinuz-linux", target_kernel], check=True)
-        log_message(app, "  Copied kernel from /boot/vmlinuz-linux")
-        return
+        # Only copy if it's the madOS kernel (not standard Arch linux)
+        with open("/boot/vmlinuz-linux", "rb") as f:
+            header = f.read(512)
+            # Check for madOS kernel signature or skip
+            if b"mados" in header.lower() or b"linux-mados" in header.lower():
+                subprocess.run(["cp", "/boot/vmlinuz-linux", target_kernel], check=True)
+                log_message(app, "  Copied kernel from /boot/vmlinuz-linux (madOS)")
+                return
+            else:
+                log_message(app, "  Skipping /boot/vmlinuz-linux (not a madOS kernel)")
+                # Don't fall through to other options - raise error instead
+                raise RuntimeError("madOS kernel not found in live system")
 
+    # Try /mnt modules directory - ONLY copy madOS kernels
     for vmlinuz in sorted(globmod.glob("/mnt/usr/lib/modules/*/vmlinuz"), reverse=True):
-        if os.path.isfile(vmlinuz) and os.access(vmlinuz, os.R_OK):
+        if "mados-zen" in vmlinuz and os.path.isfile(vmlinuz) and os.access(vmlinuz, os.R_OK):
             subprocess.run(["cp", vmlinuz, target_kernel], check=True)
             log_message(app, f"  Copied kernel from {vmlinuz}")
             return
 
     log_message(
         app,
-        "  WARNING: Could not find kernel in live system, chroot will attempt recovery",
+        "  ERROR: Could not find madOS kernel (mados-zen) in live system",
     )
+    raise RuntimeError("madOS kernel not found")
 
 
 def step_partition_disk(app, disk, disk_size_gb):
