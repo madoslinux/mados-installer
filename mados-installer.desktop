@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=madOS Installer
+Comment=System installer
+Exec=/usr/local/bin/mados-installer
+Icon=drive-harddisk-system
+Terminal=false
+Type=Application
+Categories=System;
+StartupWMClass=mados-installer
+StartupNotify=true
