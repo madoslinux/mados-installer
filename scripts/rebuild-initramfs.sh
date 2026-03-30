@@ -13,6 +13,7 @@ rm -f /etc/mkinitcpio.d/linux-lts.preset
 rm -f /etc/mkinitcpio.d/linux-mados-zen.preset
 
 KERNEL="linux-mados-zen"
+
 if [ ! -s /boot/vmlinuz-${KERNEL} ] || [ ! -r /boot/vmlinuz-${KERNEL} ]; then
     echo "  Kernel missing before mkinitcpio! Recovering..."
     for kdir in /usr/lib/modules/*/; do
@@ -30,6 +31,26 @@ if [ ! -s /boot/vmlinuz-${KERNEL} ] || [ ! -r /boot/vmlinuz-${KERNEL} ]; then
     pacman -Sy --noconfirm ${KERNEL} || { echo "FATAL: Failed to install kernel"; exit 1; }
 fi
 
+echo "  Detecting installed kernel versions in target system..."
+ls /lib/modules/ 2>/dev/null || echo "  No kernel modules found"
+
+TARGET_KVER=""
+for kver in /lib/modules/*/; do
+    kver_name=$(basename "$kver")
+    if [[ "$kver_name" == *"mados-zen"* ]]; then
+        TARGET_KVER="$kver_name"
+        echo "  Found target kernel: $TARGET_KVER"
+        break
+    fi
+done
+
+if [ -z "$TARGET_KVER" ]; then
+    echo "  ERROR: No mados-zen kernel modules found in /lib/modules"
+    echo "  Available kernels:"
+    ls /lib/modules/ 2>/dev/null || echo "  (none)"
+    exit 1
+fi
+
 echo "  Creating mkinitcpio preset file..."
 cat > /etc/mkinitcpio.d/${KERNEL}.preset <<EOFPRESET
 ALL_config="/etc/mkinitcpio.conf"
@@ -39,41 +60,34 @@ default_image="/boot/initramfs-${KERNEL}.img"
 fallback_image="/boot/initramfs-${KERNEL}-fallback.img"
 EOFPRESET
 
-echo "  Detecting loaded kernel modules for initramfs..."
-MODULES=$(lsmod | awk 'NR>1 {print $1}' | tr '\n' ' ')
+echo "  Backing up and replacing mkinitcpio.conf..."
+cp /etc/mkinitcpio.conf /etc/mkinitcpio.conf.bak 2>/dev/null || true
 
 CORE_STORAGE="nvme ahci xhci_pci usb_storage virtio_scsi sd_mod sr_mod"
 CORE_FS="btrfs ext4 xfs vfat fat"
 
-if [ -n "$MODULES" ]; then
-    echo "  Modules from live system: ${MODULES}"
-    echo "  Adding core modules: ${CORE_STORAGE} ${CORE_FS}"
-    echo "MODULES=\"${MODULES} ${CORE_STORAGE} ${CORE_FS}\"" >> /etc/mkinitcpio.conf
-else
-    echo "  No modules from lsmod, adding core only: ${CORE_STORAGE} ${CORE_FS}"
-    echo "MODULES=\"${CORE_STORAGE} ${CORE_FS}\"" >> /etc/mkinitcpio.conf
-fi
+cat > /etc/mkinitcpio.conf <<EOFMKINIT
+MODULES="${CORE_STORAGE} ${CORE_FS}"
+BINARIES=""
+HOOKS="base systemd udev microcode modconf kms plymouth block filesystems keyboard fsck"
+EOFMKINIT
 
-echo "  Current /etc/mkinitcpio.conf content:"
-grep -v '^#' /etc/mkinitcpio.conf | grep -v '^$' | sed 's/^/    /'
+echo "  New /etc/mkinitcpio.conf content:"
+cat /etc/mkinitcpio.conf | sed 's/^/    /'
 
 sync
-echo "  Running mkinitcpio -P..."
-if ! mkinitcpio -P 2>&1; then
-    echo "  ERROR: mkinitcpio -P failed"
-    exit 1
-fi
-
-if [ ! -f /boot/initramfs-${KERNEL}.img ]; then
-    echo "  WARNING: initramfs not created, trying fallback preset..."
-    mkinitcpio -p ${KERNEL} 2>&1 || { echo "FATAL: mkinitcpio -p ${KERNEL} failed"; exit 1; }
+echo "  Running mkinitcpio for ${KERNEL}..."
+if ! mkinitcpio -p ${KERNEL} 2>&1; then
+    echo "  ERROR: mkinitcpio -p ${KERNEL} failed"
+    echo "  Trying mkinitcpio with explicit kernel version..."
+    mkinitcpio -k "/boot/vmlinuz-${KERNEL}" -g /boot/initramfs-${KERNEL}.img 2>&1 || { echo "FATAL: mkinitcpio failed"; exit 1; }
 fi
 
 if [ -f /boot/initramfs-${KERNEL}.img ]; then
     INITRAMFS_SIZE=$(du -h /boot/initramfs-${KERNEL}.img | cut -f1)
     echo "  Initramfs created: /boot/initramfs-${KERNEL}.img (${INITRAMFS_SIZE})"
 else
-    echo "  ERROR: initramfs still not created!"
+    echo "  ERROR: initramfs not created!"
     exit 1
 fi
 
