@@ -67,7 +67,7 @@ def _copy_item(src, dst):
 
 def _ensure_kernel_in_target(app):
     """Ensure /mnt/boot/vmlinuz-linux exists before entering the chroot."""
-    target_kernel = "/mnt/boot/vmlinuz-linux"
+    target_kernel = "/mnt/boot/vmlinuz-linux-mados-zen"
 
     if (
         os.path.isfile(target_kernel)
@@ -78,6 +78,17 @@ def _ensure_kernel_in_target(app):
 
     log_message(app, "  Kernel not found in target /boot, copying from live system...")
 
+    # First, try madOS kernel in /boot
+    if os.path.isfile("/boot/vmlinuz-linux-mados-zen") and os.access(
+        "/boot/vmlinuz-linux-mados-zen", os.R_OK
+    ):
+        subprocess.run(
+            ["cp", "/boot/vmlinuz-linux-mados-zen", target_kernel], check=True
+        )
+        log_message(app, "  Copied kernel from /boot/vmlinuz-linux-mados-zen")
+        return
+
+    # Try modules directory (archiso format with vmlinuz inside)
     for vmlinuz in sorted(globmod.glob("/usr/lib/modules/*/vmlinuz"), reverse=True):
         if os.path.isfile(vmlinuz) and os.access(vmlinuz, os.R_OK):
             subprocess.run(["cp", vmlinuz, target_kernel], check=True)
