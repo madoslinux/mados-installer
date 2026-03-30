@@ -10,22 +10,23 @@ rm -f /etc/mkinitcpio.conf.d/archiso.conf
 rm -f /etc/mkinitcpio.d/linux.preset
 rm -f /etc/mkinitcpio.d/linux-zen.preset
 rm -f /etc/mkinitcpio.d/linux-lts.preset
+rm -f /etc/mkinitcpio.d/linux-mados-zen.preset
 
-KERNEL="linux-zen"
+KERNEL="linux-mados-zen"
 if [ ! -s /boot/vmlinuz-${KERNEL} ] || [ ! -r /boot/vmlinuz-${KERNEL} ]; then
     echo "  Kernel missing before mkinitcpio! Recovering..."
     for kdir in /usr/lib/modules/*/; do
         kver=$(basename "$kdir")
-        if [[ "$kver" == *"zen"* ]] && [ -r "${kdir}vmlinuz" ]; then
+        if [[ "$kver" == *"mados-zen"* ]] && [ -r "${kdir}vmlinuz" ]; then
             cp "${kdir}vmlinuz" /boot/vmlinuz-${KERNEL}
-            echo "  Recovered kernel from ${kdir}vmlinuz (zen kernel)"
+            echo "  Recovered kernel from ${kdir}vmlinuz (mados-zen kernel)"
             break
         fi
     done
 fi
 
 if [ ! -s /boot/vmlinuz-${KERNEL} ] || [ ! -r /boot/vmlinuz-${KERNEL} ]; then
-    echo "  ERROR: Could not find kernel image. Reinstalling linux-zen package..."
+    echo "  ERROR: Could not find kernel image. Reinstalling linux-mados-zen package..."
     pacman -Sy --noconfirm ${KERNEL} || { echo "FATAL: Failed to install kernel"; exit 1; }
 fi
 

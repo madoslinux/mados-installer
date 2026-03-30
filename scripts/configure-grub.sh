@@ -29,10 +29,10 @@ menuentry 'madOS Linux' {
     insmod part_gpt
     insmod ext2
     search --no-floppy --fs-uuid --set=root $ROOT_UUID
-    echo        'Loading Linux linux-zen ...'
-    linux       /vmlinuz-linux-zen root=UUID=$ROOT_UUID rw zswap.enabled=0 splash quiet
+    echo        'Loading Linux linux-mados-zen ...'
+    linux       /vmlinuz-linux-mados-zen root=UUID=$ROOT_UUID rw zswap.enabled=0 splash quiet
     echo        'Loading initial ramdisk ...'
-    initrd      /initramfs-linux-zen.img
+    initrd      /initramfs-linux-mados-zen.img
 }
 EOFGRUB
 fi
