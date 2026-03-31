@@ -15,7 +15,7 @@ from config import (
     NORD_AURORA,
 )
 from utils import show_error, style_dialog
-from pages.base import create_page_header, create_nav_buttons
+from .base import create_page_header, create_nav_buttons
 
 
 def create_disk_page(app):

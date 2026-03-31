@@ -13,7 +13,7 @@ from gi.repository import Gtk, GLib, GdkPixbuf
 from config import DEMO_MODE, NORD_FROST
 from utils import log_message, set_progress, show_error, save_log_to_file
 
-from pages.base import create_page_header
+from .base import create_page_header
 from installer import (
     step_partition_disk,
     step_format_partitions,

@@ -5,7 +5,7 @@ madOS Installer - Partitioning scheme page (Btrfs with subvolumes for OTA)
 from gi.repository import Gtk, GLib
 
 from config import NORD_POLAR_NIGHT, NORD_SNOW_STORM, NORD_AURORA
-from pages.base import create_page_header, create_nav_buttons
+from .base import create_page_header, create_nav_buttons
 
 
 def _get_partition_prefix(disk):

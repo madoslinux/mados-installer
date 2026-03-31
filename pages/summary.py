@@ -5,7 +5,7 @@ madOS Installer - Installation summary page
 from gi.repository import Gtk
 
 from config import NORD_FROST, NORD_AURORA, NORD_SNOW_STORM
-from pages.base import create_page_header, create_nav_buttons
+from .base import create_page_header, create_nav_buttons
 
 
 def create_summary_page(app):
