@@ -1,22 +1,9 @@
-"""
-madOS Installer - GTK Edition
-An AI-orchestrated Arch Linux system installer
-Beautiful GUI installer with Nord theme and i18n support
-"""
+"""madOS Installer - GTK Edition."""
 
-import gi
-
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-
-from mados_installer import MadOSInstaller
+# Import MadOSInstaller directly from the package's app module
+# This works because when the package is imported, app.py is in the package namespace
+import mados_installer.app
+MadOSInstaller = mados_installer.app.MadOSInstaller
 
 __app_name__ = "madOS Installer"
 __version__ = "1.0.0"
-
-
-def main():
-    """Main entry point"""
-    app = MadOSInstaller()
-    app.connect("destroy", Gtk.main_quit)
-    Gtk.main()
