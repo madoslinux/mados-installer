@@ -31,7 +31,7 @@ def create_summary_page(app):
     content.pack_start(app.summary_container, True, False, 0)
 
     # Navigation
-    from .installation import on_start_installation
+    from installation import on_start_installation
 
     nav = create_nav_buttons(
         app,

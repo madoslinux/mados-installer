@@ -2,7 +2,7 @@
 madOS Installer - Installation package
 """
 
-from .steps import (
+from installer.steps import (
     step_partition_disk,
     step_format_partitions,
     step_create_btrfs_subvolumes,
@@ -26,7 +26,7 @@ from .steps import (
     step_install_nvidia_if_needed,
 )
 
-from .config_script import (
+from installer.config_script import (
     build_config_script,
     write_config_script,
 )

@@ -123,7 +123,7 @@ def _on_locale_next(app):
     kb_code, _ = KEYBOARDS[app.keyboard_combo.get_active()]
     app.install_data["keyboard"] = kb_code
     # Trigger summary update before showing the page
-    from .summary import update_summary
+    from summary import update_summary
 
     update_summary(app)
     app.notebook.next_page()
