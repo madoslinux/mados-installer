@@ -108,6 +108,13 @@ def _ensure_kernel_in_target(app):
             log_message(app, f"  Copied kernel from {vmlinuz}")
             return
 
+    # Fallback: try to find kernel image in /lib/modules/*/vmlinuz (Arch standard location)
+    for vmlinuz in sorted(globmod.glob("/lib/modules/*/vmlinuz"), reverse=True):
+        if "mados-zen" in vmlinuz and os.path.isfile(vmlinuz) and os.access(vmlinuz, os.R_OK):
+            subprocess.run(["cp", vmlinuz, target_kernel], check=True)
+            log_message(app, f"  Copied kernel from {vmlinuz}")
+            return
+
     # Try /boot/vmlinuz-linux as last resort (only if it contains "mados-zen")
     # Skip if it doesn't exist or is a non-mados kernel
     if os.path.isfile("/boot/vmlinuz-linux") and os.access(
