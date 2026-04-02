@@ -72,11 +72,11 @@ echo "[PROGRESS 2/8] Creating user account..."
 echo "  Cleaning live ISO artifacts..."
 /usr/local/bin/clean-live-artifacts.sh
 
-echo "[PROGRESS 3/8] Installing GRUB bootloader..."
-/usr/local/bin/setup-bootloader.sh "$DISK"
+echo "[PROGRESS 3/8] Installing Limine bootloader..."
+/usr/local/bin/setup-limine.sh "$DISK"
 
-echo "[PROGRESS 4/8] Configuring GRUB..."
-/usr/local/bin/configure-grub.sh "$ROOT_PART"
+echo "[PROGRESS 4/8] Configuring Limine..."
+/usr/local/bin/configure-limine.sh "$ROOT_PART"
 
 echo "[PROGRESS 5/8] Setting up Plymouth boot splash..."
 /usr/local/bin/setup-plymouth.sh
