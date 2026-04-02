@@ -264,7 +264,7 @@ def _run_installation(app):
 
 
 def _handle_installation_error(app, error_msg):
-    """Save log to file, show error on completion page, then show completion page."""
+    """Save log to file and show dedicated error page with QR."""
     log_path = save_log_to_file(app)
     if log_path:
         log_message(app, f"Error log saved to: {log_path}")
@@ -272,9 +272,17 @@ def _handle_installation_error(app, error_msg):
 
     app.installation_error = error_msg
 
-    _add_qr_to_completion(app, log_path)
+    if hasattr(app, "error_info_label") and app.error_info_label:
+        app.error_info_label.set_markup(
+            f'<span size="9000" foreground="#dc7878">{error_msg}</span>'
+        )
 
-    app.notebook.next_page()
+    _add_qr_to_completion(app, log_path, error_page=True)
+
+    if hasattr(app, "error_page_index"):
+        app.notebook.set_current_page(app.error_page_index)
+    else:
+        app.notebook.next_page()
     return False
 
 
@@ -287,14 +295,14 @@ def _finish_installation(app):
         log_message(app, f"\nLog saved to: {log_path}")
     app.install_spinner.stop()
 
-    log_message(app, f"QR: about to call _add_qr_to_completion, DEMO_MODE={DEMO_MODE}")
-    _add_qr_to_completion(app, log_path)
-
-    app.notebook.next_page()
+    if hasattr(app, "success_page_index"):
+        app.notebook.set_current_page(app.success_page_index)
+    else:
+        app.notebook.next_page()
     return False
 
 
-def _add_qr_to_completion(app, log_path):
+def _add_qr_to_completion(app, log_path, error_page=False):
     """Add QR code section to completion page after installation."""
     log_message(app, f"QR: _add_qr_to_completion started, log_path={log_path}")
     log_message(app, f"QR: qr_container exists={hasattr(app, 'qr_container')}")
@@ -326,12 +334,20 @@ def _add_qr_to_completion(app, log_path):
         decoder_url = log_mod.generate_decoder_url(compressed)
         qr_box = _build_qr_box(app, decoder_url, stats)
 
-        if hasattr(app, "qr_container") and app.qr_container:
-            app.qr_container.pack_start(qr_box, False, False, 0)
-            app.qr_container.show_all()
-            log_message(app, "QR: added to completion page")
+        target_container = None
+        if error_page and hasattr(app, "qr_error_container"):
+            target_container = app.qr_error_container
+        elif not error_page and hasattr(app, "qr_container"):
+            target_container = app.qr_container
+
+        if target_container:
+            for child in target_container.get_children():
+                target_container.remove(child)
+            target_container.pack_start(qr_box, False, False, 0)
+            target_container.show_all()
+            log_message(app, "QR: added to target completion page")
         else:
-            log_message(app, "QR: qr_container not found on app")
+            log_message(app, "QR: target container not found on app")
     except Exception as e:
         log_message(app, f"QR exception: {e}")
 

@@ -44,6 +44,7 @@ from pages import (
     create_summary_page,
     create_installation_page,
     create_completion_page,
+    create_error_page,
 )
 from pages.partitioning import refresh_partitioning_content
 
@@ -154,6 +155,7 @@ class MadOSInstaller(Gtk.Window):
         create_summary_page(self)
         create_installation_page(self)
         create_completion_page(self)
+        create_error_page(self)
 
     def _on_page_switch(self, notebook, page, page_num):
         """Refresh page content when switching to it"""

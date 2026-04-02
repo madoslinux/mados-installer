@@ -9,7 +9,7 @@ from .user import create_user_page
 from .locale import create_locale_page
 from .summary import create_summary_page
 from .installation import create_installation_page
-from .completion import create_completion_page
+from .completion import create_completion_page, create_error_page
 
 __all__ = [
     "create_welcome_page",
@@ -20,4 +20,5 @@ __all__ = [
     "create_summary_page",
     "create_installation_page",
     "create_completion_page",
+    "create_error_page",
 ]
