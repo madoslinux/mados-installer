@@ -63,11 +63,14 @@ EOFPRESET
 echo "  Backing up and replacing mkinitcpio.conf..."
 cp /etc/mkinitcpio.conf /etc/mkinitcpio.conf.bak 2>/dev/null || true
 
-CORE_STORAGE="nvme ahci xhci_pci usb_storage virtio_scsi sd_mod sr_mod"
-CORE_FS="btrfs ext4 xfs vfat fat"
+echo "  Using mkinitcpio autodetect mode (MODULES=\"\")"
+DETECTED_MODULES=$(lsmod 2>/dev/null | awk 'NR>1 {print $1}' | tr '\n' ' ' | xargs || true)
+if [ -n "$DETECTED_MODULES" ]; then
+    echo "  Live modules detected (informational): $DETECTED_MODULES"
+fi
 
 cat > /etc/mkinitcpio.conf <<EOFMKINIT
-MODULES="${CORE_STORAGE} ${CORE_FS}"
+MODULES=""
 BINARIES=""
 HOOKS="base systemd udev microcode modconf kms plymouth block filesystems keyboard fsck"
 EOFMKINIT
@@ -77,15 +80,28 @@ cat /etc/mkinitcpio.conf | sed 's/^/    /'
 
 sync
 echo "  Running mkinitcpio for ${KERNEL}..."
-if ! mkinitcpio -p ${KERNEL} 2>&1; then
-    echo "  ERROR: mkinitcpio -p ${KERNEL} failed"
-    echo "  Trying mkinitcpio with explicit kernel version..."
-    mkinitcpio -k "/boot/vmlinuz-${KERNEL}" -g /boot/initramfs-${KERNEL}.img 2>&1 || { echo "FATAL: mkinitcpio failed"; exit 1; }
+mkinit_ok=0
+if mkinitcpio -p ${KERNEL} 2>&1; then
+    mkinit_ok=1
+else
+    echo "  WARNING: mkinitcpio -p ${KERNEL} returned non-zero"
 fi
 
-if [ -f /boot/initramfs-${KERNEL}.img ]; then
+if [ ! -s /boot/initramfs-${KERNEL}.img ]; then
+    echo "  Trying mkinitcpio with explicit kernel version..."
+    if mkinitcpio -k "/boot/vmlinuz-${KERNEL}" -c /etc/mkinitcpio.conf -g /boot/initramfs-${KERNEL}.img 2>&1; then
+        mkinit_ok=1
+    else
+        echo "  WARNING: explicit mkinitcpio command returned non-zero"
+    fi
+fi
+
+if [ -s /boot/initramfs-${KERNEL}.img ]; then
     INITRAMFS_SIZE=$(du -h /boot/initramfs-${KERNEL}.img | cut -f1)
     echo "  Initramfs created: /boot/initramfs-${KERNEL}.img (${INITRAMFS_SIZE})"
+    if [ "$mkinit_ok" -eq 0 ]; then
+        echo "  WARNING: mkinitcpio returned non-zero, but initramfs image was created"
+    fi
 else
     echo "  ERROR: initramfs not created!"
     exit 1

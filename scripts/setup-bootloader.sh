@@ -11,6 +11,11 @@ fi
 
 echo "[3/8] Installing GRUB bootloader..."
 
+if ! command -v grub-install >/dev/null 2>&1; then
+    echo "ERROR: grub-install not found. Ensure the 'grub' package is installed."
+    exit 1
+fi
+
 if [ -d /sys/firmware/efi ]; then
     echo "==> Detected UEFI boot mode"
     

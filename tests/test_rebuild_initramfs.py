@@ -60,11 +60,11 @@ ahci                   40960  1"""
             script_content = f.read()
 
         self.assertIn("lsmod", script_content)
-        self.assertIn("MODULES=", script_content)
+        self.assertIn('MODULES=""', script_content)
         self.assertIn("/etc/mkinitcpio.conf", script_content)
 
     def test_script_adds_modules_before_mkinitcpio(self):
-        """Test that MODULES are added to mkinitcpio.conf before mkinitcpio -P"""
+        """Test that MODULES config is written before mkinitcpio command"""
         script_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
             "scripts",
@@ -78,17 +78,19 @@ ahci                   40960  1"""
         mkinitcpio_line = None
 
         for i, line in enumerate(lines):
-            if "MODULES=" in line and "/etc/mkinitcpio.conf" in line:
+            if "MODULES=\"\"" in line:
                 modules_line = i
-            if "mkinitcpio -P" in line:
+            if "mkinitcpio -p" in line:
                 mkinitcpio_line = i
 
-        self.assertIsNotNone(modules_line, "MODULES line not found in script")
-        self.assertIsNotNone(mkinitcpio_line, "mkinitcpio -P line not found")
+        if modules_line is None:
+            self.fail("MODULES line not found in script")
+        if mkinitcpio_line is None:
+            self.fail("mkinitcpio -p line not found")
         self.assertLess(
             modules_line,
             mkinitcpio_line,
-            "MODULES should be added before mkinitcpio -P",
+            "MODULES should be added before mkinitcpio -p",
         )
 
     def test_empty_lsmod_handled(self):
