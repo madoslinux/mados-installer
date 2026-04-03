@@ -33,6 +33,11 @@ cp /usr/share/limine/limine-bios.sys /boot/limine-bios.sys
 
 if [ -d /sys/firmware/efi ]; then
     echo "==> Detected UEFI boot mode"
+
+    if ! mountpoint -q /sys/firmware/efi/efivars 2>/dev/null; then
+        mount -t efivarfs efivarfs /sys/firmware/efi/efivars 2>/dev/null || true
+    fi
+
     cp /usr/share/limine/BOOTX64.EFI /boot/EFI/BOOT/BOOTX64.EFI
     cp /usr/share/limine/BOOTIA32.EFI /boot/EFI/BOOT/BOOTIA32.EFI 2>/dev/null || true
 
@@ -47,11 +52,12 @@ if [ -d /sys/firmware/efi ]; then
             echo "WARN: Could not create EFI boot entry (NVRAM may be read-only)"
         fi
 
-        BOOT_CURRENT=$(efibootmgr | awk '/BootOrder:/ {print $2}')
-        BOOT_NUM=$(efibootmgr | awk '/madOS Limine/ {gsub("Boot", "", $1); gsub("\*", "", $1); print $1; exit}')
+        BOOTMGR_OUTPUT=$(efibootmgr 2>/dev/null || true)
+        BOOT_CURRENT=$(printf '%s\n' "$BOOTMGR_OUTPUT" | awk '/BootOrder:/ {print $2}')
+        BOOT_NUM=$(printf '%s\n' "$BOOTMGR_OUTPUT" | awk '/madOS Limine/ {gsub("Boot", "", $1); gsub("\*", "", $1); print $1; exit}')
         if [ -n "$BOOT_NUM" ]; then
             if [ -n "$BOOT_CURRENT" ]; then
-                REST=$(echo "$BOOT_CURRENT" | tr ',' '\n' | grep -v "^$BOOT_NUM$" | paste -sd, -)
+                REST=$(echo "$BOOT_CURRENT" | tr ',' '\n' | awk -v boot="$BOOT_NUM" '$0 != boot' | paste -sd, -)
                 if [ -n "$REST" ]; then
                     NEW_ORDER="$BOOT_NUM,$REST"
                 else
