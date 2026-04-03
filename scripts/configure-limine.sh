@@ -20,20 +20,24 @@ fi
 mkdir -p /boot/EFI/BOOT
 
 cat > /boot/limine.conf <<EOF
-TIMEOUT=5
-DEFAULT_ENTRY=1
+timeout: 5
+default_entry: 1
 
-/1) madOS Linux
-    PROTOCOL=linux
-    KERNEL_PATH=boot():/vmlinuz-linux-mados-zen
-    MODULE_PATH=boot():/initramfs-linux-mados-zen.img
-    CMDLINE=root=UUID=${ROOT_UUID} rw zswap.enabled=0 splash quiet plymouth.use-simpledrm=0
+/madOS (Installed)
+    protocol: linux
+    path: boot():/vmlinuz-linux-mados-zen
+    module_path: boot():/initramfs-linux-mados-zen.img
+    cmdline: root=UUID=${ROOT_UUID} rw zswap.enabled=0 splash quiet plymouth.use-simpledrm=0
 
-/2) madOS Linux (Safe Graphics)
-    PROTOCOL=linux
-    KERNEL_PATH=boot():/vmlinuz-linux-mados-zen
-    MODULE_PATH=boot():/initramfs-linux-mados-zen.img
-    CMDLINE=root=UUID=${ROOT_UUID} rw nomodeset zswap.enabled=0 splash quiet
+/madOS (Installed, Safe Graphics)
+    protocol: linux
+    path: boot():/vmlinuz-linux-mados-zen
+    module_path: boot():/initramfs-linux-mados-zen.img
+    cmdline: root=UUID=${ROOT_UUID} rw nomodeset zswap.enabled=0 splash quiet
+
+/UEFI Firmware Settings
+    protocol: efi_boot_entry
+    entry: UEFI Firmware Settings
 EOF
 
 # UEFI fallback search path used by Limine.

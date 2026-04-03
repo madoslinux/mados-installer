@@ -40,6 +40,31 @@ if [ -d /sys/firmware/efi ]; then
         echo "ERROR: /boot/EFI/BOOT/BOOTX64.EFI was not created"
         exit 1
     fi
+
+    # Prefer disk boot first by creating/updating an EFI boot entry.
+    if command -v efibootmgr >/dev/null 2>&1; then
+        if ! efibootmgr --create --disk "$DISK" --part 2 --label "madOS Limine" --loader '\\EFI\\BOOT\\BOOTX64.EFI' >/dev/null 2>&1; then
+            echo "WARN: Could not create EFI boot entry (NVRAM may be read-only)"
+        fi
+
+        BOOT_CURRENT=$(efibootmgr | awk '/BootOrder:/ {print $2}')
+        BOOT_NUM=$(efibootmgr | awk '/madOS Limine/ {gsub("Boot", "", $1); gsub("\*", "", $1); print $1; exit}')
+        if [ -n "$BOOT_NUM" ]; then
+            if [ -n "$BOOT_CURRENT" ]; then
+                REST=$(echo "$BOOT_CURRENT" | tr ',' '\n' | grep -v "^$BOOT_NUM$" | paste -sd, -)
+                if [ -n "$REST" ]; then
+                    NEW_ORDER="$BOOT_NUM,$REST"
+                else
+                    NEW_ORDER="$BOOT_NUM"
+                fi
+                efibootmgr -o "$NEW_ORDER" >/dev/null 2>&1 || echo "WARN: Could not set BootOrder"
+            else
+                efibootmgr -o "$BOOT_NUM" >/dev/null 2>&1 || echo "WARN: Could not set BootOrder"
+            fi
+        fi
+    else
+        echo "WARN: efibootmgr not available; skipping UEFI BootOrder update"
+    fi
 fi
 
 echo "==> Installing Limine BIOS stages to $DISK"
