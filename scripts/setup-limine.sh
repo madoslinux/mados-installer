@@ -1,6 +1,8 @@
 #!/bin/bash
 # madOS - Setup Limine bootloader (BIOS + UEFI)
-set -euo pipefail
+set -Eeuo pipefail
+
+trap 'echo "ERROR: setup-limine.sh failed at line ${LINENO}: ${BASH_COMMAND}"' ERR
 
 DISK="${1:-}"
 
@@ -48,8 +50,9 @@ if [ -d /sys/firmware/efi ]; then
 
     # Prefer disk boot first by creating/updating an EFI boot entry.
     if command -v efibootmgr >/dev/null 2>&1; then
-        if ! efibootmgr --create --disk "$DISK" --part 2 --label "madOS Limine" --loader '\\EFI\\BOOT\\BOOTX64.EFI' >/dev/null 2>&1; then
+        if ! EFIBOOT_CREATE_OUTPUT=$(efibootmgr --create --disk "$DISK" --part 2 --label "madOS Limine" --loader '\\EFI\\BOOT\\BOOTX64.EFI' 2>&1); then
             echo "WARN: Could not create EFI boot entry (NVRAM may be read-only)"
+            echo "WARN: efibootmgr output: ${EFIBOOT_CREATE_OUTPUT}"
         fi
 
         BOOTMGR_OUTPUT=$(efibootmgr 2>/dev/null || true)
@@ -63,9 +66,15 @@ if [ -d /sys/firmware/efi ]; then
                 else
                     NEW_ORDER="$BOOT_NUM"
                 fi
-                efibootmgr -o "$NEW_ORDER" >/dev/null 2>&1 || echo "WARN: Could not set BootOrder"
+                if ! EFIBOOT_ORDER_OUTPUT=$(efibootmgr -o "$NEW_ORDER" 2>&1); then
+                    echo "WARN: Could not set BootOrder"
+                    echo "WARN: efibootmgr output: ${EFIBOOT_ORDER_OUTPUT}"
+                fi
             else
-                efibootmgr -o "$BOOT_NUM" >/dev/null 2>&1 || echo "WARN: Could not set BootOrder"
+                if ! EFIBOOT_ORDER_OUTPUT=$(efibootmgr -o "$BOOT_NUM" 2>&1); then
+                    echo "WARN: Could not set BootOrder"
+                    echo "WARN: efibootmgr output: ${EFIBOOT_ORDER_OUTPUT}"
+                fi
             fi
         fi
     else

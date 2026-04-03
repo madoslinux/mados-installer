@@ -5,6 +5,7 @@ madOS Installer - Installation steps
 import glob as globmod
 import os
 import re
+import shlex
 import subprocess
 import time
 
@@ -115,14 +116,22 @@ def _ensure_kernel_in_target(app):
 
     # Try modules directory - ONLY copy madOS kernels (filter by "mados-zen")
     for vmlinuz in sorted(globmod.glob("/usr/lib/modules/*/vmlinuz"), reverse=True):
-        if "mados-zen" in vmlinuz and os.path.isfile(vmlinuz) and os.access(vmlinuz, os.R_OK):
+        if (
+            "mados-zen" in vmlinuz
+            and os.path.isfile(vmlinuz)
+            and os.access(vmlinuz, os.R_OK)
+        ):
             subprocess.run(["cp", vmlinuz, target_kernel], check=True)
             log_message(app, f"  Copied kernel from {vmlinuz}")
             return
 
     # Fallback: try to find kernel image in /lib/modules/*/vmlinuz (Arch standard location)
     for vmlinuz in sorted(globmod.glob("/lib/modules/*/vmlinuz"), reverse=True):
-        if "mados-zen" in vmlinuz and os.path.isfile(vmlinuz) and os.access(vmlinuz, os.R_OK):
+        if (
+            "mados-zen" in vmlinuz
+            and os.path.isfile(vmlinuz)
+            and os.access(vmlinuz, os.R_OK)
+        ):
             subprocess.run(["cp", vmlinuz, target_kernel], check=True)
             log_message(app, f"  Copied kernel from {vmlinuz}")
             return
@@ -146,7 +155,11 @@ def _ensure_kernel_in_target(app):
 
     # Try /mnt modules directory - ONLY copy madOS kernels
     for vmlinuz in sorted(globmod.glob("/mnt/usr/lib/modules/*/vmlinuz"), reverse=True):
-        if "mados-zen" in vmlinuz and os.path.isfile(vmlinuz) and os.access(vmlinuz, os.R_OK):
+        if (
+            "mados-zen" in vmlinuz
+            and os.path.isfile(vmlinuz)
+            and os.access(vmlinuz, os.R_OK)
+        ):
             subprocess.run(["cp", vmlinuz, target_kernel], check=True)
             log_message(app, f"  Copied kernel from {vmlinuz}")
             return
@@ -1085,8 +1098,9 @@ def run_chroot_with_progress(app, config_script_path):
             f"Configuration script at {config_script_path} is empty — write may have failed"
         )
 
+    cmd = ["arch-chroot", "/mnt", "/root/configure.sh"]
     proc = subprocess.Popen(
-        ["arch-chroot", "/mnt", "/root/configure.sh"],
+        cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
@@ -1120,7 +1134,12 @@ def run_chroot_with_progress(app, config_script_path):
 
     proc.wait()
     if proc.returncode != 0:
-        raise subprocess.CalledProcessError(proc.returncode, "arch-chroot")
+        cmd_str = " ".join(shlex.quote(part) for part in cmd)
+        raise subprocess.CalledProcessError(
+            proc.returncode,
+            cmd_str,
+            output=f"arch-chroot failed with exit code {proc.returncode}",
+        )
 
     set_progress(app, progress_end, "System configured")
     log_message(app, "System configuration complete")

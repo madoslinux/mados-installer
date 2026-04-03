@@ -255,12 +255,23 @@ def _run_installation(app):
         GLib.idle_add(_finish_installation, app)
 
     except Exception as e:
-        log_message(app, f"\n[ERROR] {str(e)}")
+        error_msg = str(e)
+        if isinstance(e, subprocess.CalledProcessError):
+            log_message(app, f"\n[ERROR] Command failed: {e.cmd}")
+            log_message(app, f"[ERROR] Exit code: {e.returncode}")
+            if getattr(e, "output", None):
+                log_message(app, f"[ERROR] Output: {e.output}")
+            error_msg = (
+                f"Command failed: {e.cmd} (exit code {e.returncode}). "
+                "Check installer log for detailed command output."
+            )
+        else:
+            log_message(app, f"\n[ERROR] {error_msg}")
         if not DEMO_MODE:
             log_message(app, "Cleaning up after error...")
             subprocess.run(["umount", "-R", "/mnt"], capture_output=True)
         GLib.idle_add(app.install_spinner.stop)
-        GLib.idle_add(_handle_installation_error, app, str(e))
+        GLib.idle_add(_handle_installation_error, app, error_msg)
 
 
 def _handle_installation_error(app, error_msg):
@@ -412,6 +423,7 @@ def _build_qr_box(app, decoder_url, stats):
         log_message(app, f"QR local failed: {e}")
         try:
             import urllib.request
+
             qr_api_url = (
                 f"https://api.qrserver.com/v1/create-qr-code/"
                 f"?size=300x300&data={urllib.parse.quote(decoder_url)}"
