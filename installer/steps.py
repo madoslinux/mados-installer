@@ -1148,6 +1148,12 @@ def run_chroot_with_progress(app, config_script_path):
     if proc.returncode != 0:
         cmd_str = " ".join(shlex.quote(part) for part in cmd)
         output_tail = "\n".join(captured_lines[-40:]) if captured_lines else ""
+
+        if output_tail:
+            log_message(app, "  --- Last output lines before failure ---")
+            for tail_line in output_tail.splitlines():
+                log_message(app, f"  {tail_line}")
+
         raise subprocess.CalledProcessError(
             proc.returncode,
             cmd_str,

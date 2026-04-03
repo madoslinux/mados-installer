@@ -58,7 +58,7 @@ if [ -d /sys/firmware/efi ]; then
 
         BOOTMGR_OUTPUT=$(efibootmgr 2>/dev/null || true)
         BOOT_CURRENT=$(printf '%s\n' "$BOOTMGR_OUTPUT" | awk '/BootOrder:/ {print $2}')
-        BOOT_NUM=$(printf '%s\n' "$BOOTMGR_OUTPUT" | awk '/madOS Limine/ {gsub("Boot", "", $1); gsub("\*", "", $1); print $1; exit}')
+        BOOT_NUM=$(printf '%s\n' "$BOOTMGR_OUTPUT" | awk '/madOS Limine/ {gsub("Boot", "", $1); gsub(/\*/, "", $1); print $1; exit}')
         echo "==> Current UEFI BootOrder: ${BOOT_CURRENT:-<none>}"
         echo "==> madOS Limine BootNum: ${BOOT_NUM:-<not found>}"
         if [ -n "$BOOT_NUM" ]; then
