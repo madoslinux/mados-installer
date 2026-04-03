@@ -17,34 +17,16 @@ is_modern_cpu() {
     [[ "$flags" == *" avx2 "* ]] && [[ "$flags" == *" sse4_2 "* ]]
 }
 
-select_kernel() {
-    if is_modern_cpu && [[ -f /boot/vmlinuz-linux-mados-perf ]]; then
-        echo "linux-mados-perf"
-        return 0
-    fi
+if is_modern_cpu; then
+    KERNEL="linux-mados"
+else
+    KERNEL="linux-mados"
+fi
 
-    if [[ -f /boot/vmlinuz-linux-mados ]]; then
-        echo "linux-mados"
-        return 0
-    fi
-
-    if [[ -f /boot/vmlinuz-linux-mados-perf ]]; then
-        echo "linux-mados-perf"
-        return 0
-    fi
-
-    if [[ -f /boot/vmlinuz-linux-mados-zen ]]; then
-        echo "linux-mados-zen"
-        return 0
-    fi
-
-    return 1
-}
-
-KERNEL=$(select_kernel) || {
-    echo "ERROR: No supported madOS kernel found in /boot"
+if [ ! -f /boot/vmlinuz-${KERNEL} ]; then
+    echo "ERROR: No madOS kernel found in /boot"
     exit 1
-}
+fi
 
 mkdir -p /etc/mados
 echo "$KERNEL" > /etc/mados/default-kernel

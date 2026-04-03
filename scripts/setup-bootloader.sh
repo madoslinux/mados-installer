@@ -68,9 +68,7 @@ if [ -d /sys/firmware/efi ]; then
         for f in \
             /boot/EFI/BOOT/BOOTX64.EFI \
             /boot/EFI/madOS/grubx64.efi \
-            /boot/vmlinuz-linux-mados \
-            /boot/vmlinuz-linux-mados-perf \
-            /boot/vmlinuz-linux-mados-zen; do
+            /boot/vmlinuz-linux-mados; do
             if [ -f "$f" ]; then
                 echo "    Signing $f"
                 sbctl sign -s "$f" 2>&1 || echo "WARN: Could not sign $f"
@@ -87,8 +85,6 @@ Target = linux
 Target = linux-lts
 Target = linux-zen
 Target = linux-mados
-Target = linux-mados-perf
-Target = linux-mados-zen
 Target = grub
 
 [Action]
