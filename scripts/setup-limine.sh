@@ -50,6 +50,7 @@ if [ -d /sys/firmware/efi ]; then
 
     # Prefer disk boot first by creating/updating an EFI boot entry.
     if command -v efibootmgr >/dev/null 2>&1; then
+        echo "==> Creating UEFI boot entry: madOS Limine"
         if ! EFIBOOT_CREATE_OUTPUT=$(efibootmgr --create --disk "$DISK" --part 2 --label "madOS Limine" --loader '\\EFI\\BOOT\\BOOTX64.EFI' 2>&1); then
             echo "WARN: Could not create EFI boot entry (NVRAM may be read-only)"
             echo "WARN: efibootmgr output: ${EFIBOOT_CREATE_OUTPUT}"
@@ -58,19 +59,23 @@ if [ -d /sys/firmware/efi ]; then
         BOOTMGR_OUTPUT=$(efibootmgr 2>/dev/null || true)
         BOOT_CURRENT=$(printf '%s\n' "$BOOTMGR_OUTPUT" | awk '/BootOrder:/ {print $2}')
         BOOT_NUM=$(printf '%s\n' "$BOOTMGR_OUTPUT" | awk '/madOS Limine/ {gsub("Boot", "", $1); gsub("\*", "", $1); print $1; exit}')
+        echo "==> Current UEFI BootOrder: ${BOOT_CURRENT:-<none>}"
+        echo "==> madOS Limine BootNum: ${BOOT_NUM:-<not found>}"
         if [ -n "$BOOT_NUM" ]; then
             if [ -n "$BOOT_CURRENT" ]; then
-                REST=$(echo "$BOOT_CURRENT" | tr ',' '\n' | awk -v boot="$BOOT_NUM" '$0 != boot' | paste -sd, -)
+                REST=$(printf '%s\n' "$BOOT_CURRENT" | tr ',' '\n' | awk -v boot="$BOOT_NUM" '$0 != boot && $0 != ""' | paste -sd, - || true)
                 if [ -n "$REST" ]; then
                     NEW_ORDER="$BOOT_NUM,$REST"
                 else
                     NEW_ORDER="$BOOT_NUM"
                 fi
+                echo "==> Setting UEFI BootOrder to: $NEW_ORDER"
                 if ! EFIBOOT_ORDER_OUTPUT=$(efibootmgr -o "$NEW_ORDER" 2>&1); then
                     echo "WARN: Could not set BootOrder"
                     echo "WARN: efibootmgr output: ${EFIBOOT_ORDER_OUTPUT}"
                 fi
             else
+                echo "==> Setting UEFI BootOrder to single entry: $BOOT_NUM"
                 if ! EFIBOOT_ORDER_OUTPUT=$(efibootmgr -o "$BOOT_NUM" 2>&1); then
                     echo "WARN: Could not set BootOrder"
                     echo "WARN: efibootmgr output: ${EFIBOOT_ORDER_OUTPUT}"

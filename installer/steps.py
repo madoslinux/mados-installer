@@ -1108,6 +1108,7 @@ def run_chroot_with_progress(app, config_script_path):
     )
 
     progress_pattern = re.compile(r"\[PROGRESS\s+(\d+)/(\d+)\]\s+(.+)")
+    captured_lines = []
 
     while True:
         line = proc.stdout.readline()
@@ -1128,17 +1129,32 @@ def run_chroot_with_progress(app, config_script_path):
             progress = min(progress, progress_end)
             set_progress(app, progress, description)
             log_message(app, f"  {description}")
+            captured_lines.append(line)
             continue
 
+        captured_lines.append(line)
         log_message(app, f"  {line}")
 
     proc.wait()
+    if proc.stdout:
+        remainder = proc.stdout.read()
+        if remainder:
+            for rem_line in remainder.splitlines():
+                rem_line = rem_line.strip()
+                if rem_line:
+                    captured_lines.append(rem_line)
+                    log_message(app, f"  {rem_line}")
+
     if proc.returncode != 0:
         cmd_str = " ".join(shlex.quote(part) for part in cmd)
+        output_tail = "\n".join(captured_lines[-40:]) if captured_lines else ""
         raise subprocess.CalledProcessError(
             proc.returncode,
             cmd_str,
-            output=f"arch-chroot failed with exit code {proc.returncode}",
+            output=(
+                f"arch-chroot failed with exit code {proc.returncode}\n"
+                f"--- Last output lines ---\n{output_tail}"
+            ).rstrip(),
         )
 
     set_progress(app, progress_end, "System configured")
