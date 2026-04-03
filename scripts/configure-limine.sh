@@ -27,7 +27,7 @@ default_entry: 1
     protocol: linux
     path: boot():/vmlinuz-linux-mados-zen
     module_path: boot():/initramfs-linux-mados-zen.img
-    cmdline: root=UUID=${ROOT_UUID} rw zswap.enabled=0 splash quiet plymouth.use-simpledrm=0
+    cmdline: root=UUID=${ROOT_UUID} rw zswap.enabled=0 splash quiet
 
 /madOS (Installed, Safe Graphics)
     protocol: linux
