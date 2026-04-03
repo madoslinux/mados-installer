@@ -10,24 +10,45 @@ rm -f /etc/mkinitcpio.conf.d/archiso.conf
 rm -f /etc/mkinitcpio.d/linux.preset
 rm -f /etc/mkinitcpio.d/linux-zen.preset
 rm -f /etc/mkinitcpio.d/linux-lts.preset
+rm -f /etc/mkinitcpio.d/linux-mados.preset
+rm -f /etc/mkinitcpio.d/linux-mados-perf.preset
 rm -f /etc/mkinitcpio.d/linux-mados-zen.preset
 
-KERNEL="linux-mados-zen"
+KERNEL=""
+if [ -f /etc/mados/default-kernel ]; then
+    KERNEL=$(cat /etc/mados/default-kernel 2>/dev/null || true)
+fi
+
+if [ -z "$KERNEL" ]; then
+    if [ -f /boot/vmlinuz-linux-mados-perf ]; then
+        KERNEL="linux-mados-perf"
+    elif [ -f /boot/vmlinuz-linux-mados ]; then
+        KERNEL="linux-mados"
+    elif [ -f /boot/vmlinuz-linux-mados-zen ]; then
+        KERNEL="linux-mados-zen"
+    fi
+fi
+
+if [ -z "$KERNEL" ]; then
+    echo "  ERROR: Could not determine target madOS kernel"
+    exit 1
+fi
+echo "  Target kernel package: ${KERNEL}"
 
 if [ ! -s /boot/vmlinuz-${KERNEL} ] || [ ! -r /boot/vmlinuz-${KERNEL} ]; then
     echo "  Kernel missing before mkinitcpio! Recovering..."
     for kdir in /usr/lib/modules/*/; do
         kver=$(basename "$kdir")
-        if [[ "$kver" == *"mados-zen"* ]] && [ -r "${kdir}vmlinuz" ]; then
+        if [[ "$kver" == *"mados"* ]] && [ -r "${kdir}vmlinuz" ]; then
             cp "${kdir}vmlinuz" /boot/vmlinuz-${KERNEL}
-            echo "  Recovered kernel from ${kdir}vmlinuz (mados-zen kernel)"
+            echo "  Recovered kernel from ${kdir}vmlinuz"
             break
         fi
     done
 fi
 
 if [ ! -s /boot/vmlinuz-${KERNEL} ] || [ ! -r /boot/vmlinuz-${KERNEL} ]; then
-    echo "  ERROR: Could not find kernel image. Reinstalling linux-mados-zen package..."
+    echo "  ERROR: Could not find kernel image. Reinstalling ${KERNEL} package..."
     pacman -Sy --noconfirm ${KERNEL} || { echo "FATAL: Failed to install kernel"; exit 1; }
 fi
 
@@ -37,7 +58,7 @@ ls /lib/modules/ 2>/dev/null || echo "  No kernel modules found"
 TARGET_KVER=""
 for kver in /lib/modules/*/; do
     kver_name=$(basename "$kver")
-    if [[ "$kver_name" == *"mados-zen"* ]]; then
+    if [[ "$kver_name" == *"mados"* ]]; then
         TARGET_KVER="$kver_name"
         echo "  Found target kernel: $TARGET_KVER"
         break
@@ -45,7 +66,7 @@ for kver in /lib/modules/*/; do
 done
 
 if [ -z "$TARGET_KVER" ]; then
-    echo "  ERROR: No mados-zen kernel modules found in /lib/modules"
+    echo "  ERROR: No madOS kernel modules found in /lib/modules"
     echo "  Available kernels:"
     ls /lib/modules/ 2>/dev/null || echo "  (none)"
     exit 1

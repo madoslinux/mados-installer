@@ -65,7 +65,12 @@ if [ -d /sys/firmware/efi ]; then
             echo "    2) Put firmware in Setup Mode, reboot to madOS, then run: sudo sbctl enroll-keys --microsoft"
         fi
 
-        for f in /boot/EFI/BOOT/BOOTX64.EFI /boot/EFI/madOS/grubx64.efi /boot/vmlinuz-linux-mados-zen; do
+        for f in \
+            /boot/EFI/BOOT/BOOTX64.EFI \
+            /boot/EFI/madOS/grubx64.efi \
+            /boot/vmlinuz-linux-mados \
+            /boot/vmlinuz-linux-mados-perf \
+            /boot/vmlinuz-linux-mados-zen; do
             if [ -f "$f" ]; then
                 echo "    Signing $f"
                 sbctl sign -s "$f" 2>&1 || echo "WARN: Could not sign $f"
@@ -81,6 +86,8 @@ Type = Package
 Target = linux
 Target = linux-lts
 Target = linux-zen
+Target = linux-mados
+Target = linux-mados-perf
 Target = linux-mados-zen
 Target = grub
 

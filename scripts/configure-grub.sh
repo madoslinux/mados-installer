@@ -11,30 +11,73 @@ if [ -z "$ROOT_PART" ]; then
     exit 1
 fi
 
+is_modern_cpu() {
+    local flags
+    flags=$(grep -m1 '^flags' /proc/cpuinfo 2>/dev/null || true)
+    [[ "$flags" == *" avx2 "* ]] && [[ "$flags" == *" sse4_2 "* ]]
+}
+
+select_kernel() {
+    if is_modern_cpu && [[ -f /boot/vmlinuz-linux-mados-perf ]]; then
+        echo "linux-mados-perf"
+        return 0
+    fi
+
+    if [[ -f /boot/vmlinuz-linux-mados ]]; then
+        echo "linux-mados"
+        return 0
+    fi
+
+    if [[ -f /boot/vmlinuz-linux-mados-perf ]]; then
+        echo "linux-mados-perf"
+        return 0
+    fi
+
+    if [[ -f /boot/vmlinuz-linux-mados-zen ]]; then
+        echo "linux-mados-zen"
+        return 0
+    fi
+
+    return 1
+}
+
+KERNEL=$(select_kernel) || {
+    echo "ERROR: No supported madOS kernel found in /boot"
+    exit 1
+}
+
+mkdir -p /etc/mados
+echo "$KERNEL" > /etc/mados/default-kernel
+echo "  Selected default kernel: $KERNEL"
+
 sed -i 's/GRUB_CMDLINE_LINUX=""/GRUB_CMDLINE_LINUX="zswap.enabled=0 splash quiet plymouth.use-simpledrm=0"/' /etc/default/grub
 sed -i 's/GRUB_DISTRIBUTOR="Arch"/GRUB_DISTRIBUTOR="madOS"/' /etc/default/grub
 sed -i 's/#GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' /etc/default/grub
+sed -i 's/^#\?GRUB_DEFAULT=.*/GRUB_DEFAULT=0/' /etc/default/grub
     echo 'GRUB_DISABLE_LINUX_UUID=false' >> /etc/default/grub
 echo 'GRUB_TERMINAL="console"' >> /etc/default/grub
 
 ROOT_UUID=$(blkid -s UUID -o value "$ROOT_PART" 2>/dev/null || echo "")
 if [ -n "$ROOT_UUID" ]; then
     echo "  Root partition UUID: $ROOT_UUID"
-    mkdir -p /boot/grub/custom
-    cat > /boot/grub/custom/mados.cfg <<'EOFGRUB'
+    cat > /etc/grub.d/09_mados <<EOFGRUB
+#!/bin/sh
+cat <<'GRUB_EOF'
 menuentry 'madOS Linux' {
     load_video
     set gfxpayload=keep
     insmod gzio
     insmod part_gpt
     insmod ext2
-    search --no-floppy --fs-uuid --set=root $ROOT_UUID
-    echo        'Loading Linux linux-mados-zen ...'
-    linux       /vmlinuz-linux-mados-zen root=UUID=$ROOT_UUID rw zswap.enabled=0 splash quiet
+    search --no-floppy --fs-uuid --set=root ${ROOT_UUID}
+    echo        'Loading Linux ${KERNEL} ...'
+    linux       /vmlinuz-${KERNEL} root=UUID=${ROOT_UUID} rw zswap.enabled=0 splash quiet
     echo        'Loading initial ramdisk ...'
-    initrd      /initramfs-linux-mados-zen.img
+    initrd      /initramfs-${KERNEL}.img
 }
+GRUB_EOF
 EOFGRUB
+    chmod +x /etc/grub.d/09_mados
 fi
 
 grub-mkconfig -o /boot/grub/grub.cfg
