@@ -4,8 +4,16 @@ madOS Installer - Regional settings (locale/timezone) page
 
 from gi.repository import Gtk
 
-from config import (KEYBOARDS, NORD_FROST, NORD_POLAR_NIGHT, NORD_SNOW_STORM,
-                    TIMEZONES)
+from config import (
+    KEYBOARDS,
+    LOCALE_KB_MAP,
+    LOCALE_MAP,
+    LOCALE_OPTIONS_MAP,
+    NORD_FROST,
+    NORD_POLAR_NIGHT,
+    NORD_SNOW_STORM,
+    TIMEZONES,
+)
 
 from .base import create_nav_buttons, create_page_header
 
@@ -16,9 +24,9 @@ def create_locale_page(app):
     page.get_style_context().add_class("page-container")
 
     content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-    content.set_margin_start(30)
-    content.set_margin_end(30)
-    content.set_margin_bottom(14)
+    content.set_margin_start(22)
+    content.set_margin_end(22)
+    content.set_margin_bottom(10)
     content.set_halign(Gtk.Align.FILL)
     content.set_valign(Gtk.Align.CENTER)
     content.set_hexpand(True)
@@ -27,10 +35,10 @@ def create_locale_page(app):
     header = create_page_header(app, app.t("regional"), 5)
     content.pack_start(header, False, False, 0)
 
-    # Language info card (read-only, set on welcome page)
+    # Language + locale card
     lang_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
     lang_card.get_style_context().add_class("content-card")
-    lang_card.set_margin_top(10)
+    lang_card.set_margin_top(6)
     lang_card.set_hexpand(True)
 
     lang_icon_label = Gtk.Label()
@@ -42,28 +50,36 @@ def create_locale_page(app):
     lang_card.pack_start(lang_icon_label, False, False, 0)
 
     lang_value = Gtk.Label()
-    lang_value.set_markup(
-        f'<span size="11000" weight="bold">{app.current_lang}</span>  '
-        f'<span size="9000" foreground="{NORD_SNOW_STORM["nord4"]}">({app.install_data["locale"]})</span>'
-    )
+    lang_value.set_markup(f'<span size="11000" weight="bold">{app.current_lang}</span>')
     lang_value.set_halign(Gtk.Align.START)
     lang_value.set_margin_start(24)
     lang_card.pack_start(lang_value, False, False, 0)
 
-    hint = Gtk.Label()
-    hint.set_markup(
-        f'<span size="8000" foreground="{NORD_POLAR_NIGHT["nord3"]}">← Configured on welcome page</span>'
+    app.locale_combo = Gtk.ComboBoxText()
+    locale_options = LOCALE_OPTIONS_MAP.get(
+        app.current_lang,
+        [LOCALE_MAP.get(app.current_lang, app.install_data["locale"])],
     )
-    hint.set_halign(Gtk.Align.START)
-    hint.set_margin_start(24)
-    lang_card.pack_start(hint, False, False, 0)
+    for locale_code in locale_options:
+        app.locale_combo.append_text(locale_code)
+
+    current_locale = app.install_data.get("locale")
+    try:
+        app.locale_combo.set_active(locale_options.index(current_locale))
+    except ValueError:
+        app.locale_combo.set_active(0)
+        app.install_data["locale"] = locale_options[0]
+
+    app.locale_combo.set_margin_start(24)
+    app.locale_combo.set_margin_end(8)
+    lang_card.pack_start(app.locale_combo, False, False, 0)
 
     content.pack_start(lang_card, False, False, 0)
 
     # Timezone card
     tz_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
     tz_card.get_style_context().add_class("content-card")
-    tz_card.set_margin_top(8)
+    tz_card.set_margin_top(6)
     tz_card.set_hexpand(True)
 
     tz_label = Gtk.Label()
@@ -87,7 +103,7 @@ def create_locale_page(app):
     # Keyboard layout card
     kb_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
     kb_card.get_style_context().add_class("content-card")
-    kb_card.set_margin_top(8)
+    kb_card.set_margin_top(6)
     kb_card.set_hexpand(True)
 
     kb_label = Gtk.Label()
@@ -106,6 +122,9 @@ def create_locale_page(app):
     app.keyboard_combo.set_margin_end(8)
     kb_card.pack_start(app.keyboard_combo, False, False, 0)
 
+    app.locale_combo.connect("changed", lambda combo: _on_locale_changed(app, combo))
+    _set_keyboard_from_locale(app, app.locale_combo.get_active_text())
+
     content.pack_start(kb_card, False, False, 0)
 
     # Navigation
@@ -121,11 +140,33 @@ def create_locale_page(app):
 
 def _on_locale_next(app):
     """Save locale data and advance to summary"""
+    app.install_data["locale"] = app.locale_combo.get_active_text()
     app.install_data["timezone"] = app.timezone_combo.get_active_text()
     kb_code, _ = KEYBOARDS[app.keyboard_combo.get_active()]
     app.install_data["keyboard"] = kb_code
     # Trigger summary update before showing the page
-    from summary import update_summary
+    from pages.summary import update_summary
 
     update_summary(app)
     app.notebook.next_page()
+
+
+def _on_locale_changed(app, combo):
+    """Update keyboard suggestion when locale changes."""
+    locale_code = combo.get_active_text()
+    _set_keyboard_from_locale(app, locale_code)
+
+
+def _set_keyboard_from_locale(app, locale_code):
+    """Select matching keyboard layout for locale when available."""
+    if not locale_code:
+        return
+
+    recommended_kb = LOCALE_KB_MAP.get(locale_code)
+    if not recommended_kb:
+        return
+
+    for idx, (kb_code, _) in enumerate(KEYBOARDS):
+        if kb_code == recommended_kb:
+            app.keyboard_combo.set_active(idx)
+            break

@@ -11,14 +11,23 @@ import urllib.parse
 from gi.repository import GdkPixbuf, GLib, Gtk
 
 from config import DEMO_MODE, NORD_FROST
-from installer import (_check_required_commands, build_config_script,
-                       rsync_rootfs_with_progress, run_chroot_with_progress,
-                       step_configure_mados_updater, step_configure_snapper,
-                       step_copy_installer_scripts, step_copy_live_files,
-                       step_create_base_snapshot, step_create_btrfs_subvolumes,
-                       step_format_partitions, step_generate_fstab,
-                       step_install_nvidia_if_needed, step_mount_filesystems,
-                       step_partition_disk)
+from installer import (
+    _check_required_commands,
+    build_config_script,
+    rsync_rootfs_with_progress,
+    run_chroot_with_progress,
+    step_configure_mados_updater,
+    step_configure_snapper,
+    step_copy_installer_scripts,
+    step_copy_live_files,
+    step_create_base_snapshot,
+    step_create_btrfs_subvolumes,
+    step_format_partitions,
+    step_generate_fstab,
+    step_install_nvidia_if_needed,
+    step_mount_filesystems,
+    step_partition_disk,
+)
 from utils import log_message, save_log_to_file, set_progress, show_error
 
 from .base import create_page_header
@@ -31,19 +40,19 @@ def create_installation_page(app):
     page.set_valign(Gtk.Align.CENTER)
 
     content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-    content.set_margin_start(30)
-    content.set_margin_end(30)
-    content.set_margin_top(10)
-    content.set_margin_bottom(14)
+    content.set_margin_start(22)
+    content.set_margin_end(22)
+    content.set_margin_top(6)
+    content.set_margin_bottom(10)
 
     app.install_spinner = Gtk.Spinner()
     app.install_spinner.get_style_context().add_class("install-spinner")
     app.install_spinner.set_halign(Gtk.Align.CENTER)
-    app.install_spinner.set_margin_top(8)
+    app.install_spinner.set_margin_top(4)
     content.pack_start(app.install_spinner, False, False, 0)
 
     title = Gtk.Label()
-    title.set_markup(f'<span size="15000" weight="bold">{app.t("installing")}</span>')
+    title.set_markup(f'<span size="13200" weight="bold">{app.t("installing")}</span>')
     title.set_halign(Gtk.Align.CENTER)
     content.pack_start(title, False, False, 0)
 
@@ -54,6 +63,14 @@ def create_installation_page(app):
     app.status_label.set_halign(Gtk.Align.CENTER)
     content.pack_start(app.status_label, False, False, 0)
 
+    app.next_status_label = Gtk.Label()
+    app.next_status_label.set_markup(
+        f'<span size="8200" foreground="{NORD_FROST["nord8"]}">Next: partitioning disks</span>'
+    )
+    app.next_status_label.set_halign(Gtk.Align.CENTER)
+    app.next_status_label.set_margin_top(2)
+    content.pack_start(app.next_status_label, False, False, 0)
+
     app.progress_bar = Gtk.ProgressBar()
     app.progress_bar.set_show_text(True)
     app.progress_bar.set_margin_top(4)
@@ -63,7 +80,7 @@ def create_installation_page(app):
 
     app.log_toggle = Gtk.EventBox()
     app.log_toggle.set_halign(Gtk.Align.CENTER)
-    app.log_toggle.set_margin_top(8)
+    app.log_toggle.set_margin_top(4)
     toggle_label = Gtk.Label()
     toggle_label.set_markup(
         f'<span size="9000" foreground="{NORD_FROST["nord8"]}">{app.t("show_log")}</span>'
@@ -75,14 +92,9 @@ def create_installation_page(app):
 
     log_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
     log_card.get_style_context().add_class("content-card")
-    log_card.set_margin_top(4)
+    log_card.set_margin_top(2)
     log_card.set_no_show_all(True)
     app.log_card = log_card
-
-    scrolled = Gtk.ScrolledWindow()
-    scrolled.set_min_content_height(120)
-    scrolled.set_max_content_height(180)
-    app.log_scrolled = scrolled
 
     app.log_buffer = Gtk.TextBuffer()
     log_view = Gtk.TextView(buffer=app.log_buffer)
@@ -92,9 +104,9 @@ def create_installation_page(app):
     log_view.set_right_margin(12)
     log_view.set_top_margin(8)
     log_view.set_bottom_margin(8)
-    scrolled.add(log_view)
-
-    log_card.pack_start(scrolled, True, True, 0)
+    log_view.set_size_request(-1, 120)
+    app.log_view = log_view
+    log_card.pack_start(log_view, True, True, 0)
     content.pack_start(log_card, True, True, 0)
 
     page.pack_start(content, True, True, 0)
@@ -120,6 +132,11 @@ def _toggle_log(app):
 
 def on_start_installation(app):
     """Start the installation process"""
+    precheck_ok, precheck_msg = _run_precheck(app)
+    if not precheck_ok:
+        show_error(app, "Pre-check failed", precheck_msg)
+        return
+
     app.notebook.next_page()
     app.install_spinner.start()
 
@@ -138,13 +155,19 @@ def _run_installation(app):
         disk = data["disk"]
         disk_size_gb = data["disk_size_gb"]
 
+        _set_stage_status(app, "Partitioning disk...", "Formatting partitions")
         boot_part, root_part = step_partition_disk(app, disk, disk_size_gb)
         app.install_data["root_part"] = root_part
 
+        _set_stage_status(app, "Formatting partitions...", "Creating Btrfs subvolumes")
         step_format_partitions(app, boot_part, root_part)
 
+        _set_stage_status(
+            app, "Creating Btrfs subvolumes...", "Mounting target filesystems"
+        )
         step_create_btrfs_subvolumes(app, root_part)
 
+        _set_stage_status(app, "Mounting target filesystems...", "Copying system files")
         step_mount_filesystems(app, boot_part, root_part)
 
         if DEMO_MODE:
@@ -161,6 +184,7 @@ def _run_installation(app):
             set_progress(app, 0.48, "System files copied")
             time.sleep(0.3)
         else:
+            _set_stage_status(app, "Copying system files...", "Applying configuration")
             rsync_rootfs_with_progress(app)
 
         if not DEMO_MODE:
@@ -176,6 +200,9 @@ def _run_installation(app):
 
         step_configure_mados_updater(app)
 
+        _set_stage_status(
+            app, "Preparing system configuration...", "Applying configurations"
+        )
         set_progress(app, 0.50, "Preparing system configuration...")
         log_message(app, "Preparing system configuration...")
 
@@ -202,6 +229,7 @@ def _run_installation(app):
 
             step_copy_live_files(app)
 
+        _set_stage_status(app, "Applying configurations...", "Final cleanup")
         set_progress(app, 0.55, "Applying configurations...")
         log_message(app, "Running chroot configuration...")
         if DEMO_MODE:
@@ -221,6 +249,7 @@ def _run_installation(app):
 
         step_create_base_snapshot(app)
 
+        _set_stage_status(app, "Cleaning up...", "Finishing installation")
         set_progress(app, 0.90, "Cleaning up...")
         log_message(app, "Cleaning up...")
         if DEMO_MODE:
@@ -234,6 +263,7 @@ def _run_installation(app):
             subprocess.run(["sync"], check=False)
             subprocess.run(["umount", "-R", "/mnt"], check=False)
 
+        _set_stage_status(app, "Installation complete!", "No remaining steps")
         set_progress(app, 1.0, "Installation complete!")
         if DEMO_MODE:
             log_message(app, "\n[OK] Demo installation completed successfully!")
@@ -268,6 +298,7 @@ def _run_installation(app):
 def _handle_installation_error(app, error_msg):
     """Save log to file and show dedicated error page with QR."""
     log_path = save_log_to_file(app)
+    app.last_log_path = log_path
     if log_path:
         log_message(app, f"Error log saved to: {log_path}")
     app.install_spinner.stop()
@@ -293,6 +324,7 @@ def _finish_installation(app):
     log_message(app, "QR: _finish_installation called")
     log_message(app, f"QR: DEMO_MODE={DEMO_MODE}")
     log_path = save_log_to_file(app)
+    app.last_log_path = log_path
     if log_path:
         log_message(app, f"\nLog saved to: {log_path}")
     app.install_spinner.stop()
@@ -447,3 +479,40 @@ def _build_qr_box(app, decoder_url, stats):
     box.pack_start(stats_label, False, False, 0)
 
     return box
+
+
+def _run_precheck(app):
+    """Run fast pre-install checks."""
+    disk = app.install_data.get("disk")
+    disk_size = app.install_data.get("disk_size_gb", 0)
+    username = app.install_data.get("username")
+
+    if not disk:
+        return False, "No target disk selected."
+    if disk_size < 10:
+        return False, "Selected disk is too small (minimum 10GB)."
+    if not username:
+        return False, "User account is not configured."
+    if (
+        app.install_data.get("timezone") not in (None, "")
+        and "/" not in app.install_data.get("timezone", "UTC")
+        and app.install_data.get("timezone") != "UTC"
+    ):
+        return False, "Invalid timezone selected."
+    return True, "Pre-check passed"
+
+
+def _set_stage_status(app, current, next_step):
+    """Update primary and next-stage labels from worker thread."""
+    GLib.idle_add(_set_stage_status_idle, app, current, next_step)
+
+
+def _set_stage_status_idle(app, current, next_step):
+    """Idle callback to update stage labels."""
+    app.status_label.set_markup(
+        f'<span size="10000" foreground="{NORD_FROST["nord8"]}">{current}</span>'
+    )
+    app.next_status_label.set_markup(
+        f'<span size="8200" foreground="{NORD_FROST["nord8"]}">Next: {next_step}</span>'
+    )
+    return False

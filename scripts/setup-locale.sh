@@ -15,8 +15,12 @@ echo "[1/8] Setting timezone and locale..."
 ln -sf "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
 hwclock --systohc 2>/dev/null || true
 
-echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
-echo "$LOCALE UTF-8" >> /etc/locale.gen
+if ! grep -q '^en_US.UTF-8 UTF-8$' /etc/locale.gen; then
+    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+fi
+if ! grep -q "^$LOCALE UTF-8$" /etc/locale.gen; then
+    echo "$LOCALE UTF-8" >> /etc/locale.gen
+fi
 locale-gen
 echo "LANG=$LOCALE" > /etc/locale.conf
 

@@ -54,31 +54,28 @@ def create_partitioning_page(app):
     page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
     page.get_style_context().add_class("page-container")
 
-    scroll = Gtk.ScrolledWindow()
-    scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-
     content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-    content.set_margin_start(30)
-    content.set_margin_end(30)
-    content.set_margin_bottom(14)
+    content.set_margin_start(22)
+    content.set_margin_end(22)
+    content.set_margin_bottom(10)
 
     header = create_page_header(app, app.t("partitioning"), 3)
     content.pack_start(header, False, False, 0)
 
     disk_info = Gtk.Label()
     disk_info.set_halign(Gtk.Align.CENTER)
-    disk_info.set_margin_top(6)
-    disk_info.set_margin_bottom(8)
+    disk_info.set_margin_top(4)
+    disk_info.set_margin_bottom(6)
     app._partitioning_disk_info = disk_info
     content.pack_start(disk_info, False, False, 0)
 
-    card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+    card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
     card.get_style_context().add_class("partition-card")
-    card.set_margin_bottom(8)
+    card.set_margin_bottom(6)
 
     title = Gtk.Label()
     title.set_markup(
-        f'<span weight="bold" size="11000">{app.t("btrfs_scheme_title")}</span>'
+        f'<span weight="bold" size="10000">{app.t("btrfs_scheme_title")}</span>'
     )
     title.set_halign(Gtk.Align.START)
     title.set_margin_start(28)
@@ -86,7 +83,7 @@ def create_partitioning_page(app):
 
     desc = Gtk.Label()
     desc.set_markup(
-        f'<span size="9000" foreground="{NORD_SNOW_STORM["nord4"]}">'
+        f'<span size="8200" foreground="{NORD_SNOW_STORM["nord4"]}">'
         f"{app.t('btrfs_scheme_desc')}</span>"
     )
     desc.set_halign(Gtk.Align.START)
@@ -96,13 +93,13 @@ def create_partitioning_page(app):
     bar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     bar.set_margin_start(28)
     bar.set_margin_end(28)
-    bar.set_margin_top(16)
-    bar.set_size_request(400, 32)
+    bar.set_margin_top(10)
+    bar.set_size_request(400, 24)
 
     efi_ratio = 0.02
     efi_bar = Gtk.Label()
     efi_size_pct = int(efi_ratio * 400)
-    efi_bar.set_size_request(efi_size_pct, 32)
+    efi_bar.set_size_request(efi_size_pct, 24)
     efi_bar.set_markup(
         f'<span size="7000" foreground="{NORD_POLAR_NIGHT["nord0"]}"> {app.t("efi_label")} 1GB </span>'
     )
@@ -119,7 +116,7 @@ def create_partitioning_page(app):
     partitions_labels = Gtk.Label()
     partitions_labels.set_halign(Gtk.Align.START)
     partitions_labels.set_margin_start(28)
-    partitions_labels.set_margin_top(12)
+    partitions_labels.set_margin_top(8)
     app._partitioning_labels = partitions_labels
     card.pack_start(partitions_labels, False, False, 0)
 
@@ -130,8 +127,7 @@ def create_partitioning_page(app):
     )
     content.pack_start(nav, False, False, 0)
 
-    scroll.add(content)
-    page.pack_start(scroll, True, True, 0)
+    page.pack_start(content, True, True, 0)
     app.notebook.append_page(page, Gtk.Label(label="Partitioning"))
 
     refresh_partitioning_content(app)

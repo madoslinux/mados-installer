@@ -11,8 +11,7 @@ import os
 DEMO_MODE = os.environ.get("DEMO_MODE", "").lower() == "true"
 # ================================
 
-from theme.colors import (NORD_AURORA, NORD_FROST, NORD_POLAR_NIGHT,
-                          NORD_SNOW_STORM)
+from theme.colors import NORD_AURORA, NORD_FROST, NORD_POLAR_NIGHT, NORD_SNOW_STORM
 
 # Minimum disk size (GB) for installation.  The live rootfs with rsync
 # excludes and post-copy cleanup fits in ~5-7 GB plus 1 GB EFI, so 10 GB
@@ -30,6 +29,27 @@ LOCALE_MAP = {
     "한국어": "ko_KR.UTF-8",
     "中文": "zh_CN.UTF-8",
     "日本語": "ja_JP.UTF-8",
+}
+
+# Available locale options per installer language.
+# The first entry is the default used when that language is selected.
+LOCALE_OPTIONS_MAP = {
+    "English": ["en_US.UTF-8", "en_GB.UTF-8"],
+    "Español": [
+        "es_ES.UTF-8",
+        "es_MX.UTF-8",
+        "es_AR.UTF-8",
+        "es_CL.UTF-8",
+        "es_CO.UTF-8",
+        "es_PE.UTF-8",
+    ],
+    "Français": ["fr_FR.UTF-8", "fr_CA.UTF-8"],
+    "Deutsch": ["de_DE.UTF-8", "de_CH.UTF-8"],
+    "Português": ["pt_BR.UTF-8", "pt_PT.UTF-8"],
+    "Italiano": ["it_IT.UTF-8"],
+    "한국어": ["ko_KR.UTF-8"],
+    "中文": ["zh_CN.UTF-8", "zh_TW.UTF-8"],
+    "日本語": ["ja_JP.UTF-8"],
 }
 
 # All available timezones

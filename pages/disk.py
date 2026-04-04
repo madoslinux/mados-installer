@@ -6,8 +6,14 @@ import subprocess
 
 from gi.repository import Gtk
 
-from config import (DEMO_MODE, MIN_DISK_SIZE_GB, NORD_AURORA, NORD_FROST,
-                    NORD_POLAR_NIGHT, NORD_SNOW_STORM)
+from config import (
+    DEMO_MODE,
+    MIN_DISK_SIZE_GB,
+    NORD_AURORA,
+    NORD_FROST,
+    NORD_POLAR_NIGHT,
+    NORD_SNOW_STORM,
+)
 from utils import show_error, style_dialog
 
 from .base import create_nav_buttons, create_page_header
@@ -18,13 +24,10 @@ def create_disk_page(app):
     page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
     page.get_style_context().add_class("page-container")
 
-    scroll = Gtk.ScrolledWindow()
-    scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-
     content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-    content.set_margin_start(30)
-    content.set_margin_end(30)
-    content.set_margin_bottom(14)
+    content.set_margin_start(22)
+    content.set_margin_end(22)
+    content.set_margin_bottom(10)
 
     # Page header
     header = create_page_header(app, app.t("select_disk"), 2)
@@ -33,8 +36,8 @@ def create_disk_page(app):
     # Warning banner
     warn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     warn_box.get_style_context().add_class("warning-banner")
-    warn_box.set_margin_top(8)
-    warn_box.set_margin_bottom(8)
+    warn_box.set_margin_top(5)
+    warn_box.set_margin_bottom(6)
 
     warn_text = Gtk.Label()
     warn_text.set_markup(
@@ -45,8 +48,8 @@ def create_disk_page(app):
     content.pack_start(warn_box, False, False, 0)
 
     # Disk buttons container
-    app.disk_buttons_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-    app.disk_buttons_box.set_margin_top(4)
+    app.disk_buttons_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+    app.disk_buttons_box.set_margin_top(2)
     app.disk_buttons = []
     app.selected_disk_info = None
 
@@ -56,7 +59,7 @@ def create_disk_page(app):
         f"{app.t('no_disks_available')}</span>"
     )
     app.no_disks_label.set_halign(Gtk.Align.CENTER)
-    app.no_disks_label.set_margin_top(20)
+    app.no_disks_label.set_margin_top(12)
     app.no_disks_label.set_no_show_all(True)
     app.disk_buttons_box.pack_start(app.no_disks_label, False, False, 0)
 
@@ -70,8 +73,7 @@ def create_disk_page(app):
     )
     content.pack_start(nav, False, False, 0)
 
-    scroll.add(content)
-    page.pack_start(scroll, True, True, 0)
+    page.pack_start(content, True, True, 0)
     app.notebook.append_page(page, Gtk.Label(label="Disk"))
 
 
@@ -157,20 +159,20 @@ def _create_disk_button(name, size, model, on_click):
     btn.get_style_context().add_class("disk-card")
     btn.connect("clicked", on_click, name, size)
 
-    hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+    hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     hbox.set_margin_start(12)
     hbox.set_margin_end(12)
-    hbox.set_margin_top(8)
-    hbox.set_margin_bottom(8)
+    hbox.set_margin_top(6)
+    hbox.set_margin_bottom(6)
 
     disk_type = _get_disk_type(name, model)
     hbox.pack_start(_create_disk_badge(disk_type), False, False, 0)
 
-    info_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+    info_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=1)
 
     dev_label = Gtk.Label()
     dev_label.set_markup(
-        f'<span weight="bold" size="11000" foreground="{NORD_SNOW_STORM["nord6"]}">'
+        f'<span weight="bold" size="10000" foreground="{NORD_SNOW_STORM["nord6"]}">'
         f"/dev/{name}</span>"
     )
     dev_label.set_halign(Gtk.Align.START)
@@ -178,7 +180,7 @@ def _create_disk_button(name, size, model, on_click):
 
     model_label = Gtk.Label()
     model_label.set_markup(
-        f'<span size="9500" foreground="{NORD_SNOW_STORM["nord4"]}">{model}</span>'
+        f'<span size="8800" foreground="{NORD_SNOW_STORM["nord4"]}">{model}</span>'
     )
     model_label.set_halign(Gtk.Align.START)
     info_box.pack_start(model_label, False, False, 0)
@@ -186,7 +188,7 @@ def _create_disk_button(name, size, model, on_click):
 
     size_label = Gtk.Label()
     size_label.set_markup(
-        f'<span weight="bold" size="14000" foreground="{NORD_FROST["nord8"]}">{size}</span>'
+        f'<span weight="bold" size="12000" foreground="{NORD_FROST["nord8"]}">{size}</span>'
     )
     hbox.pack_start(size_label, False, False, 0)
 
@@ -276,6 +278,8 @@ def _on_disk_next(app):
             "In real mode, all data would be erased.\n"
             "Demo mode: No actual changes will be made."
         )
+        dialog.set_modal(True)
+        dialog.set_keep_above(True)
         style_dialog(dialog)
         dialog.run()
         dialog.destroy()
@@ -292,6 +296,8 @@ def _on_disk_next(app):
             f"ALL DATA on {app.install_data['disk']} will be PERMANENTLY ERASED!\n\n"
             "Are you absolutely sure you want to continue?"
         )
+        dialog.set_modal(True)
+        dialog.set_keep_above(True)
         style_dialog(dialog)
         response = dialog.run()
         dialog.destroy()

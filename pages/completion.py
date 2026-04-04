@@ -17,14 +17,14 @@ def create_completion_page(app):
     page.get_style_context().add_class("page-container")
 
     # Centered success content (no QR on success page)
-    main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+    main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
     main_box.set_halign(Gtk.Align.CENTER)
     main_box.set_valign(Gtk.Align.CENTER)
     main_box.set_hexpand(False)
-    main_box.set_margin_start(30)
-    main_box.set_margin_end(30)
-    main_box.set_margin_top(10)
-    main_box.set_margin_bottom(14)
+    main_box.set_margin_start(22)
+    main_box.set_margin_end(22)
+    main_box.set_margin_top(6)
+    main_box.set_margin_bottom(10)
 
     content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
     content.set_halign(Gtk.Align.CENTER)
@@ -33,18 +33,18 @@ def create_completion_page(app):
 
     icon = Gtk.Label()
     icon.set_markup(
-        f'<span size="40000" weight="bold" foreground="{NORD_AURORA["nord14"]}">&#x2713;</span>'
+        f'<span size="30000" weight="bold" foreground="{NORD_AURORA["nord14"]}">&#x2713;</span>'
     )
     icon.set_halign(Gtk.Align.CENTER)
-    icon.set_margin_bottom(8)
+    icon.set_margin_bottom(4)
     content.pack_start(icon, False, False, 0)
 
     title = Gtk.Label()
     title.set_markup(
-        f'<span size="16000" weight="bold">{app.t("success_title")}</span>'
+        f'<span size="13200" weight="bold">{app.t("success_title")}</span>'
     )
     title.set_halign(Gtk.Align.CENTER)
-    title.set_margin_bottom(10)
+    title.set_margin_bottom(6)
     content.pack_start(title, False, False, 0)
 
     info_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
@@ -74,6 +74,14 @@ def create_completion_page(app):
     content.pack_start(info_card, False, False, 0)
 
     if not DEMO_MODE:
+        reboot_hint = Gtk.Label()
+        reboot_hint.set_markup(
+            '<span size="7600">Tip: remove installation media before reboot</span>'
+        )
+        reboot_hint.set_halign(Gtk.Align.CENTER)
+        reboot_hint.set_margin_top(4)
+        content.pack_start(reboot_hint, False, False, 0)
+
         secure_boot_note = Gtk.Label()
         secure_boot_note.set_markup(
             f'<span size="8400">{app.t("secure_boot_note")}</span>'
@@ -87,18 +95,30 @@ def create_completion_page(app):
     # Buttons
     btn_box = Gtk.Box(spacing=12)
     btn_box.set_halign(Gtk.Align.CENTER)
-    btn_box.set_margin_top(14)
+    btn_box.set_margin_top(8)
+
+    restart_toggle = Gtk.CheckButton(label="Reboot after completion")
+    restart_toggle.set_active(not DEMO_MODE)
+    restart_toggle.set_halign(Gtk.Align.CENTER)
+    restart_toggle.set_margin_top(6)
+    content.pack_start(restart_toggle, False, False, 0)
+    app.reboot_after_completion = restart_toggle
 
     if not DEMO_MODE:
         reboot_btn = Gtk.Button(label=app.t("reboot_now"))
         reboot_btn.get_style_context().add_class("success-button")
-        reboot_btn.connect("clicked", lambda x: subprocess.run(["reboot"]))
+        reboot_btn.connect("clicked", lambda x: _on_reboot_clicked(app))
         btn_box.pack_start(reboot_btn, False, False, 0)
 
     exit_btn = Gtk.Button(label=app.t("exit_live"))
     exit_btn.get_style_context().add_class("nav-back-button")
     exit_btn.connect("clicked", lambda x: Gtk.main_quit())
     btn_box.pack_start(exit_btn, False, False, 0)
+
+    open_log_btn = Gtk.Button(label="Open Install Log")
+    open_log_btn.get_style_context().add_class("nav-back-button")
+    open_log_btn.connect("clicked", lambda x: _on_open_log_clicked(app))
+    btn_box.pack_start(open_log_btn, False, False, 0)
 
     content.pack_start(btn_box, False, False, 0)
 
@@ -110,19 +130,42 @@ def create_completion_page(app):
     app.qr_container = None
 
 
+def _on_reboot_clicked(app):
+    """Reboot only when checkbox is active."""
+    if (
+        hasattr(app, "reboot_after_completion")
+        and app.reboot_after_completion.get_active()
+    ):
+        subprocess.run(["reboot"])
+
+
+def _on_open_log_clicked(app):
+    """Open saved installer log in terminal pager."""
+    log_path = getattr(app, "last_log_path", LOG_FILE)
+    if not log_path or not os.path.exists(log_path):
+        return
+    terminals = ["konsole", "gnome-terminal", "xfce4-terminal", "xterm", "uxterm"]
+    for term in terminals:
+        try:
+            subprocess.Popen([term, "-e", f"less '{log_path}'"])
+            return
+        except FileNotFoundError:
+            continue
+
+
 def create_error_page(app):
     """Completion error page with QR support only."""
     page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
     page.get_style_context().add_class("page-container")
 
-    main_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
+    main_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
     main_box.set_halign(Gtk.Align.CENTER)
     main_box.set_valign(Gtk.Align.CENTER)
     main_box.set_hexpand(True)
-    main_box.set_margin_start(30)
-    main_box.set_margin_end(30)
-    main_box.set_margin_top(10)
-    main_box.set_margin_bottom(14)
+    main_box.set_margin_start(22)
+    main_box.set_margin_end(22)
+    main_box.set_margin_top(6)
+    main_box.set_margin_bottom(10)
 
     left_content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
     left_content.set_halign(Gtk.Align.START)
@@ -131,16 +174,16 @@ def create_error_page(app):
 
     icon = Gtk.Label()
     icon.set_markup(
-        '<span size="40000" weight="bold" foreground="#dc7878">&#x2717;</span>'
+        '<span size="28000" weight="bold" foreground="#dc7878">&#x2717;</span>'
     )
     icon.set_halign(Gtk.Align.CENTER)
-    icon.set_margin_bottom(8)
+    icon.set_margin_bottom(4)
     left_content.pack_start(icon, False, False, 0)
 
     title = Gtk.Label()
-    title.set_markup('<span size="16000" weight="bold">Installation Failed</span>')
+    title.set_markup('<span size="13200" weight="bold">Installation Failed</span>')
     title.set_halign(Gtk.Align.CENTER)
-    title.set_margin_bottom(10)
+    title.set_margin_bottom(6)
     left_content.pack_start(title, False, False, 0)
 
     info_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
@@ -158,7 +201,7 @@ def create_error_page(app):
 
     btn_box = Gtk.Box(spacing=12)
     btn_box.set_halign(Gtk.Align.CENTER)
-    btn_box.set_margin_top(14)
+    btn_box.set_margin_top(8)
 
     exit_btn = Gtk.Button(label="Exit")
     exit_btn.get_style_context().add_class("nav-back-button")
@@ -184,8 +227,7 @@ def create_error_page(app):
 def _create_qr_section(app):
     """Create QR code section for log sharing."""
     try:
-        from scripts.log_summary import (create_log_summary,
-                                         generate_decoder_url)
+        from scripts.log_summary import create_log_summary, generate_decoder_url
 
         log_path = LOG_FILE
         if not os.path.exists(log_path):

@@ -2,8 +2,7 @@
 madOS Installer - Nord theme CSS
 """
 
-from theme.colors import (NORD_AURORA, NORD_FROST, NORD_POLAR_NIGHT,
-                          NORD_SNOW_STORM)
+from theme.colors import NORD_AURORA, NORD_FROST, NORD_POLAR_NIGHT, NORD_SNOW_STORM
 
 CSS = f"""
 * {{
@@ -385,8 +384,8 @@ messagedialog .dialog-action-area button:hover, dialog .dialog-action-area butto
 }}
 
 .page-header {{
-    margin-top: 6px;
-    margin-bottom: 2px;
+    margin-top: 2px;
+    margin-bottom: 0;
 }}
 
 .page-divider {{
@@ -400,7 +399,7 @@ messagedialog .dialog-action-area button:hover, dialog .dialog-action-area butto
     color: {NORD_SNOW_STORM["nord4"]};
     border: 1px solid {NORD_POLAR_NIGHT["nord3"]};
     border-radius: 6px;
-    padding: 8px 18px;
+    padding: 6px 14px;
     font-weight: normal;
 }}
 
@@ -414,19 +413,19 @@ messagedialog .dialog-action-area button:hover, dialog .dialog-action-area butto
 .content-card {{
     background-color: {NORD_POLAR_NIGHT["nord1"]};
     border-radius: 10px;
-    padding: 12px 16px;
+    padding: 8px 12px;
 }}
 
 .warning-banner {{
     background-color: rgba(191, 97, 106, 0.15);
     border-radius: 8px;
-    padding: 6px 12px;
+    padding: 4px 10px;
 }}
 
 .partition-card {{
     background-color: {NORD_POLAR_NIGHT["nord1"]};
     border-radius: 10px;
-    padding: 10px 14px;
+    padding: 8px 12px;
     border: 2px solid {NORD_POLAR_NIGHT["nord2"]};
 }}
 
@@ -466,48 +465,48 @@ messagedialog .dialog-action-area button:hover, dialog .dialog-action-area butto
 .form-card {{
     background-color: {NORD_POLAR_NIGHT["nord1"]};
     border-radius: 10px;
-    padding: 16px 20px;
+    padding: 10px 14px;
 }}
 
 .summary-card-system {{
     background-color: {NORD_POLAR_NIGHT["nord1"]};
     border-left: 4px solid {NORD_FROST["nord8"]};
     border-radius: 8px;
-    padding: 10px 14px;
+    padding: 8px 12px;
 }}
 
 .summary-card-account {{
     background-color: {NORD_POLAR_NIGHT["nord1"]};
     border-left: 4px solid {NORD_AURORA["nord15"]};
     border-radius: 8px;
-    padding: 10px 14px;
+    padding: 8px 12px;
 }}
 
 .summary-card-partitions {{
     background-color: {NORD_POLAR_NIGHT["nord1"]};
     border-left: 4px solid {NORD_AURORA["nord13"]};
     border-radius: 8px;
-    padding: 10px 14px;
+    padding: 8px 12px;
 }}
 
 .summary-card-software {{
     background-color: {NORD_POLAR_NIGHT["nord1"]};
     border-left: 4px solid {NORD_AURORA["nord14"]};
     border-radius: 8px;
-    padding: 10px 14px;
+    padding: 8px 12px;
 }}
 
 .completion-card {{
     background-color: {NORD_POLAR_NIGHT["nord1"]};
     border-radius: 10px;
-    padding: 14px 18px;
+    padding: 10px 14px;
     border-left: 4px solid {NORD_AURORA["nord14"]};
 }}
 
 .disk-card {{
     background-color: {NORD_POLAR_NIGHT["nord1"]};
     background-image: none;
-    border-radius: 10px;
+    border-radius: 8px;
     padding: 0;
     border: 2px solid {NORD_POLAR_NIGHT["nord2"]};
     text-shadow: none;
@@ -522,7 +521,7 @@ messagedialog .dialog-action-area button:hover, dialog .dialog-action-area butto
 .disk-card-selected {{
     background-color: rgba(136, 192, 208, 0.08);
     background-image: none;
-    border-radius: 10px;
+    border-radius: 8px;
     padding: 0;
     border: 2px solid {NORD_FROST["nord8"]};
     text-shadow: none;

@@ -85,13 +85,20 @@ def show_error(parent, title, message):
         text=title,
     )
     dialog.format_secondary_text(message)
+    dialog.set_modal(True)
+    dialog.set_keep_above(True)
+    dialog.set_destroy_with_parent(True)
+    dialog.set_default_response(Gtk.ResponseType.OK)
     style_dialog(dialog)
     dialog.run()
     dialog.destroy()
 
 
 def style_dialog(dialog):
-    """Apply dark theme to a dialog"""
+    """Apply dark theme to a dialog and make it modal/sticky"""
+    dialog.set_modal(True)
+    dialog.set_keep_above(True)
+    dialog.set_destroy_with_parent(True)
     dialog.get_content_area().foreach(
         lambda w: (
             w.get_style_context().add_class("dialog-content")
@@ -110,11 +117,10 @@ def _log_idle(app, message):
     """Idle callback for logging"""
     app.log_buffer.insert_at_cursor(message + "\n")
     # Auto-scroll log viewer to the bottom using the built-in insert mark
-    if hasattr(app, "log_scrolled"):
-        text_view = app.log_scrolled.get_child()
-        if text_view:
-            insert_mark = app.log_buffer.get_insert()
-            text_view.scroll_to_mark(insert_mark, 0.0, True, 0.0, 1.0)
+    text_view = getattr(app, "log_view", None)
+    if text_view:
+        insert_mark = app.log_buffer.get_insert()
+        text_view.scroll_to_mark(insert_mark, 0.0, True, 0.0, 1.0)
     return False
 
 

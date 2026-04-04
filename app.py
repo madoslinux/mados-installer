@@ -28,14 +28,22 @@ _ensure_qrcode()
 
 import gi
 
+gi.require_version("Gdk", "3.0")
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
+from gi.repository import Gdk, Gtk
 
 from config import DEMO_MODE, LOCALE_MAP
-from pages import (create_completion_page, create_disk_page, create_error_page,
-                   create_installation_page, create_locale_page,
-                   create_partitioning_page, create_summary_page,
-                   create_user_page, create_welcome_page)
+from pages import (
+    create_completion_page,
+    create_disk_page,
+    create_error_page,
+    create_installation_page,
+    create_locale_page,
+    create_partitioning_page,
+    create_summary_page,
+    create_user_page,
+    create_welcome_page,
+)
 from pages.partitioning import refresh_partitioning_content
 from theme import apply_theme
 from translations import TRANSLATIONS
@@ -59,9 +67,17 @@ class MadOSInstaller(Gtk.Window):
             )
             sys.exit(1)
 
-        self.set_default_size(1024, 550)
+        self.set_default_size(1024, 450)
         self.set_position(Gtk.WindowPosition.CENTER)
         self.set_resizable(True)
+        geometry = Gdk.Geometry()
+        geometry.min_height = 450
+        geometry.max_height = 450
+        self.set_geometry_hints(
+            self,
+            geometry,
+            Gdk.WindowHints.MIN_SIZE | Gdk.WindowHints.MAX_SIZE,
+        )
 
         # Apply theme
         apply_theme()
@@ -107,6 +123,7 @@ class MadOSInstaller(Gtk.Window):
 
         # Build all pages
         self._build_pages()
+        self.connect("key-press-event", self._on_key_press)
         self.show_all()
 
     # ── Translation helper ──────────────────────────────────────────────
@@ -154,3 +171,24 @@ class MadOSInstaller(Gtk.Window):
         """Refresh page content when switching to it"""
         if page_num == 2:
             refresh_partitioning_content(self)
+
+    def _on_key_press(self, widget, event):
+        """Keyboard shortcuts for navigation."""
+        key_name = Gdk.keyval_name(event.keyval)
+        state = event.state
+
+        if key_name == "Return" and hasattr(self, "current_next_btn"):
+            self.current_next_btn.clicked()
+            return True
+        if key_name == "Escape" and hasattr(self, "current_back_btn"):
+            self.current_back_btn.clicked()
+            return True
+        if key_name in {"n", "N"} and state & Gdk.ModifierType.MOD1_MASK:
+            if hasattr(self, "current_next_btn"):
+                self.current_next_btn.clicked()
+                return True
+        if key_name in {"b", "B"} and state & Gdk.ModifierType.MOD1_MASK:
+            if hasattr(self, "current_back_btn"):
+                self.current_back_btn.clicked()
+                return True
+        return False

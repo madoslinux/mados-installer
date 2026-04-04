@@ -22,8 +22,8 @@ def create_page_header(app, title, step_num, total_steps=7):
     # Step indicator dots
     steps_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
     steps_box.set_halign(Gtk.Align.CENTER)
-    steps_box.set_margin_bottom(8)
-    steps_box.set_margin_top(2)
+    steps_box.set_margin_bottom(4)
+    steps_box.set_margin_top(0)
 
     for i in range(1, total_steps + 1):
         dot = Gtk.Label()
@@ -58,7 +58,7 @@ def create_page_header(app, title, step_num, total_steps=7):
     # Title
     title_label = Gtk.Label()
     title_label.set_markup(
-        f'<span size="14000" weight="bold" foreground="{NORD_SNOW_STORM["nord6"]}">{title}</span>'
+        f'<span size="12400" weight="bold" foreground="{NORD_SNOW_STORM["nord6"]}">{title}</span>'
     )
     title_label.set_halign(Gtk.Align.CENTER)
     header.pack_start(title_label, False, False, 0)
@@ -68,7 +68,7 @@ def create_page_header(app, title, step_num, total_steps=7):
     divider.get_style_context().add_class("page-divider")
     divider.set_margin_start(40)
     divider.set_margin_end(40)
-    divider.set_margin_top(6)
+    divider.set_margin_top(4)
     header.pack_start(divider, False, False, 0)
 
     return header
@@ -80,16 +80,21 @@ def create_nav_buttons(
     """Create consistent navigation buttons (Back + Next)"""
     btn_box = Gtk.Box(spacing=12)
     btn_box.set_halign(Gtk.Align.END)
-    btn_box.set_margin_top(10)
+    btn_box.set_margin_top(6)
 
     back_btn = Gtk.Button(label=app.t("back"))
     back_btn.get_style_context().add_class("nav-back-button")
+    back_btn.set_can_default(True)
     back_btn.connect("clicked", back_callback)
     btn_box.pack_start(back_btn, False, False, 0)
 
     next_btn = Gtk.Button(label=next_label or app.t("next"))
     next_btn.get_style_context().add_class(next_class)
+    next_btn.set_can_default(True)
     next_btn.connect("clicked", next_callback)
     btn_box.pack_start(next_btn, False, False, 0)
+
+    app.current_back_btn = back_btn
+    app.current_next_btn = next_btn
 
     return btn_box

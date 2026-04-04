@@ -19,17 +19,17 @@ def create_welcome_page(app):
     content.set_valign(Gtk.Align.CENTER)
 
     # ── Logo ──
-    logo_image = load_logo(180)
+    logo_image = load_logo(128)
     if logo_image:
         logo_image.set_halign(Gtk.Align.CENTER)
-        logo_image.set_margin_bottom(4)
+        logo_image.set_margin_bottom(2)
         content.pack_start(logo_image, False, False, 0)
     else:
         fallback = Gtk.Label()
         fallback.set_markup(
             f'<span size="40000" weight="bold" foreground="{NORD_FROST["nord8"]}">madOS</span>'
         )
-        fallback.set_margin_bottom(4)
+        fallback.set_margin_bottom(2)
         content.pack_start(fallback, False, False, 0)
 
     # ── Subtitle ──
@@ -39,13 +39,13 @@ def create_welcome_page(app):
     )
     subtitle.set_halign(Gtk.Align.CENTER)
     subtitle.set_margin_top(2)
-    subtitle.set_margin_bottom(10)
+    subtitle.set_margin_bottom(6)
     content.pack_start(subtitle, False, False, 0)
 
     # ── Language selector ──
     lang_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
     lang_box.set_halign(Gtk.Align.CENTER)
-    lang_box.set_margin_top(12)
+    lang_box.set_margin_top(6)
 
     lang_label = Gtk.Label()
     lang_label.set_markup(
@@ -69,7 +69,7 @@ def create_welcome_page(app):
     # ── Buttons ──
     btn_box = Gtk.Box(spacing=12)
     btn_box.set_halign(Gtk.Align.CENTER)
-    btn_box.set_margin_top(14)
+    btn_box.set_margin_top(8)
 
     start_btn = Gtk.Button(label=app.t("start_install"))
     start_btn.get_style_context().add_class("start-button")
@@ -89,7 +89,7 @@ def create_welcome_page(app):
         f'<span size="small" foreground="{NORD_POLAR_NIGHT["nord3"]}">v1.0 • Arch Linux • x86_64</span>'
     )
     version.set_halign(Gtk.Align.CENTER)
-    version.set_margin_top(10)
+    version.set_margin_top(6)
     content.pack_start(version, False, False, 0)
 
     page.pack_start(content, True, True, 0)
