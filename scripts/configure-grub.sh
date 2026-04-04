@@ -11,7 +11,7 @@ if [ -z "$ROOT_PART" ]; then
     exit 1
 fi
 
-GRUB_MKCONFIG="/usr/sbin/grub-mkconfig"
+GRUB_MKCONFIG="/usr/bin/grub-mkconfig"
 BLKID="/usr/bin/blkid"
 
 require_cmd() {

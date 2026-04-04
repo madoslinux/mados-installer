@@ -11,7 +11,7 @@ fi
 
 echo "[3/8] Installing GRUB bootloader..."
 
-GRUB_INSTALL="/usr/sbin/grub-install"
+GRUB_INSTALL="/usr/bin/grub-install"
 FINDMNT="/usr/bin/findmnt"
 
 require_cmd() {
