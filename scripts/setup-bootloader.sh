@@ -11,6 +11,9 @@ fi
 
 echo "[3/8] Installing GRUB bootloader..."
 
+GRUB_INSTALL="/usr/sbin/grub-install"
+FINDMNT="/usr/bin/findmnt"
+
 require_cmd() {
     local cmd="$1"
     if ! command -v "$cmd" >/dev/null 2>&1; then
@@ -36,7 +39,7 @@ ensure_efi_mount() {
     fi
 
     local fs_type
-    fs_type=$(findmnt -n -o FSTYPE /boot 2>/dev/null || true)
+    fs_type=$($FINDMNT -n -o FSTYPE /boot 2>/dev/null || true)
     if [ "$fs_type" != "vfat" ]; then
         echo "ERROR: /boot must be mounted as vfat for EFI (found: ${fs_type:-unknown})"
         exit 1
@@ -71,11 +74,11 @@ is_setup_mode_enabled() {
 install_grub_uefi() {
     append_grub_setting_once 'GRUB_DISABLE_SHIM_LOCK=true'
 
-    if ! grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=madOS --recheck 2>&1; then
+    if ! $GRUB_INSTALL --target=x86_64-efi --efi-directory=/boot --bootloader-id=madOS --recheck 2>&1; then
         echo "WARN: grub-install with --bootloader-id failed (NVRAM may be read-only)"
     fi
 
-    if ! grub-install --target=x86_64-efi --efi-directory=/boot --removable --recheck 2>&1; then
+    if ! $GRUB_INSTALL --target=x86_64-efi --efi-directory=/boot --removable --recheck 2>&1; then
         echo "ERROR: GRUB UEFI --removable install failed"
         exit 1
     fi
@@ -244,8 +247,8 @@ validate_boot_artifacts() {
     done
 }
 
-require_cmd grub-install
-require_cmd findmnt
+require_cmd "$GRUB_INSTALL"
+require_cmd "$FINDMNT"
 
 if [ -d /sys/firmware/efi ]; then
     echo "==> Detected UEFI boot mode"
@@ -270,7 +273,7 @@ if [ -d /sys/firmware/efi ]; then
     validate_boot_artifacts
 else
     echo "==> Detected BIOS boot mode"
-    if ! grub-install --target=i386-pc --recheck "$DISK" 2>&1; then
+    if ! $GRUB_INSTALL --target=i386-pc --recheck "$DISK" 2>&1; then
         echo "ERROR: GRUB BIOS install failed"
         exit 1
     fi

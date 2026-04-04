@@ -23,7 +23,7 @@ class TestConfigureGrubScript(unittest.TestCase):
     def test_validates_root_partition_uuid(self):
         """Script should validate root partition and UUID."""
         self.assertIn('if [ ! -b "$ROOT_PART" ]; then', self.script)
-        self.assertIn("ROOT_UUID=$(blkid -s UUID -o value", self.script)
+        self.assertIn("ROOT_UUID=$($BLKID -s UUID -o value", self.script)
         self.assertIn("Could not detect UUID for root partition", self.script)
 
     def test_uses_idempotent_grub_key_updates(self):
@@ -35,7 +35,7 @@ class TestConfigureGrubScript(unittest.TestCase):
 
     def test_validates_generated_grub_cfg_contains_kernel(self):
         """Script should fail when grub.cfg misses linux-mados entry."""
-        self.assertIn("grub-mkconfig -o /boot/grub/grub.cfg", self.script)
+        self.assertIn("$GRUB_MKCONFIG -o /boot/grub/grub.cfg", self.script)
         self.assertIn("grub.cfg does not contain linux-mados entry", self.script)
 
 

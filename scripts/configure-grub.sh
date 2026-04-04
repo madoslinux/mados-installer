@@ -11,6 +11,9 @@ if [ -z "$ROOT_PART" ]; then
     exit 1
 fi
 
+GRUB_MKCONFIG="/usr/sbin/grub-mkconfig"
+BLKID="/usr/bin/blkid"
+
 require_cmd() {
     local cmd="$1"
     if ! command -v "$cmd" >/dev/null 2>&1; then
@@ -53,15 +56,15 @@ ensure_cmdline_token() {
     set_grub_key "GRUB_CMDLINE_LINUX" "\"$current\""
 }
 
-require_cmd grub-mkconfig
-require_cmd blkid
+require_cmd "$GRUB_MKCONFIG"
+require_cmd "$BLKID"
 
 if [ ! -b "$ROOT_PART" ]; then
     echo "ERROR: ROOT_PART is not a valid block device: $ROOT_PART"
     exit 1
 fi
 
-ROOT_UUID=$(blkid -s UUID -o value "$ROOT_PART" 2>/dev/null || true)
+ROOT_UUID=$($BLKID -s UUID -o value "$ROOT_PART" 2>/dev/null || true)
 if [ -z "$ROOT_UUID" ]; then
     echo "ERROR: Could not detect UUID for root partition: $ROOT_PART"
     exit 1
@@ -96,7 +99,7 @@ ensure_cmdline_token "plymouth.use-simpledrm=0"
 # GRUB's auto-generated linux entry is correct for this layout and avoids duplicate/broken menu entries.
 rm -f /etc/grub.d/09_mados
 
-grub-mkconfig -o /boot/grub/grub.cfg
+$GRUB_MKCONFIG -o /boot/grub/grub.cfg
 
 if [ ! -f /boot/grub/grub.cfg ]; then
     echo "ERROR: grub.cfg was not generated!"

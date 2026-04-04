@@ -24,7 +24,7 @@ class TestSetupBootloaderScript(unittest.TestCase):
         """UEFI flow should validate ESP mount before installing GRUB."""
         self.assertIn("ensure_efi_mount()", self.script)
         self.assertIn("mountpoint -q /boot", self.script)
-        self.assertIn("findmnt -n -o FSTYPE /boot", self.script)
+        self.assertIn("$FINDMNT -n -o FSTYPE /boot", self.script)
         self.assertIn("/boot must be mounted as vfat for EFI", self.script)
 
     def test_secure_boot_setup_mode_flow_uses_sbctl(self):
