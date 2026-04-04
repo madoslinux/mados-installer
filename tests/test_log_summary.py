@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Tests for log-summary.py"""
 
-import unittest
-import subprocess
 import os
+import subprocess
+import unittest
 
 SCRIPT_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -35,23 +35,25 @@ class TestLogSummaryScript(unittest.TestCase):
         """Test that script produces base64-like output"""
         test_log = "/tmp/test-mados-install.log"
         with open(test_log, "w") as f:
-            f.write("""
+            f.write(
+                """
 [PROGRESS 1/8] Starting installation
 [ERROR] Something failed
   WARNING: Low disk space
 [OK] Installation completed
-""")
+"""
+            )
         try:
             result = subprocess.run(
                 ["python3", SCRIPT_PATH, test_log], capture_output=True, text=True
             )
             lines = result.stdout.strip().split("\n")
             compressed_line = [
-                l
-                for l in lines
-                if not l.startswith("Compressed")
-                and not l.startswith("Decoder")
-                and not l.startswith("QR API")
+                line
+                for line in lines
+                if not line.startswith("Compressed")
+                and not line.startswith("Decoder")
+                and not line.startswith("QR API")
             ][0]
             self.assertGreater(len(compressed_line), 50)
             self.assertTrue(
@@ -85,7 +87,8 @@ class TestLogSummaryScript(unittest.TestCase):
         """Test that script reports statistics"""
         test_log = "/tmp/test-mados-install.log"
         with open(test_log, "w") as f:
-            f.write("""
+            f.write(
+                """
 [PROGRESS 1/8] Step 1
 [PROGRESS 2/8] Step 2
 [ERROR] Failed
@@ -93,7 +96,8 @@ class TestLogSummaryScript(unittest.TestCase):
   WARNING: Warning 2
 [OK] Success 1
 [OK] Success 2
-""")
+"""
+            )
         try:
             result = subprocess.run(
                 ["python3", SCRIPT_PATH, test_log], capture_output=True, text=True

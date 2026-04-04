@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """madOS Installer - Entry point for: python3 -m mados_installer"""
 
-import sys
 import os
+import sys
 
 log_file = "/var/log/mados-installer-debug.log"
+
 
 def log(msg, level="INFO"):
     line = f"[mados-installer] [{level}] {msg}"
@@ -12,8 +13,9 @@ def log(msg, level="INFO"):
     try:
         with open(log_file, "a") as f:
             f.write(line + "\n")
-    except:
+    except OSError:
         pass
+
 
 log("=" * 60, "START")
 log(f"Python: {sys.executable}", "INFO")
@@ -25,15 +27,17 @@ log(f"DEMO_MODE: {os.environ.get('DEMO_MODE', '(not set)')}", "INFO")
 
 try:
     import gi
+
     gi.require_version("Gtk", "3.0")
     from gi.repository import Gtk
-    
+
     log("GTK initialized", "INFO")
-    
+
     from app import MadOSInstaller
+
     log("Creating app...", "INFO")
     app = MadOSInstaller()
-    
+
     log("Starting Gtk.main()", "INFO")
     app.connect("destroy", Gtk.main_quit)
     Gtk.main()
@@ -42,6 +46,7 @@ try:
 except Exception as e:
     log(f"ERROR: {e}", "ERROR")
     import traceback
+
     log(traceback.format_exc(), "ERROR")
     sys.exit(1)
 

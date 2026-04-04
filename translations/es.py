@@ -68,6 +68,7 @@ TRANSLATIONS = {
         "preparing": "Preparando instalación...",
         "success_title": "¡Instalación Completa!",
         "success_msg": '¡El sistema base de madOS se ha instalado!\n\n<b>En el primer arranque</b>, los paquetes y\nconfiguración restantes se instalarán automáticamente.\nRequiere conexión a internet.\n\nPróximos pasos:\n1. Remover el medio de instalación\n2. Reiniciar tu computadora\n3. Esperar a que termine la configuración inicial\n4. Iniciar sesión con tus credenciales\n5. Escribe "opencode" para iniciar el asistente IA',
+        "secure_boot_note": "Si Secure Boot está habilitado, en el primer arranque puede abrirse MokManager para registrar la clave de madOS. Usa la contraseña guardada en <b>/root/mok-password.txt</b> dentro del sistema instalado.",
         "reboot_now": "Reiniciar Ahora",
         "exit_live": "Salir al Sistema Live",
         "show_log": "▶ Ver registro",

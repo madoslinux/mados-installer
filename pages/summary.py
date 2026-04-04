@@ -4,8 +4,9 @@ madOS Installer - Installation summary page
 
 from gi.repository import Gtk
 
-from config import NORD_FROST, NORD_AURORA, NORD_SNOW_STORM
-from .base import create_page_header, create_nav_buttons
+from config import NORD_AURORA, NORD_FROST, NORD_SNOW_STORM
+
+from .base import create_nav_buttons, create_page_header
 
 
 def create_summary_page(app):
@@ -159,5 +160,23 @@ def update_summary(app):
     sw_info.set_line_wrap(True)
     sw_card.pack_start(sw_info, False, False, 0)
     app.summary_container.pack_start(sw_card, False, False, 0)
+
+    # ── Secure Boot note ──
+    sb_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+    sb_card.get_style_context().add_class("summary-card-system")
+
+    sb_title = Gtk.Label()
+    sb_title.set_markup(
+        f'<span weight="bold" foreground="{NORD_SNOW_STORM["nord4"]}">Secure Boot</span>'
+    )
+    sb_title.set_halign(Gtk.Align.START)
+    sb_card.pack_start(sb_title, False, False, 0)
+
+    sb_info = Gtk.Label()
+    sb_info.set_markup(f'<span size="9000">{app.t("secure_boot_note")}</span>')
+    sb_info.set_halign(Gtk.Align.START)
+    sb_info.set_line_wrap(True)
+    sb_card.pack_start(sb_info, False, False, 0)
+    app.summary_container.pack_start(sb_card, False, False, 0)
 
     app.summary_container.show_all()

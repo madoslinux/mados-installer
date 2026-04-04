@@ -1,3 +1,5 @@
+default_install_hook_types: [pre-commit, pre-push]
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
@@ -12,22 +14,42 @@ repos:
     rev: 24.1.1
     hooks:
       - id: black
+        stages: [pre-commit, pre-push]
+        files: ^(scripts/|tests/|\.pre-commit-config\.yaml$|\.flake8$)
 
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2
     hooks:
       - id: isort
+        stages: [pre-commit, pre-push]
+        files: ^(scripts/|tests/)
 
   - repo: https://github.com/pycqa/flake8
     rev: 7.0.0
     hooks:
       - id: flake8
+        stages: [pre-push]
+        files: ^(scripts/|tests/)
 
   - repo: local
     hooks:
-      - id: tests
-        name: Run Tests
-        entry: python3 -m pytest tests/ -v
+      - id: shell-syntax
+        name: Validate shell script syntax
+        entry: bash -c 'for f in scripts/*.sh; do bash -n "$f"; done'
         language: system
         pass_filenames: false
-        types: [python]
+        stages: [pre-commit, pre-push]
+
+      - id: tests-fast
+        name: Run fast critical tests
+        entry: python3 -m unittest tests.test_config_script tests.test_setup_bootloader tests.test_configure_grub -v
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+
+      - id: tests-full
+        name: Run full unit tests
+        entry: python3 -m unittest discover -s tests -v
+        language: system
+        pass_filenames: false
+        stages: [pre-push]

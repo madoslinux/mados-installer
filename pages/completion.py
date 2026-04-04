@@ -2,8 +2,8 @@
 madOS Installer - Completion page
 """
 
-import subprocess
 import os
+import subprocess
 
 from gi.repository import Gtk
 
@@ -73,6 +73,17 @@ def create_completion_page(app):
     info_card.pack_start(info, False, False, 0)
     content.pack_start(info_card, False, False, 0)
 
+    if not DEMO_MODE:
+        secure_boot_note = Gtk.Label()
+        secure_boot_note.set_markup(
+            f'<span size="8400">{app.t("secure_boot_note")}</span>'
+        )
+        secure_boot_note.set_halign(Gtk.Align.CENTER)
+        secure_boot_note.set_justify(Gtk.Justification.CENTER)
+        secure_boot_note.set_line_wrap(True)
+        secure_boot_note.set_margin_top(8)
+        content.pack_start(secure_boot_note, False, False, 0)
+
     # Buttons
     btn_box = Gtk.Box(spacing=12)
     btn_box.set_halign(Gtk.Align.CENTER)
@@ -119,7 +130,9 @@ def create_error_page(app):
     left_content.set_hexpand(True)
 
     icon = Gtk.Label()
-    icon.set_markup('<span size="40000" weight="bold" foreground="#dc7878">&#x2717;</span>')
+    icon.set_markup(
+        '<span size="40000" weight="bold" foreground="#dc7878">&#x2717;</span>'
+    )
     icon.set_halign(Gtk.Align.CENTER)
     icon.set_margin_bottom(8)
     left_content.pack_start(icon, False, False, 0)
@@ -135,7 +148,9 @@ def create_error_page(app):
     info_card.set_hexpand(True)
 
     error_info = Gtk.Label()
-    error_info.set_markup('<span size="9000" foreground="#dc7878">Installation failed. Scan the QR code to share logs.</span>')
+    error_info.set_markup(
+        '<span size="9000" foreground="#dc7878">Installation failed. Scan the QR code to share logs.</span>'
+    )
     error_info.set_justify(Gtk.Justification.LEFT)
     error_info.set_line_wrap(True)
     info_card.pack_start(error_info, False, False, 0)
@@ -169,10 +184,8 @@ def create_error_page(app):
 def _create_qr_section(app):
     """Create QR code section for log sharing."""
     try:
-        from scripts.log_summary import (
-            create_log_summary,
-            generate_decoder_url,
-        )
+        from scripts.log_summary import (create_log_summary,
+                                         generate_decoder_url)
 
         log_path = LOG_FILE
         if not os.path.exists(log_path):
@@ -198,8 +211,9 @@ def _create_qr_section(app):
 
         qr_image = Gtk.Image()
         try:
-            import qrcode
             import tempfile
+
+            import qrcode
             from gi.repository import GdkPixbuf
 
             qr = qrcode.QRCode(
@@ -221,6 +235,7 @@ def _create_qr_section(app):
             print(f"Warning: Could not generate local QR: {e}")
             try:
                 import urllib.request
+
                 qr_api_url = (
                     f"https://api.qrserver.com/v1/create-qr-code/"
                     f"?size=300x300&data={urllib.parse.quote(decoder_url)}"
@@ -229,7 +244,9 @@ def _create_qr_section(app):
                     img_data = response.read()
                 with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
                     f.write(img_data)
-                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(f.name, 300, 300, True)
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(
+                        f.name, 300, 300, True
+                    )
                     qr_image.set_from_pixbuf(pixbuf)
                     os.unlink(f.name)
                 print("QR: generated via API fallback")

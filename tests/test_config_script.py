@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Tests for config_script.py"""
 
-import unittest
+import os
 import re
 import sys
-import os
+import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -32,6 +32,10 @@ class TestConfigScript(unittest.TestCase):
         self.assertIn("/usr/local/bin/clean-live-artifacts.sh", script)
         self.assertIn("/usr/local/bin/setup-bootloader.sh", script)
         self.assertIn("/usr/local/bin/configure-grub.sh", script)
+        self.assertLess(
+            script.index('/usr/local/bin/setup-bootloader.sh "$DISK"'),
+            script.index('/usr/local/bin/configure-grub.sh "$ROOT_PART"'),
+        )
         self.assertIn("/usr/local/bin/setup-plymouth.sh", script)
         self.assertIn("/usr/local/bin/rebuild-initramfs.sh", script)
         self.assertIn("/usr/local/bin/enable-services.sh", script)

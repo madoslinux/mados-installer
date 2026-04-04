@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Tests for utility functions"""
 
-import unittest
-import sys
 import os
-import tempfile
 import shutil
+import sys
+import tempfile
+import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -149,7 +149,6 @@ class TestCopyItem(unittest.TestCase):
         src_dir = tempfile.mkdtemp()
         dest_dir = tempfile.mkdtemp()
         src_file = os.path.join(src_dir, "test.txt")
-        dest_file = os.path.join(dest_dir, "test.txt")
 
         with open(src_file, "w") as f:
             f.write("test content")

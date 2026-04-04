@@ -11,7 +11,8 @@ import os
 DEMO_MODE = os.environ.get("DEMO_MODE", "").lower() == "true"
 # ================================
 
-from theme.colors import NORD_POLAR_NIGHT, NORD_SNOW_STORM, NORD_FROST, NORD_AURORA
+from theme.colors import (NORD_AURORA, NORD_FROST, NORD_POLAR_NIGHT,
+                          NORD_SNOW_STORM)
 
 # Minimum disk size (GB) for installation.  The live rootfs with rsync
 # excludes and post-copy cleanup fits in ~5-7 GB plus 1 GB EFI, so 10 GB
@@ -97,6 +98,8 @@ PACKAGES_PHASE1 = [
     "amd-ucode",
     "grub",
     "efibootmgr",
+    "shim",
+    "mokutil",
     "os-prober",
     "dosfstools",
     "sbctl",

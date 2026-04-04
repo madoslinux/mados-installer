@@ -4,10 +4,10 @@ Extract installation summary from log for QR code generation.
 Outputs compressed, QR-friendly log with only essential information.
 """
 
+import base64
+import gzip
 import re
 import sys
-import gzip
-import base64
 import urllib.parse
 
 
@@ -82,11 +82,17 @@ def create_log_summary(log_path):
     summary = extract_summary(full_log)
     compressed = compress_for_qr(summary)
 
-    errors = len([l for l in summary.split("\n") if "[ERROR]" in l or "[FATAL]" in l])
-    warnings = len([l for l in summary.split("\n") if "WARNING" in l])
-    ok_count = len([l for l in summary.split("\n") if l.startswith("[OK]")])
+    errors = len(
+        [line for line in summary.split("\n") if "[ERROR]" in line or "[FATAL]" in line]
+    )
+    warnings = len([line for line in summary.split("\n") if "WARNING" in line])
+    ok_count = len([line for line in summary.split("\n") if line.startswith("[OK]")])
     steps = len(
-        [l for l in summary.split("\n") if re.match(r"\[PROGRESS \d+/\d+\]", l)]
+        [
+            line
+            for line in summary.split("\n")
+            if re.match(r"\[PROGRESS \d+/\d+\]", line)
+        ]
     )
 
     stats = {"steps": steps, "errors": errors, "warnings": warnings, "ok": ok_count}
@@ -117,9 +123,14 @@ if __name__ == "__main__":
     if error:
         print(f"Error: {error}", file=sys.stderr)
         sys.exit(1)
+    if compressed is None or stats is None:
+        print("Error: failed to generate log summary", file=sys.stderr)
+        sys.exit(1)
 
     print(
-        f"Compressed log ({stats['steps']} steps, {stats['errors']} errors, {stats['warnings']} warnings, {stats['ok']} ok):"
+        "Compressed log "
+        f"({stats['steps']} steps, {stats['errors']} errors, "
+        f"{stats['warnings']} warnings, {stats['ok']} ok):"
     )
     print(compressed)
     print()

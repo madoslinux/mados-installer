@@ -68,6 +68,7 @@ TRANSLATIONS = {
         "preparing": "Préparation installation...",
         "success_title": "Installation Terminée!",
         "success_msg": "Le système de base madOS a été installé!\n\n<b>Au premier démarrage</b>, les paquets et\nla configuration restants seront installés automatiquement.\nCela nécessite une connexion internet.\n\nÉtapes suivantes:\n1. Retirer le média d'installation\n2. Redémarrer votre ordinateur\n3. Attendre la fin de la configuration initiale\n4. Connectez-vous avec vos identifiants\n5. Tapez \"opencode\" pour démarrer l'assistant IA",
+        "secure_boot_note": "Si Secure Boot est activé, le premier démarrage peut ouvrir MokManager pour inscrire la clé madOS. Utilisez le mot de passe enregistré dans <b>/root/mok-password.txt</b> sur le système installé.",
         "reboot_now": "Redémarrer Maintenant",
         "exit_live": "Quitter vers Système Live",
         "show_log": "▶ Afficher le journal",

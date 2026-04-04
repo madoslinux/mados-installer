@@ -68,6 +68,7 @@ TRANSLATIONS = {
         "preparing": "インストール準備中...",
         "success_title": "インストール完了！",
         "success_msg": 'madOSベースシステムがインストールされました！\n\n<b>初回起動時</b>に、残りのパッケージと設定が\n自動的にインストールされます。\nインターネット接続が必要です。\n\n次のステップ:\n1. インストールメディアを取り外す\n2. コンピュータを再起動\n3. 初回セットアップの完了を待つ\n4. 認証情報でログイン\n5. "opencode"と入力してAIアシスタントを起動',
+        "secure_boot_note": "Secure Bootが有効な場合、初回起動時にmadOSキー登録のためMokManagerが開くことがあります。インストール済みシステムの <b>/root/mok-password.txt</b> に保存されたパスワードを使用してください。",
         "reboot_now": "今すぐ再起動",
         "exit_live": "Liveシステムに終了",
         "show_log": "▶ ログを表示",
