@@ -2,7 +2,8 @@
 madOS Installer - Nord theme CSS
 """
 
-from theme.colors import NORD_POLAR_NIGHT, NORD_SNOW_STORM, NORD_FROST, NORD_AURORA
+from theme.colors import (NORD_AURORA, NORD_FROST, NORD_POLAR_NIGHT,
+                          NORD_SNOW_STORM)
 
 CSS = f"""
 * {{
@@ -10,7 +11,7 @@ CSS = f"""
     font-family: "Noto Sans", "Noto Sans CJK JP", "Noto Sans CJK KR", "Noto Sans CJK SC", "Noto Sans CJK TC", "Noto Sans CJK HK", "Noto Sans Emoji", "Noto Color Emoji", "Segoe UI Emoji", "Apple Color Emoji", sans-serif;
 }}
 
-window {{ 
+window {{
     background-color: {NORD_POLAR_NIGHT["nord0"]};
     color: {NORD_SNOW_STORM["nord6"]};
 }}
@@ -22,18 +23,18 @@ window {{
     padding: 5px;
 }}
 
-.title {{ 
-    font-size: 24px; 
-    font-weight: bold; 
-    color: {NORD_SNOW_STORM["nord6"]}; 
+.title {{
+    font-size: 24px;
+    font-weight: bold;
+    color: {NORD_SNOW_STORM["nord6"]};
 }}
 
-.subtitle {{ 
-    font-size: 13px; 
-    color: {NORD_FROST["nord8"]}; 
+.subtitle {{
+    font-size: 13px;
+    color: {NORD_FROST["nord8"]};
 }}
 
-label {{ 
+label {{
     color: {NORD_SNOW_STORM["nord6"]};
     background-color: transparent;
 }}

@@ -2,14 +2,14 @@
 madOS Installer - Pages package
 """
 
-from .welcome import create_welcome_page
-from .disk import create_disk_page
-from .partitioning import create_partitioning_page
-from .user import create_user_page
-from .locale import create_locale_page
-from .summary import create_summary_page
-from .installation import create_installation_page
 from .completion import create_completion_page, create_error_page
+from .disk import create_disk_page
+from .installation import create_installation_page
+from .locale import create_locale_page
+from .partitioning import create_partitioning_page
+from .summary import create_summary_page
+from .user import create_user_page
+from .welcome import create_welcome_page
 
 __all__ = [
     "create_welcome_page",

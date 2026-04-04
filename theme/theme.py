@@ -2,7 +2,7 @@
 madOS Installer - Nord theme application
 """
 
-from gi.repository import Gtk, Gdk
+from gi.repository import Gdk, Gtk
 
 from theme.css import CSS
 

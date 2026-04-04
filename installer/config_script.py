@@ -4,11 +4,7 @@ madOS Installer - Configuration script builder
 
 import re
 
-from config import (
-    LOCALE_KB_MAP,
-    LOCALE_MAP,
-    TIMEZONES,
-)
+from config import LOCALE_KB_MAP, LOCALE_MAP, TIMEZONES
 
 
 def _escape_shell(s):
@@ -47,7 +43,7 @@ def build_config_script(data):
     root_part = f"{part_prefix}3"
     boot_part = f"{part_prefix}2"
 
-    return f'''#!/bin/bash
+    return f"""#!/bin/bash
 set -e
 
 # madOS Installer - System Configuration Wrapper
@@ -91,7 +87,7 @@ echo "[PROGRESS 8/8] Applying final configuration..."
 /usr/local/bin/apply-configuration.sh "$USERNAME" "$LOCALE" "$VENTOY_PERSIST_SIZE"
 
 echo "System configuration complete."
-'''
+"""
 
 
 def write_config_script(data, path="/mnt/root/configure.sh"):

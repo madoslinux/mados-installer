@@ -4,7 +4,7 @@ madOS Installer - Welcome page
 
 from gi.repository import Gtk
 
-from config import NORD_POLAR_NIGHT, NORD_SNOW_STORM, NORD_FROST
+from config import NORD_FROST, NORD_POLAR_NIGHT, NORD_SNOW_STORM
 from translations import TRANSLATIONS
 from utils import load_logo
 

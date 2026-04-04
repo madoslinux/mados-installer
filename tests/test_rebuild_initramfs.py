@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Tests for rebuild-initramfs.sh script"""
 
-import unittest
-import subprocess
 import os
-import tempfile
 import shutil
+import subprocess
+import tempfile
+import unittest
 
 
 class TestRebuildInitramfsScript(unittest.TestCase):
@@ -78,7 +78,7 @@ ahci                   40960  1"""
         mkinitcpio_line = None
 
         for i, line in enumerate(lines):
-            if "MODULES=\"\"" in line:
+            if 'MODULES=""' in line:
                 modules_line = i
             if "mkinitcpio -p" in line:
                 mkinitcpio_line = i

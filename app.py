@@ -3,8 +3,8 @@ madOS Installer - Main application window
 """
 
 import os
-import sys
 import subprocess
+import sys
 
 
 def _ensure_qrcode():
@@ -32,21 +32,14 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 from config import DEMO_MODE, LOCALE_MAP
-from translations import TRANSLATIONS
-from theme import apply_theme
-from utils import random_suffix, show_error
-from pages import (
-    create_welcome_page,
-    create_disk_page,
-    create_partitioning_page,
-    create_user_page,
-    create_locale_page,
-    create_summary_page,
-    create_installation_page,
-    create_completion_page,
-    create_error_page,
-)
+from pages import (create_completion_page, create_disk_page, create_error_page,
+                   create_installation_page, create_locale_page,
+                   create_partitioning_page, create_summary_page,
+                   create_user_page, create_welcome_page)
 from pages.partitioning import refresh_partitioning_content
+from theme import apply_theme
+from translations import TRANSLATIONS
+from utils import random_suffix, show_error
 
 
 class MadOSInstaller(Gtk.Window):

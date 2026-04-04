@@ -4,8 +4,10 @@ madOS Installer - Regional settings (locale/timezone) page
 
 from gi.repository import Gtk
 
-from config import TIMEZONES, KEYBOARDS, NORD_POLAR_NIGHT, NORD_SNOW_STORM, NORD_FROST
-from .base import create_page_header, create_nav_buttons
+from config import (KEYBOARDS, NORD_FROST, NORD_POLAR_NIGHT, NORD_SNOW_STORM,
+                    TIMEZONES)
+
+from .base import create_nav_buttons, create_page_header
 
 
 def create_locale_page(app):

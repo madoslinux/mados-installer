@@ -9,13 +9,8 @@ import shlex
 import subprocess
 import time
 
-from config import (
-    DEMO_MODE,
-    RSYNC_EXCLUDES,
-    POST_COPY_CLEANUP,
-    ARCHISO_PACKAGES,
-    PACKAGES_NVIDIA,
-)
+from config import (ARCHISO_PACKAGES, DEMO_MODE, PACKAGES_NVIDIA,
+                    POST_COPY_CLEANUP, RSYNC_EXCLUDES)
 from utils import log_message, set_progress
 
 MNT_USR_LOCAL_BIN = "/mnt/usr/local/bin/"

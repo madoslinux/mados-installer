@@ -6,16 +6,11 @@ import subprocess
 
 from gi.repository import Gtk
 
-from config import (
-    DEMO_MODE,
-    MIN_DISK_SIZE_GB,
-    NORD_POLAR_NIGHT,
-    NORD_SNOW_STORM,
-    NORD_FROST,
-    NORD_AURORA,
-)
+from config import (DEMO_MODE, MIN_DISK_SIZE_GB, NORD_AURORA, NORD_FROST,
+                    NORD_POLAR_NIGHT, NORD_SNOW_STORM)
 from utils import show_error, style_dialog
-from .base import create_page_header, create_nav_buttons
+
+from .base import create_nav_buttons, create_page_header
 
 
 def create_disk_page(app):

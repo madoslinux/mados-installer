@@ -119,7 +119,7 @@
 <body>
     <div class="container">
         <h1>madOS Installer Log Decoder</h1>
-        
+
         <div class="card" id="result-card">
             <label>Installation Summary:</label>
             <div id="result">
@@ -169,18 +169,18 @@
                 while (base64.length % 4 !== 0) {
                     base64 += '=';
                 }
-                
+
                 const binaryString = atob(base64);
                 const bytes = new Uint8Array(binaryString.length);
                 for (let i = 0; i < binaryString.length; i++) {
                     bytes[i] = binaryString.charCodeAt(i);
                 }
-                
+
                 const ds = new DecompressionStream('gzip');
                 const writer = ds.writable.getWriter();
                 writer.write(bytes);
                 writer.close();
-                
+
                 const result = await new Response(ds.readable).text();
                 displayResult(result, resultDiv, statsCard);
             } catch (e) {
@@ -195,7 +195,7 @@
 
             decoded.split('\n').forEach(line => {
                 if (!line.trim()) return;
-                
+
                 let cssClass = '';
                 if (line.includes('[ERROR]') || line.includes('[FATAL]')) {
                     cssClass = 'error';

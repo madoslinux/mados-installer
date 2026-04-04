@@ -144,11 +144,11 @@ class MadOSInstaller(Gtk.Window):
 ```python
 def build_config_script(data):
     disk = data["disk"]
-    
+
     timezone = data["timezone"]
     if timezone not in TIMEZONES:
         raise ValueError(f"Invalid timezone: {timezone}")
-    
+
     username = data["username"]
     if not re.match(r"^[a-z_][a-z0-9_-]*$", username):
         raise ValueError(f"Invalid username: {username}")
@@ -203,7 +203,7 @@ class TestConfigScript(unittest.TestCase):
     def test_basic_replacements(self):
         """Test basic variable replacements work"""
         script = build_config_script(self.data)
-        
+
         self.assertIn("/usr/share/zoneinfo/Europe/Madrid", script)
         self.assertIn("es_ES.UTF-8 UTF-8", script)
 
@@ -211,7 +211,7 @@ class TestConfigScript(unittest.TestCase):
         """Test invalid username raises error"""
         data = self.data.copy()
         data["username"] = "123invalid"
-        
+
         with self.assertRaises(ValueError):
             build_config_script(data)
 ```

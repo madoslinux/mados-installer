@@ -7,9 +7,9 @@ import os
 import random
 import string
 
-from gi.repository import Gtk, GLib, GdkPixbuf
+from gi.repository import GdkPixbuf, GLib, Gtk
 
-from config import NORD_FROST, DEMO_MODE
+from config import DEMO_MODE, NORD_FROST
 
 
 def random_suffix(length=4):

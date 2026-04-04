@@ -4,33 +4,24 @@ madOS Installer - Installation progress page and install logic
 
 import os
 import subprocess
-import time
 import threading
+import time
 import urllib.parse
 
-from gi.repository import Gtk, GLib, GdkPixbuf
+from gi.repository import GdkPixbuf, GLib, Gtk
 
 from config import DEMO_MODE, NORD_FROST
-from utils import log_message, set_progress, show_error, save_log_to_file
+from installer import (_check_required_commands, build_config_script,
+                       rsync_rootfs_with_progress, run_chroot_with_progress,
+                       step_configure_mados_updater, step_configure_snapper,
+                       step_copy_installer_scripts, step_copy_live_files,
+                       step_create_base_snapshot, step_create_btrfs_subvolumes,
+                       step_format_partitions, step_generate_fstab,
+                       step_install_nvidia_if_needed, step_mount_filesystems,
+                       step_partition_disk)
+from utils import log_message, save_log_to_file, set_progress, show_error
 
 from .base import create_page_header
-from installer import (
-    step_partition_disk,
-    step_format_partitions,
-    step_create_btrfs_subvolumes,
-    step_mount_filesystems,
-    step_copy_live_files,
-    step_copy_installer_scripts,
-    step_generate_fstab,
-    step_configure_snapper,
-    step_configure_mados_updater,
-    step_create_base_snapshot,
-    rsync_rootfs_with_progress,
-    run_chroot_with_progress,
-    build_config_script,
-    _check_required_commands,
-    step_install_nvidia_if_needed,
-)
 
 
 def create_installation_page(app):

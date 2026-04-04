@@ -4,7 +4,7 @@ madOS Installer - Shared page UI helpers
 
 from gi.repository import Gtk
 
-from config import NORD_POLAR_NIGHT, NORD_SNOW_STORM, NORD_FROST, NORD_AURORA
+from config import NORD_AURORA, NORD_FROST, NORD_POLAR_NIGHT, NORD_SNOW_STORM
 
 
 def create_page_header(app, title, step_num, total_steps=7):

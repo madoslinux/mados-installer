@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Tests for partitioning functions and installation data validation"""
 
-import unittest
-import sys
 import os
+import sys
+import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -68,7 +68,7 @@ class TestInstallDataDefaults(unittest.TestCase):
 
     def test_install_data_defaults(self):
         """Test that config constants are properly defined"""
-        from config import DEMO_MODE, MIN_DISK_SIZE_GB, TIMEZONES, LOCALE_MAP
+        from config import DEMO_MODE, LOCALE_MAP, MIN_DISK_SIZE_GB, TIMEZONES
 
         self.assertIsInstance(DEMO_MODE, bool)
         self.assertIsInstance(MIN_DISK_SIZE_GB, int)
