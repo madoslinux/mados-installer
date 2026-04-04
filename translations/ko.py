@@ -5,7 +5,7 @@ madOS Installer - Korean translations
 TRANSLATIONS = {
     "한국어": {
         "title": "madOS",
-        "subtitle": "madOS Archlinux Distro | Powered by OpenCode",
+        "subtitle": "madOS Archlinux Distro | Powered by Ollama and OpenCode",
         "features": [
             "ZRAM 압축",
             "Sway 컴포지터",

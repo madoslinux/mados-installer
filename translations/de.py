@@ -5,7 +5,7 @@ madOS Installer - German translations
 TRANSLATIONS = {
     "Deutsch": {
         "title": "madOS",
-        "subtitle": "madOS Archlinux Distro | Powered by OpenCode",
+        "subtitle": "madOS Archlinux Distro | Powered by Ollama and OpenCode",
         "features": [
             "ZRAM-Kompression",
             "Sway Compositor",
