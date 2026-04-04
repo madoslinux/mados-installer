@@ -39,28 +39,9 @@ sed -i 's/^#\?GRUB_DEFAULT=.*/GRUB_DEFAULT=0/' /etc/default/grub
     echo 'GRUB_DISABLE_LINUX_UUID=false' >> /etc/default/grub
 echo 'GRUB_TERMINAL="console"' >> /etc/default/grub
 
-ROOT_UUID=$(blkid -s UUID -o value "$ROOT_PART" 2>/dev/null || echo "")
-if [ -n "$ROOT_UUID" ]; then
-    echo "  Root partition UUID: $ROOT_UUID"
-    cat > /etc/grub.d/09_mados <<EOFGRUB
-#!/bin/sh
-cat <<'GRUB_EOF'
-menuentry 'madOS Linux' {
-    load_video
-    set gfxpayload=keep
-    insmod gzio
-    insmod part_gpt
-    insmod ext2
-    search --no-floppy --fs-uuid --set=root ${ROOT_UUID}
-    echo        'Loading Linux ${KERNEL} ...'
-    linux       /vmlinuz-${KERNEL} root=UUID=${ROOT_UUID} rw zswap.enabled=0 splash quiet
-    echo        'Loading initial ramdisk ...'
-    initrd      /initramfs-${KERNEL}.img
-}
-GRUB_EOF
-EOFGRUB
-    chmod +x /etc/grub.d/09_mados
-fi
+# Remove legacy custom entry if present.
+# GRUB's auto-generated linux entry is correct for this layout and avoids duplicate/broken menu entries.
+rm -f /etc/grub.d/09_mados
 
 grub-mkconfig -o /boot/grub/grub.cfg
 
