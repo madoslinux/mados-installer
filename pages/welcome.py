@@ -86,7 +86,7 @@ def create_welcome_page(app):
     # ── Version footer ──
     version = Gtk.Label()
     version.set_markup(
-        f'<span size="small" foreground="{NORD_POLAR_NIGHT["nord3"]}">v1.0 • Arch Linux • x86_64</span>'
+        f'<span size="small" foreground="{NORD_POLAR_NIGHT["nord3"]}">v1.0 • madOS Archlinux Distro • x86_64</span>'
     )
     version.set_halign(Gtk.Align.CENTER)
     version.set_margin_top(6)

@@ -5,7 +5,7 @@ madOS Installer - Spanish translations
 TRANSLATIONS = {
     "Español": {
         "title": "madOS",
-        "subtitle": "Arch Linux Orquestado por IA | Powered by OpenCode",
+        "subtitle": "madOS Archlinux Distro | Powered by OpenCode",
         "features": [
             "Compresión ZRAM",
             "Compositor Sway",

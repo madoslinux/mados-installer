@@ -5,7 +5,7 @@ madOS Installer - Japanese translations
 TRANSLATIONS = {
     "日本語": {
         "title": "madOS",
-        "subtitle": "AIオーケストレーションArch Linux | Powered by OpenCode",
+        "subtitle": "madOS Archlinux Distro | Powered by OpenCode",
         "features": [
             "ZRAM圧縮",
             "Swayコンポジター",

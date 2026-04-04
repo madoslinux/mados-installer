@@ -5,7 +5,7 @@ madOS Installer - Chinese translations
 TRANSLATIONS = {
     "中文": {
         "title": "madOS",
-        "subtitle": "AI编排的Arch Linux | Powered by OpenCode",
+        "subtitle": "madOS Archlinux Distro | Powered by OpenCode",
         "features": [
             "ZRAM压缩",
             "Sway合成器",
