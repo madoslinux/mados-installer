@@ -21,7 +21,6 @@ enable_service systemd-resolved
 enable_service earlyoom
 enable_service systemd-timesyncd
 enable_service lightdm
-enable_service iwd
 enable_service bluetooth
 enable_service mados-gpu-wait.service
 enable_service fail2ban

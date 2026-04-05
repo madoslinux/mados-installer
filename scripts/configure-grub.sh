@@ -53,7 +53,23 @@ ensure_cmdline_token() {
         current="${current:+$current }$token"
     fi
 
+    # Drop malformed bare subvol= tokens (invalid as standalone kernel args).
+    current=$(printf '%s' "$current" | sed -E 's/(^|[[:space:]])subvol=[^[:space:]]+([[:space:]]|$)/ /g; s/[[:space:]]+/ /g; s/^ //; s/ $//')
     set_grub_key "GRUB_CMDLINE_LINUX" "\"$current\""
+}
+
+ensure_btrfs_rootflags() {
+    local root_subvol=""
+
+    if [[ -f /etc/fstab ]]; then
+        root_subvol=$(awk '$2 == "/" && $3 == "btrfs" { n=split($4, opts, ","); for (i=1; i<=n; i++) if (opts[i] ~ /^subvol=/) { print opts[i]; exit } }' /etc/fstab)
+    fi
+
+    if [[ -n "$root_subvol" ]]; then
+        ensure_cmdline_token "rootflags=${root_subvol}"
+    else
+        ensure_cmdline_token "rootflags=subvol=@"
+    fi
 }
 
 require_cmd "$GRUB_MKCONFIG"
@@ -93,7 +109,7 @@ set_grub_key "GRUB_TERMINAL" '"console"'
 ensure_cmdline_token "zswap.enabled=0"
 ensure_cmdline_token "splash"
 ensure_cmdline_token "quiet"
-ensure_cmdline_token "rootflags=subvol=@"
+ensure_btrfs_rootflags
 
 # Remove legacy custom entry if present.
 # GRUB's auto-generated linux entry is correct for this layout and avoids duplicate/broken menu entries.

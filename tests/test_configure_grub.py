@@ -30,9 +30,11 @@ class TestConfigureGrubScript(unittest.TestCase):
         """Script should avoid duplicate appends in /etc/default/grub."""
         self.assertIn("set_grub_key()", self.script)
         self.assertIn("ensure_cmdline_token()", self.script)
+        self.assertIn("ensure_btrfs_rootflags()", self.script)
+        self.assertIn("Drop malformed bare subvol= tokens", self.script)
         self.assertIn('set_grub_key "GRUB_DISTRIBUTOR"', self.script)
         self.assertIn('set_grub_key "GRUB_DISABLE_OS_PROBER"', self.script)
-        self.assertIn('ensure_cmdline_token "rootflags=subvol=@"', self.script)
+        self.assertIn("ensure_btrfs_rootflags", self.script)
         self.assertNotIn('ensure_cmdline_token "plymouth.use-simpledrm=0"', self.script)
 
     def test_validates_generated_grub_cfg_contains_kernel(self):

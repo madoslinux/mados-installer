@@ -2,6 +2,10 @@
 madOS Installer - Nord theme application
 """
 
+import gi
+
+gi.require_version("Gdk", "3.0")
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gdk, Gtk
 
 from theme.css import CSS

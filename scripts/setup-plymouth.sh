@@ -19,6 +19,7 @@ cat > /usr/share/plymouth/themes/mados/mados.script <<'EOFSCRIPT'
 Window.SetBackgroundTopColor(0.18, 0.20, 0.25);
 Window.SetBackgroundBottomColor(0.13, 0.15, 0.19);
 logo.image = Image("logo.png");
+logo.image = logo.image.Scale(250, 250);
 logo.sprite = Sprite(logo.image);
 logo.sprite.SetX(Window.GetWidth() / 2 - logo.image.GetWidth() / 2);
 logo.sprite.SetY(Window.GetHeight() / 2 - logo.image.GetHeight() / 2 - 50);

@@ -40,7 +40,6 @@ EOF
 mkdir -p /etc/NetworkManager/conf.d
 cat > /etc/NetworkManager/conf.d/wifi-backend.conf <<EOF
 [device]
-wifi.backend=iwd
 EOF
 
 cat > /etc/sysctl.d/99-extreme-low-ram.conf <<EOF

@@ -734,8 +734,45 @@ def rsync_rootfs_with_progress(app):
 
     proc.wait()
     if proc.returncode not in (0, 24):
-        raise subprocess.CalledProcessError(proc.returncode, "rsync")
-    if proc.returncode == 24:
+        if proc.returncode == 23:
+            log_message(
+                app,
+                "  WARNING: rsync metadata copy failed on some filesystems; retrying without ACL/xattr...",
+            )
+
+            retry_cmd = [
+                "rsync",
+                "-aHWS",
+                "--info=progress2",
+                "--no-inc-recursive",
+                "--numeric-ids",
+            ]
+            for exc in RSYNC_EXCLUDES:
+                retry_cmd.extend(["--exclude", exc])
+            retry_cmd.extend(["/", "/mnt/"])
+
+            retry = subprocess.run(
+                retry_cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+            )
+
+            for line in retry.stdout.splitlines():
+                line = line.rstrip()
+                if line.startswith("rsync:") or line.startswith("sent "):
+                    log_message(app, f"  {line}")
+
+            if retry.returncode not in (0, 24):
+                raise subprocess.CalledProcessError(retry.returncode, "rsync")
+            if retry.returncode == 24:
+                log_message(
+                    app,
+                    "  WARNING: rsync reported vanished source files (normal on live system)",
+                )
+        else:
+            raise subprocess.CalledProcessError(proc.returncode, "rsync")
+    elif proc.returncode == 24:
         log_message(
             app,
             "  WARNING: rsync reported vanished source files (normal on live system)",
