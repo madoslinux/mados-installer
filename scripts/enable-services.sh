@@ -25,6 +25,8 @@ enable_service iwd
 enable_service bluetooth
 enable_service mados-gpu-wait.service
 enable_service fail2ban
+enable_service plymouth-start.service
+enable_service plymouthd.service
 
 systemctl --global enable pipewire.socket pipewire-pulse.socket wireplumber.service 2>/dev/null || true
 
