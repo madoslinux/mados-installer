@@ -93,7 +93,6 @@ set_grub_key "GRUB_TERMINAL" '"console"'
 ensure_cmdline_token "zswap.enabled=0"
 ensure_cmdline_token "splash"
 ensure_cmdline_token "quiet"
-ensure_cmdline_token "plymouth.use-simpledrm=0"
 ensure_cmdline_token "rootflags=subvol=@"
 
 # Remove legacy custom entry if present.

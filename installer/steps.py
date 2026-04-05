@@ -9,8 +9,13 @@ import shlex
 import subprocess
 import time
 
-from config import (ARCHISO_PACKAGES, DEMO_MODE, PACKAGES_NVIDIA,
-                    POST_COPY_CLEANUP, RSYNC_EXCLUDES)
+from config import (
+    ARCHISO_PACKAGES,
+    DEMO_MODE,
+    PACKAGES_NVIDIA,
+    POST_COPY_CLEANUP,
+    RSYNC_EXCLUDES,
+)
 from utils import log_message, set_progress
 
 MNT_USR_LOCAL_BIN = "/mnt/usr/local/bin/"
@@ -629,17 +634,30 @@ def step_generate_fstab(app):
         lines = fstab_content.split("\n")
         new_lines = []
         for line in lines:
-            if "/dev/" in line and "/boot" not in line and "subvol=" not in line:
-                parts = line.split()
-                if len(parts) >= 4:
-                    mount_point = parts[1]
-                    if mount_point == "/":
-                        parts[3] = parts[3] + ",subvol=@"
-                    elif mount_point == "/home":
-                        parts[3] = parts[3] + ",subvol=@home"
-                new_lines.append(" ".join(parts))
-            else:
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
                 new_lines.append(line)
+                continue
+
+            parts = line.split()
+            if len(parts) < 4:
+                new_lines.append(line)
+                continue
+
+            mount_point = parts[1]
+            fs_type = parts[2]
+            opts = parts[3].split(",") if parts[3] else []
+            has_subvol = any(opt.startswith("subvol=") for opt in opts)
+
+            if fs_type == "btrfs" and not has_subvol:
+                if mount_point == "/":
+                    opts.append("subvol=@")
+                elif mount_point == "/home":
+                    opts.append("subvol=@home")
+
+            parts[3] = ",".join([opt for opt in opts if opt])
+            new_lines.append(" ".join(parts))
+
         with open("/mnt/etc/fstab", "w") as f:
             f.write("\n".join(new_lines) + "\n")
 

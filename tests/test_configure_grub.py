@@ -32,6 +32,8 @@ class TestConfigureGrubScript(unittest.TestCase):
         self.assertIn("ensure_cmdline_token()", self.script)
         self.assertIn('set_grub_key "GRUB_DISTRIBUTOR"', self.script)
         self.assertIn('set_grub_key "GRUB_DISABLE_OS_PROBER"', self.script)
+        self.assertIn('ensure_cmdline_token "rootflags=subvol=@"', self.script)
+        self.assertNotIn('ensure_cmdline_token "plymouth.use-simpledrm=0"', self.script)
 
     def test_validates_generated_grub_cfg_contains_kernel(self):
         """Script should fail when grub.cfg misses linux-mados entry."""
