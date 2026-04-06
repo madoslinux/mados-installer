@@ -91,7 +91,6 @@ install -d -o "$USERNAME" -g "$USERNAME" /home/"$USERNAME"/.config/{sway,hypr,wa
 install -d -o "$USERNAME" -g "$USERNAME" /home/"$USERNAME"/{Documents,Downloads,Music,Videos,Desktop,Templates,Public}
 install -d -o "$USERNAME" -g "$USERNAME" /home/"$USERNAME"/Pictures/{Wallpapers,Screenshots}
 cp -r /etc/skel/.config/* /home/"$USERNAME"/.config/ 2>/dev/null || true
-cp -r /etc/skel/Pictures/* /home/"$USERNAME"/Pictures/ 2>/dev/null || true
 cp /etc/skel/.gtkrc-2.0 /home/"$USERNAME"/.gtkrc-2.0 2>/dev/null || true
 
 mkdir -p /usr/share/music /usr/share/video

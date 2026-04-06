@@ -506,7 +506,6 @@ def step_copy_live_files(app):
     log_message(app, "Copying desktop configuration files...")
     for item in [
         ".config",
-        "Pictures",
         ".bash_profile",
         ".zshrc",
         ".bashrc",
