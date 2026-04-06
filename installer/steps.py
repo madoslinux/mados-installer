@@ -324,6 +324,12 @@ def step_create_btrfs_subvolumes(app, root_part):
         )
         log_message(app, "Created subvolume @snapshots")
 
+        subprocess.run(
+            ["btrfs", "subvolume", "create", f"{mount_point}/@var_cache"],
+            check=True,
+        )
+        log_message(app, "Created subvolume @var_cache")
+
         subprocess.run(["umount", mount_point], check=True)
     except subprocess.CalledProcessError as e:
         log_message(app, f"Error creating subvolumes: {e}")
@@ -477,6 +483,11 @@ def step_mount_filesystems(app, boot_part, root_part):
         time.sleep(0.5)
         log_message(app, "[DEMO] Simulating mount -o subvol=@home btrfs /mnt/home...")
         time.sleep(0.3)
+        log_message(
+            app,
+            "[DEMO] Simulating mount -o subvol=@var_cache btrfs /mnt/var/cache/pacman...",
+        )
+        time.sleep(0.3)
     else:
         subprocess.run(["mount", "-o", "subvol=@", root_part, "/mnt"], check=True)
         subprocess.run(["mkdir", "-p", "/mnt/boot"], check=True)
@@ -484,6 +495,11 @@ def step_mount_filesystems(app, boot_part, root_part):
         subprocess.run(["mkdir", "-p", "/mnt/home"], check=True)
         subprocess.run(
             ["mount", "-o", "subvol=@home", root_part, "/mnt/home"],
+            check=True,
+        )
+        subprocess.run(["mkdir", "-p", "/mnt/var/cache/pacman"], check=True)
+        subprocess.run(
+            ["mount", "-o", "subvol=@var_cache", root_part, "/mnt/var/cache/pacman"],
             check=True,
         )
 
@@ -653,6 +669,8 @@ def step_generate_fstab(app):
                     opts.append("subvol=@")
                 elif mount_point == "/home":
                     opts.append("subvol=@home")
+                elif mount_point == "/var/cache/pacman":
+                    opts.append("subvol=@var_cache")
 
             parts[3] = ",".join([opt for opt in opts if opt])
             new_lines.append(" ".join(parts))
