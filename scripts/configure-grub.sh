@@ -105,6 +105,7 @@ set_grub_key "GRUB_DISABLE_OS_PROBER" "false"
 set_grub_key "GRUB_DEFAULT" "0"
 set_grub_key "GRUB_DISABLE_LINUX_UUID" "false"
 set_grub_key "GRUB_TERMINAL" '"console"'
+set_grub_key "GRUB_CMDLINE_LINUX_DEFAULT" '"quiet splash"'
 
 ensure_cmdline_token "zswap.enabled=0"
 ensure_cmdline_token "splash"

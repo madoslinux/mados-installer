@@ -34,6 +34,10 @@ class TestConfigureGrubScript(unittest.TestCase):
         self.assertIn("Drop malformed bare subvol= tokens", self.script)
         self.assertIn('set_grub_key "GRUB_DISTRIBUTOR"', self.script)
         self.assertIn('set_grub_key "GRUB_DISABLE_OS_PROBER"', self.script)
+        self.assertIn(
+            'set_grub_key "GRUB_CMDLINE_LINUX_DEFAULT" \'"quiet splash"\'',
+            self.script,
+        )
         self.assertIn("ensure_btrfs_rootflags", self.script)
         self.assertNotIn('ensure_cmdline_token "plymouth.use-simpledrm=0"', self.script)
 
