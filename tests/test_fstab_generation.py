@@ -29,6 +29,8 @@ def _normalize_fstab(fstab_content: str) -> str:
                 opts.append("subvol=@")
             elif mount_point == "/home":
                 opts.append("subvol=@home")
+            elif mount_point == "/var/cache/pacman":
+                opts.append("subvol=@var_cache")
 
         parts[3] = ",".join([opt for opt in opts if opt])
         new_lines.append(" ".join(parts))
@@ -44,11 +46,16 @@ class TestFstabGeneration(unittest.TestCase):
         input_fstab = (
             "UUID=1111 / btrfs rw,relatime 0 0\n"
             "UUID=1111 /home btrfs rw,relatime 0 0\n"
+            "UUID=1111 /var/cache/pacman btrfs rw,relatime 0 0\n"
             "UUID=2222 /boot vfat rw,relatime 0 2\n"
         )
         output = _normalize_fstab(input_fstab)
         self.assertIn("UUID=1111 / btrfs rw,relatime,subvol=@ 0 0", output)
         self.assertIn("UUID=1111 /home btrfs rw,relatime,subvol=@home 0 0", output)
+        self.assertIn(
+            "UUID=1111 /var/cache/pacman btrfs rw,relatime,subvol=@var_cache 0 0",
+            output,
+        )
         self.assertIn("UUID=2222 /boot vfat rw,relatime 0 2", output)
 
     def test_keeps_existing_subvol_options(self):
@@ -56,10 +63,20 @@ class TestFstabGeneration(unittest.TestCase):
         input_fstab = (
             "UUID=1111 / btrfs rw,relatime,subvol=@ 0 0\n"
             "UUID=1111 /home btrfs rw,relatime,subvol=@home 0 0\n"
+            "UUID=1111 /var/cache/pacman btrfs rw,relatime,subvol=@var_cache 0 0\n"
         )
         output = _normalize_fstab(input_fstab)
-        self.assertEqual(output.count("subvol=@"), 2)
-        self.assertEqual(output.count("subvol=@home"), 1)
+        lines = output.strip().split("\n")
+        mount_subvol = {}
+        for line in lines:
+            parts = line.split()
+            if len(parts) >= 4 and parts[2] == "btrfs":
+                mount_subvol[parts[1]] = parts[3]
+        self.assertEqual(mount_subvol["/"], "rw,relatime,subvol=@")
+        self.assertEqual(mount_subvol["/home"], "rw,relatime,subvol=@home")
+        self.assertEqual(
+            mount_subvol["/var/cache/pacman"], "rw,relatime,subvol=@var_cache"
+        )
 
 
 if __name__ == "__main__":
