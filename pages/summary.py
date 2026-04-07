@@ -120,7 +120,12 @@ def update_summary(app):
 
     part_info = Gtk.Label()
     part_info.set_markup(
-        f'<span size="8000">{part_prefix}1=1MB | {part_prefix}2=1GB EFI | {part_prefix}3={root_size}GB Btrfs</span>'
+        f'<span size="8000">'
+        f"{part_prefix}1=1MiB bios_grub | "
+        f"{part_prefix}2=2MiB-1GiB EFI(FAT32, esp) | "
+        f"{part_prefix}3=1GiB-100% Btrfs ({root_size}GB aprox)\n"
+        "Subvolumes: @, @home, @snapshots, @var_cache"
+        "</span>"
     )
     part_info.set_halign(Gtk.Align.START)
     part_info.set_line_wrap(True)

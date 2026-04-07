@@ -43,9 +43,13 @@ def refresh_partitioning_content(app):
 
     app._partitioning_labels.set_markup(
         f'<span size="8500" foreground="{NORD_AURORA["nord14"]}">'
-        f"  {part_prefix}1  BIOS     1 MB      ({app.t('bootable')})\n"
-        f"  {part_prefix}2  {app.t('efi_label')}      {efi_gb} GB    (FAT32)\n"
-        f"  {part_prefix}3  {app.t('root_label')}     {root_display}    (Btrfs)</span>"
+        f"  {part_prefix}1  BIOS     1 MiB      (bios_grub)\n"
+        f"  {part_prefix}2  {app.t('efi_label')}      1022 MiB   (FAT32, esp)\n"
+        f"  {part_prefix}3  {app.t('root_label')}     {root_display}    (Btrfs)\n"
+        "      - @\n"
+        "      - @home\n"
+        "      - @snapshots\n"
+        "      - @var_cache</span>"
     )
 
 
@@ -101,7 +105,7 @@ def create_partitioning_page(app):
     efi_size_pct = int(efi_ratio * 400)
     efi_bar.set_size_request(efi_size_pct, 24)
     efi_bar.set_markup(
-        f'<span size="7000" foreground="{NORD_POLAR_NIGHT["nord0"]}"> {app.t("efi_label")} 1GB </span>'
+        f'<span size="7000" foreground="{NORD_POLAR_NIGHT["nord0"]}"> {app.t("efi_label")} 1022MiB </span>'
     )
     efi_bar.get_style_context().add_class("partition-bar-efi")
     bar.pack_start(efi_bar, False, False, 0)
