@@ -62,30 +62,15 @@ swap-priority = 100
 fs-type = swap
 EOF
 
-# Configure LightDM with GTK greeter
-cat > /etc/lightdm/lightdm.conf <<'EOLIGHTDM'
-[Seat:*]
-greeter-session = lightdm-gtk-greeter
-user-session = hyprland
-allow-user-switching = true
-allow-guest = false
-session-wrapper = /etc/lightdm/Xsession
-EOLIGHTDM
+# Configure SDDM
+cat > /etc/sddm.conf <<'EOSDDM'
+[Theme]
+Current=sddm-astron_theme
 
-cat > /etc/lightdm/lightdm-gtk-greeter.conf <<'EOLIGHTDMGTK'
-[greeter]
-icon-theme-name = Adwaita
-background = /usr/share/backgrounds/mad-os-wallpaper.png
-default-user-image = /usr/share/pixmaps/hicolor/128x128/apps/system-logo-icon.png
-xft-antialias = true
-xft-dpi = 96
-xft-font = Sans 10
-indicators = ~clock;~language;~session;~power
-clock-format = %a %d %b  %H:%M
-hide-users = false
-show-manual-login = false
-show-guest = false
-EOLIGHTDMGTK
+[General]
+DisplayServer=x11
+MinimumVT=1
+EOSDDM
 
 install -d -o "$USERNAME" -g "$USERNAME" /home/"$USERNAME"/.config/{sway,hypr,waybar,foot,wofi,gtk-3.0,gtk-4.0}
 install -d -o "$USERNAME" -g "$USERNAME" /home/"$USERNAME"/{Documents,Downloads,Music,Videos,Desktop,Templates,Public}
@@ -229,7 +214,7 @@ EOFHOOK2
 
 echo "Verifying graphical environment components..."
 GRAPHICAL_OK=1
-for bin in lightdm lightdm-gtk-greeter sway; do
+for bin in sddm sway; do
     if command -v "$bin" &>/dev/null; then
         echo "  ✓ $bin found: $(command -v "$bin")"
     else
@@ -250,10 +235,10 @@ for script in /usr/local/bin/sway-session /usr/local/bin/hyprland-session /usr/l
     fi
 done
 
-if [ -f /etc/lightdm/lightdm.conf ]; then
-    echo "  ✓ lightdm config exists"
+if [ -f /etc/sddm.conf ]; then
+    echo "  ✓ sddm config exists"
 else
-    echo "  ✗ lightdm config NOT found — graphical login may fail"
+    echo "  ✗ sddm config NOT found — graphical login may fail"
     GRAPHICAL_OK=0
 fi
 
@@ -274,11 +259,11 @@ for session_file in /usr/share/wayland-sessions/sway.desktop /usr/share/wayland-
     fi
 done
 
-if systemctl is-enabled lightdm.service &>/dev/null; then
-    echo "  ✓ lightdm.service is enabled"
+if systemctl is-enabled sddm.service &>/dev/null; then
+    echo "  ✓ sddm.service is enabled"
 else
-    echo "  ✗ lightdm.service is NOT enabled — enabling..."
-    systemctl enable lightdm.service 2>/dev/null || true
+    echo "  ✗ sddm.service is NOT enabled — enabling..."
+    systemctl enable sddm.service 2>/dev/null || true
 fi
 
 systemctl enable getty@tty2.service 2>/dev/null || true
