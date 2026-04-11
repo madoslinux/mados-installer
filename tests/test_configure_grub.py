@@ -34,11 +34,6 @@ class TestConfigureGrubScript(unittest.TestCase):
         self.assertIn("sanitize_generated_grub_cfg()", self.script)
         self.assertIn("assert_no_legacy_grub_tokens()", self.script)
         self.assertIn("remove_cmdline_token()", self.script)
-        self.assertIn("ensure_btrfs_rootflags()", self.script)
-        self.assertIn(
-            "root_fs=$(awk '$2 == \"/\" { print $3; exit }' /etc/fstab)", self.script
-        )
-        self.assertIn('if [[ "$root_fs" != "btrfs" ]]; then', self.script)
         self.assertIn(
             "remove_cmdline_token 'rootflags=subvol=[^[:space:]]+'", self.script
         )
@@ -58,6 +53,7 @@ class TestConfigureGrubScript(unittest.TestCase):
         self.assertNotIn('ensure_cmdline_token "splash"', self.script)
         self.assertNotIn('ensure_cmdline_token "quiet"', self.script)
         self.assertNotIn('ensure_cmdline_token "plymouth.use-simpledrm=0"', self.script)
+        self.assertNotIn("ensure_btrfs_rootflags()", self.script)
         self.assertIn("assert_no_legacy_grub_tokens", self.script)
 
     def test_validates_generated_grub_cfg_contains_kernel(self):

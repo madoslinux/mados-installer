@@ -118,30 +118,6 @@ remove_cmdline_token() {
     set_grub_key "GRUB_CMDLINE_LINUX" "\"$current\""
 }
 
-ensure_btrfs_rootflags() {
-    local root_fs=""
-    local root_subvol=""
-
-    if [[ -f /etc/fstab ]]; then
-        root_fs=$(awk '$2 == "/" { print $3; exit }' /etc/fstab)
-    fi
-
-    if [[ "$root_fs" != "btrfs" ]]; then
-        remove_cmdline_token 'rootflags=subvol=[^[:space:]]+'
-        return
-    fi
-
-    if [[ -f /etc/fstab ]]; then
-        root_subvol=$(awk '$2 == "/" && $3 == "btrfs" { n=split($4, opts, ","); for (i=1; i<=n; i++) if (opts[i] ~ /^subvol=/) { print opts[i]; exit } }' /etc/fstab)
-    fi
-
-    if [[ -n "$root_subvol" ]]; then
-        ensure_cmdline_token "rootflags=${root_subvol}"
-    else
-        remove_cmdline_token 'rootflags=subvol=[^[:space:]]+'
-    fi
-}
-
 require_cmd "$GRUB_MKCONFIG"
 require_cmd "$BLKID"
 
@@ -178,7 +154,7 @@ set_grub_key "GRUB_TERMINAL" '"console"'
 set_grub_key "GRUB_CMDLINE_LINUX_DEFAULT" '"quiet splash"'
 
 ensure_cmdline_token "zswap.enabled=0"
-ensure_btrfs_rootflags
+remove_cmdline_token 'rootflags=subvol=[^[:space:]]+'
 sanitize_grub_cmdline_key "GRUB_CMDLINE_LINUX"
 sanitize_grub_cmdline_key "GRUB_CMDLINE_LINUX_DEFAULT"
 
