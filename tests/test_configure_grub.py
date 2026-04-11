@@ -44,6 +44,7 @@ class TestConfigureGrubScript(unittest.TestCase):
         self.assertIn(
             'sanitize_grub_cmdline_key "GRUB_CMDLINE_LINUX_DEFAULT"', self.script
         )
+        self.assertNotIn("rootflag=", self.script)
         self.assertNotIn('ensure_cmdline_token "rootflags=subvol=@"', self.script)
         self.assertNotIn('ensure_cmdline_token "plymouth.use-simpledrm=0"', self.script)
 
