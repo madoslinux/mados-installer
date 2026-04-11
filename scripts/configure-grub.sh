@@ -58,6 +58,25 @@ ensure_cmdline_token() {
     set_grub_key "GRUB_CMDLINE_LINUX" "\"$current\""
 }
 
+sanitize_grub_cmdline_key() {
+    local key="$1"
+    local file="/etc/default/grub"
+    local raw
+    local current
+
+    raw=$(grep -E "^${key}=" "$file" | tail -n1 || true)
+    if [[ -z "$raw" ]]; then
+        return 0
+    fi
+
+    current=${raw#${key}=}
+    current=${current#\"}
+    current=${current%\"}
+
+    current=$(printf '%s' "$current" | sed -E 's/(^|[[:space:]])subvol=[^[:space:]]+([[:space:]]|$)/ /g; s/[[:space:]]+/ /g; s/^ //; s/ $//')
+    set_grub_key "$key" "\"$current\""
+}
+
 ensure_btrfs_rootflags() {
     local root_subvol=""
 
@@ -67,8 +86,6 @@ ensure_btrfs_rootflags() {
 
     if [[ -n "$root_subvol" ]]; then
         ensure_cmdline_token "rootflags=${root_subvol}"
-    else
-        ensure_cmdline_token "rootflags=subvol=@"
     fi
 }
 
@@ -111,6 +128,8 @@ ensure_cmdline_token "zswap.enabled=0"
 ensure_cmdline_token "splash"
 ensure_cmdline_token "quiet"
 ensure_btrfs_rootflags
+sanitize_grub_cmdline_key "GRUB_CMDLINE_LINUX"
+sanitize_grub_cmdline_key "GRUB_CMDLINE_LINUX_DEFAULT"
 
 # Remove legacy custom entry if present.
 # GRUB's auto-generated linux entry is correct for this layout and avoids duplicate/broken menu entries.
