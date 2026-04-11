@@ -33,6 +33,15 @@ class TestConfigureGrubScript(unittest.TestCase):
         self.assertIn("sanitize_grub_cmdline_key()", self.script)
         self.assertIn("sanitize_generated_grub_cfg()", self.script)
         self.assertIn("assert_no_legacy_grub_tokens()", self.script)
+        self.assertIn("remove_cmdline_token()", self.script)
+        self.assertIn("ensure_btrfs_rootflags()", self.script)
+        self.assertIn(
+            "root_fs=$(awk '$2 == \"/\" { print $3; exit }' /etc/fstab)", self.script
+        )
+        self.assertIn('if [[ "$root_fs" != "btrfs" ]]; then', self.script)
+        self.assertIn(
+            "remove_cmdline_token 'rootflags=subvol=[^[:space:]]+'", self.script
+        )
         self.assertIn("Drop malformed bare subvol= tokens", self.script)
         self.assertIn('set_grub_key "GRUB_DISTRIBUTOR"', self.script)
         self.assertIn('set_grub_key "GRUB_DISABLE_OS_PROBER"', self.script)

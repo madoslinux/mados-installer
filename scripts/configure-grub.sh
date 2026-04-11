@@ -99,6 +99,49 @@ assert_no_legacy_grub_tokens() {
     fi
 }
 
+remove_cmdline_token() {
+    local token_regex="$1"
+    local file="/etc/default/grub"
+    local current
+    local raw
+
+    raw=$(grep -E '^GRUB_CMDLINE_LINUX=' "$file" | tail -n1 || true)
+    if [ -n "$raw" ]; then
+        current=${raw#GRUB_CMDLINE_LINUX=}
+        current=${current#\"}
+        current=${current%\"}
+    else
+        current=""
+    fi
+
+    current=$(printf '%s' "$current" | sed -E "s/(^|[[:space:]])${token_regex}([[:space:]]|$)/ /g; s/[[:space:]]+/ /g; s/^ //; s/ $//")
+    set_grub_key "GRUB_CMDLINE_LINUX" "\"$current\""
+}
+
+ensure_btrfs_rootflags() {
+    local root_fs=""
+    local root_subvol=""
+
+    if [[ -f /etc/fstab ]]; then
+        root_fs=$(awk '$2 == "/" { print $3; exit }' /etc/fstab)
+    fi
+
+    if [[ "$root_fs" != "btrfs" ]]; then
+        remove_cmdline_token 'rootflags=subvol=[^[:space:]]+'
+        return
+    fi
+
+    if [[ -f /etc/fstab ]]; then
+        root_subvol=$(awk '$2 == "/" && $3 == "btrfs" { n=split($4, opts, ","); for (i=1; i<=n; i++) if (opts[i] ~ /^subvol=/) { print opts[i]; exit } }' /etc/fstab)
+    fi
+
+    if [[ -n "$root_subvol" ]]; then
+        ensure_cmdline_token "rootflags=${root_subvol}"
+    else
+        remove_cmdline_token 'rootflags=subvol=[^[:space:]]+'
+    fi
+}
+
 require_cmd "$GRUB_MKCONFIG"
 require_cmd "$BLKID"
 
@@ -135,6 +178,7 @@ set_grub_key "GRUB_TERMINAL" '"console"'
 set_grub_key "GRUB_CMDLINE_LINUX_DEFAULT" '"quiet splash"'
 
 ensure_cmdline_token "zswap.enabled=0"
+ensure_btrfs_rootflags
 sanitize_grub_cmdline_key "GRUB_CMDLINE_LINUX"
 sanitize_grub_cmdline_key "GRUB_CMDLINE_LINUX_DEFAULT"
 
