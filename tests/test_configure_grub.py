@@ -31,7 +31,6 @@ class TestConfigureGrubScript(unittest.TestCase):
         self.assertIn("set_grub_key()", self.script)
         self.assertIn("ensure_cmdline_token()", self.script)
         self.assertIn("sanitize_grub_cmdline_key()", self.script)
-        self.assertIn("ensure_btrfs_rootflags()", self.script)
         self.assertIn("Drop malformed bare subvol= tokens", self.script)
         self.assertIn('set_grub_key "GRUB_DISTRIBUTOR"', self.script)
         self.assertIn('set_grub_key "GRUB_DISABLE_OS_PROBER"', self.script)
@@ -39,13 +38,14 @@ class TestConfigureGrubScript(unittest.TestCase):
             'set_grub_key "GRUB_CMDLINE_LINUX_DEFAULT" \'"quiet splash"\'',
             self.script,
         )
-        self.assertIn("ensure_btrfs_rootflags", self.script)
         self.assertIn('sanitize_grub_cmdline_key "GRUB_CMDLINE_LINUX"', self.script)
         self.assertIn(
             'sanitize_grub_cmdline_key "GRUB_CMDLINE_LINUX_DEFAULT"', self.script
         )
-        self.assertNotIn("rootflag=", self.script)
+        self.assertNotIn('ensure_cmdline_token "rootflag=', self.script)
         self.assertNotIn('ensure_cmdline_token "rootflags=subvol=@"', self.script)
+        self.assertNotIn('ensure_cmdline_token "splash"', self.script)
+        self.assertNotIn('ensure_cmdline_token "quiet"', self.script)
         self.assertNotIn('ensure_cmdline_token "plymouth.use-simpledrm=0"', self.script)
 
     def test_validates_generated_grub_cfg_contains_kernel(self):
