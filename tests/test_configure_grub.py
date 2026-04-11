@@ -31,6 +31,8 @@ class TestConfigureGrubScript(unittest.TestCase):
         self.assertIn("set_grub_key()", self.script)
         self.assertIn("ensure_cmdline_token()", self.script)
         self.assertIn("sanitize_grub_cmdline_key()", self.script)
+        self.assertIn("sanitize_generated_grub_cfg()", self.script)
+        self.assertIn("assert_no_legacy_grub_tokens()", self.script)
         self.assertIn("Drop malformed bare subvol= tokens", self.script)
         self.assertIn('set_grub_key "GRUB_DISTRIBUTOR"', self.script)
         self.assertIn('set_grub_key "GRUB_DISABLE_OS_PROBER"', self.script)
@@ -47,10 +49,12 @@ class TestConfigureGrubScript(unittest.TestCase):
         self.assertNotIn('ensure_cmdline_token "splash"', self.script)
         self.assertNotIn('ensure_cmdline_token "quiet"', self.script)
         self.assertNotIn('ensure_cmdline_token "plymouth.use-simpledrm=0"', self.script)
+        self.assertIn("assert_no_legacy_grub_tokens", self.script)
 
     def test_validates_generated_grub_cfg_contains_kernel(self):
         """Script should fail when grub.cfg misses linux-mados entry."""
         self.assertIn("$GRUB_MKCONFIG -o /boot/grub/grub.cfg", self.script)
+        self.assertIn("sanitize_generated_grub_cfg", self.script)
         self.assertIn("grub.cfg does not contain linux-mados entry", self.script)
 
 

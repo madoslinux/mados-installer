@@ -77,6 +77,28 @@ sanitize_grub_cmdline_key() {
     set_grub_key "$key" "\"$current\""
 }
 
+sanitize_generated_grub_cfg() {
+    local cfg="/boot/grub/grub.cfg"
+    [ -f "$cfg" ] || return 0
+
+    sed -Ei 's/(^|[[:space:]])subvol=[^[:space:]]+([[:space:]]|$)/ /g; s/(^|[[:space:]])rootflag=[^[:space:]]+([[:space:]]|$)/ /g; s/[[:space:]]+/ /g' "$cfg"
+}
+
+assert_no_legacy_grub_tokens() {
+    local cfg="/boot/grub/grub.cfg"
+    [ -f "$cfg" ] || return 0
+
+    if grep -Eq '(^|[[:space:]])rootflag=' "$cfg"; then
+        echo "ERROR: grub.cfg still contains invalid rootflag= token"
+        exit 1
+    fi
+
+    if grep -Eq '(^|[[:space:]])subvol=' "$cfg"; then
+        echo "ERROR: grub.cfg still contains invalid bare subvol= token"
+        exit 1
+    fi
+}
+
 require_cmd "$GRUB_MKCONFIG"
 require_cmd "$BLKID"
 
@@ -121,6 +143,8 @@ sanitize_grub_cmdline_key "GRUB_CMDLINE_LINUX_DEFAULT"
 rm -f /etc/grub.d/09_mados
 
 $GRUB_MKCONFIG -o /boot/grub/grub.cfg
+sanitize_generated_grub_cfg
+assert_no_legacy_grub_tokens
 
 if [ ! -f /boot/grub/grub.cfg ]; then
     echo "ERROR: grub.cfg was not generated!"
