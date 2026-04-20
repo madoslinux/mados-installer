@@ -285,6 +285,39 @@ def _format_partitions_real(boot_part, root_part):
     subprocess.run(["mkfs.btrfs", "-f", root_part], check=True)
 
 
+def _mount_btrfs_with_retry(app, root_part, mount_point, retries=6):
+    """Mount Btrfs root partition with retries to handle device readiness races."""
+    last_error = ""
+
+    for attempt in range(1, retries + 1):
+        subprocess.run(["udevadm", "settle", "--timeout=3"], check=False)
+        result = subprocess.run(
+            ["mount", "-t", "btrfs", root_part, mount_point],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        if result.returncode == 0:
+            if attempt > 1:
+                log_message(app, f"Mounted {root_part} on attempt {attempt}/{retries}")
+            return
+
+        last_error = (result.stderr or result.stdout or "").strip()
+        if not last_error:
+            last_error = f"exit code {result.returncode}"
+
+        log_message(
+            app,
+            f"Mount attempt {attempt}/{retries} failed for {root_part}: {last_error}",
+        )
+        time.sleep(1)
+
+    raise RuntimeError(
+        f"Failed to mount {root_part} as btrfs after {retries} attempts: {last_error}"
+    )
+
+
 def step_create_btrfs_subvolumes(app, root_part):
     """Create Btrfs subvolumes for OTA support."""
     set_progress(app, 0.18, "Creating Btrfs subvolumes...")
@@ -303,7 +336,7 @@ def step_create_btrfs_subvolumes(app, root_part):
     os.makedirs(mount_point, exist_ok=True)
 
     try:
-        subprocess.run(["mount", root_part, mount_point], check=True)
+        _mount_btrfs_with_retry(app, root_part, mount_point)
         time.sleep(1)
 
         subprocess.run(
@@ -331,12 +364,16 @@ def step_create_btrfs_subvolumes(app, root_part):
         log_message(app, "Created subvolume @var_cache")
 
         subprocess.run(["umount", mount_point], check=True)
-    except subprocess.CalledProcessError as e:
+    except (subprocess.CalledProcessError, RuntimeError) as e:
         log_message(app, f"Error creating subvolumes: {e}")
         raise
     finally:
+        subprocess.run(["umount", mount_point], check=False)
         if os.path.exists(mount_point):
-            os.rmdir(mount_point)
+            try:
+                os.rmdir(mount_point)
+            except OSError:
+                pass
 
 
 def step_configure_snapper(app):
