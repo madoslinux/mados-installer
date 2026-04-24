@@ -157,7 +157,10 @@ set_grub_key "GRUB_DISABLE_OS_PROBER" "false"
 set_grub_key "GRUB_DEFAULT" "0"
 set_grub_key "GRUB_DISABLE_LINUX_UUID" "false"
 set_grub_key "GRUB_TERMINAL" '"console"'
-set_grub_key "GRUB_CMDLINE_LINUX_DEFAULT" '"quiet splash"'
+set_grub_key "GRUB_GFXMODE" "auto"
+set_grub_key "GRUB_GFXPAYLOAD_LINUX" "keep"
+set_grub_key "GRUB_TERMINAL_OUTPUT" "gfxterm"
+set_grub_key "GRUB_CMDLINE_LINUX_DEFAULT" '"quiet splash loglevel=3 rd.udev.log_level=3 udev.log_priority=3 rd.systemd.show_status=false systemd.show_status=false vt.global_cursor_default=0 plymouth.ignore-serial-consoles"'
 
 ensure_cmdline_token "zswap.enabled=0"
 remove_cmdline_token 'rootflags=subvol=[^[:space:]]+'

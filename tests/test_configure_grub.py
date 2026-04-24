@@ -41,9 +41,15 @@ class TestConfigureGrubScript(unittest.TestCase):
         self.assertIn('set_grub_key "GRUB_DISTRIBUTOR"', self.script)
         self.assertIn('set_grub_key "GRUB_DISABLE_OS_PROBER"', self.script)
         self.assertIn(
-            'set_grub_key "GRUB_CMDLINE_LINUX_DEFAULT" \'"quiet splash"\'',
+            'set_grub_key "GRUB_CMDLINE_LINUX_DEFAULT" \'"quiet splash loglevel=3',
             self.script,
         )
+        self.assertIn('set_grub_key "GRUB_GFXMODE" "auto"', self.script)
+        self.assertIn('set_grub_key "GRUB_GFXPAYLOAD_LINUX" "keep"', self.script)
+        self.assertIn('set_grub_key "GRUB_TERMINAL_OUTPUT" "gfxterm"', self.script)
+        self.assertIn("rd.systemd.show_status=false", self.script)
+        self.assertIn("systemd.show_status=false", self.script)
+        self.assertIn("vt.global_cursor_default=0", self.script)
         self.assertIn('sanitize_grub_cmdline_key "GRUB_CMDLINE_LINUX"', self.script)
         self.assertIn(
             'sanitize_grub_cmdline_key "GRUB_CMDLINE_LINUX_DEFAULT"', self.script
