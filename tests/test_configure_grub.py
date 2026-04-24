@@ -57,10 +57,11 @@ class TestConfigureGrubScript(unittest.TestCase):
         self.assertIn("assert_no_legacy_grub_tokens", self.script)
 
     def test_validates_generated_grub_cfg_contains_kernel(self):
-        """Script should fail when grub.cfg misses linux-mados entry."""
+        """Script should fail when grub.cfg misses selected kernel entry."""
         self.assertIn("$GRUB_MKCONFIG -o /boot/grub/grub.cfg", self.script)
         self.assertIn("sanitize_generated_grub_cfg", self.script)
-        self.assertIn("grub.cfg does not contain linux-mados entry", self.script)
+        self.assertIn("for candidate in linux-lts linux-mados linux linux-zen", self.script)
+        self.assertIn("grub.cfg does not contain vmlinuz-${KERNEL} entry", self.script)
 
 
 if __name__ == "__main__":

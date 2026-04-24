@@ -126,8 +126,17 @@ sign_secure_boot_artifacts() {
     for path in \
         /boot/EFI/BOOT/BOOTX64.EFI \
         /boot/EFI/BOOT/grubx64.efi \
-        /boot/EFI/madOS/grubx64.efi \
-        /boot/vmlinuz-linux-mados; do
+        /boot/EFI/madOS/grubx64.efi; do
+        if [ -f "$path" ]; then
+            artifacts+=("$path")
+        fi
+    done
+
+    for path in \
+        /boot/vmlinuz-linux-lts \
+        /boot/vmlinuz-linux-mados \
+        /boot/vmlinuz-linux \
+        /boot/vmlinuz-linux-zen; do
         if [ -f "$path" ]; then
             artifacts+=("$path")
         fi
@@ -235,7 +244,6 @@ validate_boot_artifacts() {
     local required_paths=(
         "/boot/EFI/BOOT/BOOTX64.EFI"
         "/boot/EFI/madOS/grubx64.efi"
-        "/boot/vmlinuz-linux-mados"
     )
 
     local path
@@ -245,6 +253,24 @@ validate_boot_artifacts() {
             exit 1
         fi
     done
+
+    local kernel_found=0
+    local kernel_path
+    for kernel_path in \
+        /boot/vmlinuz-linux-lts \
+        /boot/vmlinuz-linux-mados \
+        /boot/vmlinuz-linux \
+        /boot/vmlinuz-linux-zen; do
+        if [ -s "$kernel_path" ]; then
+            kernel_found=1
+            break
+        fi
+    done
+
+    if [ "$kernel_found" -ne 1 ]; then
+        echo "ERROR: Required kernel artifact missing: expected one of /boot/vmlinuz-linux-lts|linux-mados|linux|linux-zen"
+        exit 1
+    fi
 }
 
 require_cmd "$GRUB_INSTALL"

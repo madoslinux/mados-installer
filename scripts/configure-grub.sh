@@ -132,10 +132,16 @@ if [ -z "$ROOT_UUID" ]; then
     exit 1
 fi
 
-KERNEL="linux-mados"
+KERNEL=""
+for candidate in linux-lts linux-mados linux linux-zen; do
+    if [ -f "/boot/vmlinuz-${candidate}" ]; then
+        KERNEL="${candidate}"
+        break
+    fi
+done
 
-if [ ! -f /boot/vmlinuz-${KERNEL} ]; then
-    echo "ERROR: No madOS kernel found in /boot"
+if [ -z "$KERNEL" ]; then
+    echo "ERROR: No supported kernel found in /boot"
     exit 1
 fi
 
@@ -171,8 +177,8 @@ if [ ! -f /boot/grub/grub.cfg ]; then
     exit 1
 fi
 
-if ! grep -q "vmlinuz-linux-mados" /boot/grub/grub.cfg; then
-    echo "ERROR: grub.cfg does not contain linux-mados entry"
+if ! grep -q "vmlinuz-${KERNEL}" /boot/grub/grub.cfg; then
+    echo "ERROR: grub.cfg does not contain vmlinuz-${KERNEL} entry"
     exit 1
 fi
 

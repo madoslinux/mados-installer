@@ -48,7 +48,10 @@ class TestSetupBootloaderScript(unittest.TestCase):
         self.assertIn("validate_boot_artifacts()", self.script)
         self.assertIn("/boot/EFI/BOOT/BOOTX64.EFI", self.script)
         self.assertIn("/boot/EFI/madOS/grubx64.efi", self.script)
+        self.assertIn("/boot/vmlinuz-linux-lts", self.script)
         self.assertIn("/boot/vmlinuz-linux-mados", self.script)
+        self.assertIn("/boot/vmlinuz-linux", self.script)
+        self.assertIn("/boot/vmlinuz-linux-zen", self.script)
 
 
 if __name__ == "__main__":

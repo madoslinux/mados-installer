@@ -27,10 +27,23 @@ $RM -f /etc/mkinitcpio.d/linux-zen.preset
 $RM -f /etc/mkinitcpio.d/linux-lts.preset
 $RM -f /etc/mkinitcpio.d/linux-mados.preset
 
-KERNEL="linux-mados"
-if [ ! -s /boot/vmlinuz-${KERNEL} ] || [ ! -r /boot/vmlinuz-${KERNEL} ]; then
-    echo "  ERROR: Could not find kernel image. Reinstalling ${KERNEL} package..."
+KERNEL=""
+for candidate in linux-lts linux-mados linux linux-zen; do
+    if [ -s "/boot/vmlinuz-${candidate}" ] && [ -r "/boot/vmlinuz-${candidate}" ]; then
+        KERNEL="${candidate}"
+        break
+    fi
+done
+
+if [ -z "$KERNEL" ]; then
+    KERNEL="linux-lts"
+    echo "  WARNING: Could not find kernel image in /boot. Installing ${KERNEL} package..."
     $PACMAN -Sy --noconfirm ${KERNEL} || { echo "FATAL: Failed to install kernel"; exit 1; }
+fi
+
+if [ ! -s "/boot/vmlinuz-${KERNEL}" ] || [ ! -r "/boot/vmlinuz-${KERNEL}" ]; then
+    echo "  ERROR: Could not find readable kernel image: /boot/vmlinuz-${KERNEL}"
+    exit 1
 fi
 
 echo "  Detecting installed kernel versions in target system..."
@@ -39,15 +52,35 @@ $LS /lib/modules/ 2>/dev/null || echo "  No kernel modules found"
 TARGET_KVER=""
 for kver in /lib/modules/*/; do
     kver_name=$($BASENAME "$kver")
-    if [[ "$kver_name" == *"mados"* ]]; then
-        TARGET_KVER="$kver_name"
-        echo "  Found target kernel: $TARGET_KVER"
-        break
-    fi
+    case "$KERNEL" in
+        linux-lts)
+            [[ "$kver_name" == *"lts"* ]] || continue
+            ;;
+        linux-mados)
+            [[ "$kver_name" == *"mados"* ]] || continue
+            ;;
+        linux-zen)
+            [[ "$kver_name" == *"zen"* ]] || continue
+            ;;
+        linux)
+            [[ "$kver_name" == *"arch"* || "$kver_name" == *"linux"* ]] || continue
+            ;;
+    esac
+    TARGET_KVER="$kver_name"
+    echo "  Found target kernel: $TARGET_KVER"
+    break
 done
 
 if [ -z "$TARGET_KVER" ]; then
-    echo "  ERROR: No madOS kernel modules found in /lib/modules"
+    echo "  WARNING: No matching kernel modules found for ${KERNEL}; using first available module tree"
+    for kver in /lib/modules/*/; do
+        TARGET_KVER=$($BASENAME "$kver")
+        break
+    done
+fi
+
+if [ -z "$TARGET_KVER" ]; then
+    echo "  ERROR: No kernel modules found in /lib/modules"
     echo "  Available kernels:"
     $LS /lib/modules/ 2>/dev/null || echo "  (none)"
     exit 1

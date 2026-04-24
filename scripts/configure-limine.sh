@@ -19,20 +19,33 @@ fi
 
 mkdir -p /boot/EFI/BOOT
 
+KERNEL_NAME=""
+for candidate in linux-lts linux-mados linux linux-zen; do
+    if [ -f "/boot/vmlinuz-${candidate}" ] && [ -f "/boot/initramfs-${candidate}.img" ]; then
+        KERNEL_NAME="${candidate}"
+        break
+    fi
+done
+
+if [ -z "$KERNEL_NAME" ]; then
+    echo "ERROR: No supported kernel/initramfs pair found in /boot"
+    exit 1
+fi
+
 cat > /boot/limine.conf <<EOF
 timeout: 5
 default_entry: 1
 
 /madOS (Installed)
     protocol: linux
-    path: boot():/vmlinuz-linux-mados-zen
-    module_path: boot():/initramfs-linux-mados-zen.img
+    path: boot():/vmlinuz-${KERNEL_NAME}
+    module_path: boot():/initramfs-${KERNEL_NAME}.img
     cmdline: root=UUID=${ROOT_UUID} rw zswap.enabled=0 splash quiet
 
 /madOS (Installed, Safe Graphics)
     protocol: linux
-    path: boot():/vmlinuz-linux-mados-zen
-    module_path: boot():/initramfs-linux-mados-zen.img
+    path: boot():/vmlinuz-${KERNEL_NAME}
+    module_path: boot():/initramfs-${KERNEL_NAME}.img
     cmdline: root=UUID=${ROOT_UUID} rw nomodeset zswap.enabled=0 splash quiet
 
 /UEFI Firmware Settings
